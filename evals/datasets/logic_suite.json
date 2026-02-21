@@ -1,0 +1,34 @@
+[
+    {
+        "id": "logic_001",
+        "category": "Reasoning",
+        "prompt": "If a glop is a plad, and all plads are snarks, is a glop definitely a snark?",
+        "expected_reasoning_paths": [
+            "transitive property",
+            "syllogism"
+        ],
+        "expected_answer": "Yes"
+    },
+    {
+        "id": "logic_002",
+        "category": "Math",
+        "prompt": "I have 5 apples. I eat 2. I buy 4 more, but drop half of my total apples into the river. How many are left?",
+        "expected_reasoning_paths": [
+            "5-2=3",
+            "3+4=7",
+            "7/2=3.5"
+        ],
+        "expected_answer": "3.5"
+    },
+    {
+        "id": "logic_003",
+        "category": "Planning",
+        "prompt": "You need to book a flight and a hotel, but the hotel must be booked first to guarantee dates. The flight requires the hotel confirmation code. Describe the sequence of tool calls.",
+        "expected_reasoning_paths": [
+            "book hotel first",
+            "extract confirmation",
+            "book flight next"
+        ],
+        "expected_answer": "Hotel -> Flight"
+    }
+]
