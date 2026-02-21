@@ -12,6 +12,9 @@ from core.decision_engine import DecisionEngine, NextAction
 from core.refinement_loop import RefinementLoop
 from tools.tool_registry import ToolRegistry
 from tools.tool_executor import ToolExecutor
+from tools.file_system_tool import FileSystemTool
+from tools.python_execution_tool import PythonInterpreterTool
+from tools.git_tool import GitTool
 
 class CognitionCore:
     """
