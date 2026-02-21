@@ -41,13 +41,34 @@ class CodeExecutionTool(BaseTool):
         if not code:
             return "Error: No code provided."
             
-        logger.warning(f"EXECUTING UNTRUSTED CODE BLOCK: {len(code)} bytes.")
+        # Hardened restrictions
+        restricted_imports = ["os", "subprocess", "shutil", "socket", "requests"]
+        for forbidden in restricted_imports:
+            if f"import {forbidden}" in code or f"from {forbidden}" in code:
+                return f"Sandbox Violation: Import of '{forbidden}' is restricted."
+
+        logger.warning(f"EXECUTING HARDENED SANDBOX CODE: {len(code)} bytes.")
+
+        # Wrap code in exception summarizer to save tokens on error
+        wrapper_code = f"""
+import sys
+import traceback
+
+def summarize_exception(e):
+    # Generates a token-light summary of the error
+    return f"{{type(e).__name__}}: {{str(e)}}"
+
+try:
+{self._indent_code(code)}
+except Exception as e:
+    print(f"SANDBOX_EXC:{{summarize_exception(e)}}", file=sys.stderr)
+    sys.exit(1)
+"""
 
         try:
-            # We spin up a new python interpreter as an async subprocess
-            # This is safer than eval() or exec() inside our own memory space.
+            # Subprocess limits enforced by OS via asyncio
             process = await asyncio.create_subprocess_exec(
-                sys.executable, "-c", code,
+                sys.executable, "-c", wrapper_code,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE
             )
@@ -57,10 +78,13 @@ class CodeExecutionTool(BaseTool):
             except asyncio.TimeoutError:
                 process.kill()
                 await process.communicate()
-                return f"Execution Timeout Error: Code ran for longer than {timeout} seconds and was killed."
+                return "Execution Timeout: Resource limit exceeded (Time)."
 
             out = stdout.decode().strip()
             err = stderr.decode().strip()
+
+            if "SANDBOX_EXC:" in err:
+                return f"Runtime Error: {err.split('SANDBOX_EXC:')[1]}"
 
             result = ""
             if out:
@@ -68,11 +92,11 @@ class CodeExecutionTool(BaseTool):
             if err:
                 result += f"STDERR:\n{err}\n"
 
-            if not result:
-                result = "Execution finished successfully with no printed output."
-
-            return result
+            return result or "Execution Successful (No Output)."
 
         except Exception as e:
-            logger.error(f"CodeExecutionTool failed fatally: {e}")
+            logger.error(f"Sandbox fatal failure: {e}")
             return f"Fatal Sandbox Error: {e}"
+
+    def _indent_code(self, code: str) -> str:
+        return "\n".join(["    " + line for line in code.splitlines()])

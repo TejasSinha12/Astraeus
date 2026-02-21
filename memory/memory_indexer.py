@@ -6,6 +6,7 @@ from typing import List, Dict, Any
 from pydantic import BaseModel, Field
 
 from core.reasoning_engine import ReasoningEngine
+from core.code_intelligence import CodeIntelligence
 from utils.logger import logger
 
 class MemorySummary(BaseModel):
@@ -16,6 +17,14 @@ class MemorySummary(BaseModel):
     compressed_fact: str = Field(description="Concise, factual distillation of what was learned or experienced.")
     tags: List[str] = Field(description="Keywords for filtering. E.g. 'error', 'database', 'user_preference'.")
 
+class CodeMemorySummary(MemorySummary):
+    """
+    Enhanced memory summary specifically for code, containing structural metadata.
+    """
+    functions: List[str] = Field(default_factory=list, description="Relevant functions involved.")
+    complexity_delta: float = Field(default=0.0, description="Change in cyclomatic complexity if applicable.")
+    dependency_impact: List[str] = Field(default_factory=list, description="Downstream modules affected.")
+
 class MemoryIndexer:
     """
     Takes raw episode exports (lists of dicts) and uses the reasoning engine
@@ -24,7 +33,8 @@ class MemoryIndexer:
 
     def __init__(self, engine: ReasoningEngine):
         self.engine = engine
-        logger.info("MemoryIndexer initialized.")
+        self.intelligence = CodeIntelligence()
+        logger.info("MemoryIndexer initialized with CodeIntelligence support.")
 
     async def compress_episode(self, episode_data: List[Dict[str, Any]]) -> MemorySummary:
         """
@@ -44,16 +54,25 @@ class MemoryIndexer:
         )
 
         user_prompt = "Episode Log:\n"
+        is_code_heavy = False
+        
         for entry in episode_data:
-            user_prompt += f"{entry.get('role', 'System')}: {entry.get('content', '')}\n"
+            content = entry.get('content', '')
+            user_prompt += f"{entry.get('role', 'System')}: {content}\n"
+            if "def " in content or "class " in content:
+                is_code_heavy = True
 
-        logger.debug(f"Compressing episode of {len(episode_data)} turns...")
+        logger.debug(f"Compressing episode (Code-Heavy: {is_code_heavy}) of {len(episode_data)} turns...")
+        
+        # Select appropriate model based on content
+        resp_model = CodeMemorySummary if is_code_heavy else MemorySummary
+
         summary = await self.engine.generate_response(
             system_prompt=sys_prompt,
             user_prompt=user_prompt,
             temperature=0.2,
-            response_model=MemorySummary
+            response_model=resp_model
         )
         
-        logger.info(f"Episode compressed down to fact regarding: {summary.core_topic}")
+        logger.info(f"Episode compressed regarding: {summary.core_topic}")
         return summary

@@ -29,6 +29,12 @@ class AscensionConfig(BaseSettings):
     MAX_PLANNING_STEPS: int = 10
     MAX_TOOL_RETRIES: int = 3
 
+    # Token & Budget Control
+    GLOBAL_TOKEN_BUDGET: int = 100000  # Total tokens per overarching goal
+    TASK_TOKEN_LIMIT: int = 10000      # Tokens per individual task
+    ADAPTIVE_COMPRESSION_THRESHOLD: float = 0.8  # Compress if > 80% usage
+    CONTEXT_PRIORITY: list = ["goal", "task", "short_memory", "long_memory"]
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

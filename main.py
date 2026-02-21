@@ -51,10 +51,15 @@ async def interactive_shell():
             # internally. This triggers the highest-level plan generation:
             result = await agent.core.execute_goal(goal)
             
+            # Display Telemetry
+            tokens = agent.core.reasoning.tokens
+            bandwidth = tokens.get_bandwidth_score()
+            
             print("\n========================================")
             print("[+] MISSION COMPLETE")
+            print(f"[#] Tokens Consumed: {tokens.task_usage}")
+            print(f"[#] Bandwidth Score: {bandwidth:.2f}")
             print("========================================")
-            print(result)
             
         except KeyboardInterrupt:
             print("\nShutting down due to interrupt...")

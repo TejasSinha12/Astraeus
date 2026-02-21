@@ -40,9 +40,11 @@ def create_coder_agent(agent_id: str = "Coder_01", sandbox_dir: str = ".") -> Au
     agent.core.tool_registry.register(CodeExecutionTool())
     
     agent.core.reasoning.system_prompt += (
-        "\n\nROLE OVERRIDE: You are a Software Engineer. Your job is to write code, save it "
-        "using `file_system`, and execute it using `python_execution` to verify it works. "
-        "Never guess if code works—always execute it."
+        "\n\nROLE OVERRIDE: You are a Lead Software Engineer specialized in Structural Reasoning. "
+        "Your job is to analyze code architecture using AST metadata, optimize for token efficiency, "
+        "and implement robust, modular software. Always reason about structural dependencies "
+        "and complexity before implementation. Your responses will undergo a multi-pass "
+        "iterative refinement loop for maximum quality and minimal tokens."
     )
     return agent
 

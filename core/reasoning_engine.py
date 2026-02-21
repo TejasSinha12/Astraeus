@@ -8,6 +8,7 @@ from pydantic import BaseModel, ValidationError
 
 from core_config import config
 from utils.logger import logger
+from core.token_controller import TokenController
 
 
 class ReasoningEngine:
@@ -26,7 +27,8 @@ class ReasoningEngine:
         
         self.client = openai.AsyncOpenAI(api_key=config.OPENAI_API_KEY)
         self.model = config.DEFAULT_MODEL
-        logger.info(f"ReasoningEngine initialized with model: {self.model}")
+        self.tokens = TokenController(model_name=self.model)
+        logger.info(f"ReasoningEngine initialized with model: {self.model} and TokenController.")
 
     async def generate_response(
         self,
@@ -53,6 +55,10 @@ class ReasoningEngine:
         ]
 
         try:
+            # Enforce token limit check before generation
+            if not self.tokens.check_limit():
+                raise RuntimeError("Token limit reached. Aborting generation.")
+
             # Simple text generation
             if response_model is None:
                 response = await self.client.chat.completions.create(
@@ -60,7 +66,11 @@ class ReasoningEngine:
                     messages=messages,
                     temperature=temperature,
                 )
-                return response.choices[0].message.content
+                content = response.choices[0].message.content
+                # Track usage
+                usage = response.usage.total_tokens if response.usage else self.tokens.count_tokens(content)
+                self.tokens.track_usage(usage)
+                return content
 
             # Structured JSON parsing
             else:
@@ -73,6 +83,11 @@ class ReasoningEngine:
                 parsed_response = response.choices[0].message.parsed
                 if parsed_response is None:
                     raise ValueError("Model failed to adhere to the required JSON schema.")
+                
+                # Track usage
+                usage = response.usage.total_tokens if hasattr(response, 'usage') and response.usage else self.tokens.count_tokens(str(parsed_response))
+                self.tokens.track_usage(usage or 0)
+                
                 return parsed_response
 
         except Exception as e:

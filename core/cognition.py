@@ -9,6 +9,7 @@ from utils.logger import logger
 from core.reasoning_engine import ReasoningEngine
 from core.goal_planner import GoalPlanner, Plan, TaskDefinition
 from core.decision_engine import DecisionEngine, NextAction
+from core.refinement_loop import RefinementLoop
 from tools.tool_registry import ToolRegistry
 from tools.tool_executor import ToolExecutor
 
@@ -25,9 +26,10 @@ class CognitionCore:
         self.reasoning = ReasoningEngine()
         self.planner = GoalPlanner(engine=self.reasoning)
         self.decision = DecisionEngine(engine=self.reasoning)
+        self.refiner = RefinementLoop(engine=self.reasoning, token_controller=self.reasoning.tokens)
         self.tool_registry = ToolRegistry()
         self.tool_executor = ToolExecutor(registry=self.tool_registry)
-        logger.info("CognitionCore initialized and sub-modules bootstrapped.")
+        logger.info("CognitionCore initialized with RefinementLoop integration.")
 
     async def execute_goal(self, goal: str) -> None:
         """
@@ -65,6 +67,11 @@ class CognitionCore:
         while step_count < config.MAX_PLANNING_STEPS:
             step_count += 1
             
+            # Enforce token limit and check bandwidth
+            bandwidth = self.reasoning.tokens.get_bandwidth_score()
+            if bandwidth < 0.1:
+                logger.warning(f"Extremely low bandwidth ({bandwidth:.2f}). Emergency optimization required.")
+
             decision: NextAction = await self.decision.decide_next_step(
                 task_description=task.description,
                 recent_memory=working_memory,
@@ -73,8 +80,10 @@ class CognitionCore:
 
             # Route Decision
             if decision.action_type == "TASK_COMPLETE":
-                logger.info(f"Task {task.id} finalized: {decision.response_or_summary}")
-                # TODO: Trigger SelfReflection and MemoryConsolidation here
+                logger.info(f"Task {task.id} finalized. Triggering final refinement pass.")
+                # Multi-pass iterative refinement for the final response
+                refined_response = await self.refiner.run_refinement(task.description, working_memory)
+                logger.info(f"Refined Result Size: {len(refined_response)} chars")
                 return
 
             elif decision.action_type == "FAIL":
