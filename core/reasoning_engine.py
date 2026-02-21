@@ -25,8 +25,11 @@ class ReasoningEngine:
         self.client = None
         if not config.USE_MOCK:
             if not config.OPENAI_API_KEY:
-                logger.warning("OPENAI_API_KEY is missing. ReasoningEngine will fail attempting inference.")
-            self.client = openai.AsyncOpenAI(api_key=config.OPENAI_API_KEY)
+                logger.warning("OPENAI_API_KEY is missing. Falling back to simulation mode.")
+                config.USE_MOCK = True
+            
+            # Note: We still initialize a client skeleton if mock is on for architecture consistency
+            self.client = openai.AsyncOpenAI(api_key=config.OPENAI_API_KEY or "dummy")
             
         self.model = config.DEFAULT_MODEL
         self.tokens = TokenController(model_name=self.model)
@@ -66,7 +69,7 @@ class ReasoningEngine:
             if not self.tokens.check_limit():
                 raise RuntimeError("Token limit reached. Aborting generation.")
 
-            # Simple text generation
+            # Standard text generation
             if response_model is None:
                 response = await self.client.chat.completions.create(
                     model=self.model,
@@ -100,6 +103,7 @@ class ReasoningEngine:
         except Exception as e:
             logger.error(f"ReasoningEngine failed during generation: {e}")
             raise RuntimeError(f"Engine generation error: {e}")
+
 
     async def _generate_mock_response(self, prompt: str, response_model: Optional[type[BaseModel]]) -> Any:
         """

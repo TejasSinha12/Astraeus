@@ -63,10 +63,11 @@ class DecisionEngine:
             "and decide what MUST happen next.\n\n"
             "Rules:\n"
             "1. Choose a single tactical action.\n"
-            "2. Ensure arguments match the signature of the tools exactly.\n"
-            "3. If the task is verified complete based on memory, return TASK_COMPLETE with a detailed summary.\n"
-            "4. If progress is impossible, return FAIL with a reason.\n"
-            "5. META-COGNITION CALIBRATION: Evaluate your `confidence_score` critically. If you are hallucinating or guessing, lower the score below 0.5. Calibration metrics penalize high-confidence errors exponentially.\n"
+            "2. TOOL ARGUMENTS: When using 'USE_TOOL', you MUST populate the `arguments` dictionary with ALL required fields defined in the tool's schema. Do NOT return an empty dictionary.\n"
+            "3. Ensure arguments match the signature of the tools exactly.\n"
+            "4. If the task is verified complete based on memory, return TASK_COMPLETE with a detailed summary.\n"
+            "5. If progress is impossible, return FAIL with a reason.\n"
+            "6. META-COGNITION CALIBRATION: Evaluate your `confidence_score` critically. If you are hallucinating or guessing, lower the score below 0.5. Calibration metrics penalize high-confidence errors exponentially.\n"
         )
 
         user_prompt = f"Current Task:\n{task_description}\n\n"

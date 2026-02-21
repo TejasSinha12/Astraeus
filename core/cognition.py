@@ -28,8 +28,11 @@ class CognitionCore:
         self.decision = DecisionEngine(engine=self.reasoning)
         self.refiner = RefinementLoop(engine=self.reasoning, token_controller=self.reasoning.tokens)
         self.tool_registry = ToolRegistry()
+        self.tool_registry.register(FileSystemTool())
+        self.tool_registry.register(PythonInterpreterTool())
+        self.tool_registry.register(GitTool())
         self.tool_executor = ToolExecutor(registry=self.tool_registry)
-        logger.info("CognitionCore initialized with RefinementLoop integration.")
+        logger.info("CognitionCore initialized with RefinementLoop and Git support.")
 
     async def execute_goal(self, goal: str) -> None:
         """
@@ -80,7 +83,13 @@ class CognitionCore:
 
             # Route Decision
             if decision.action_type == "TASK_COMPLETE":
-                logger.info(f"Task {task.id} finalized. Triggering final refinement pass.")
+                logger.info(f"Task {task.id} finalized.")
+                
+                if config.DISABLE_REFINEMENT:
+                    logger.info("Refinement skipped (DISABLE_REFINEMENT=True)")
+                    return
+                
+                logger.info("Triggering final refinement pass.")
                 # Multi-pass iterative refinement for the final response
                 refined_response = await self.refiner.run_refinement(task.description, working_memory)
                 logger.info(f"Refined Result Size: {len(refined_response)} chars")

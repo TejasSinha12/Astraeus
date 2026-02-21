@@ -108,13 +108,15 @@ Create a `.env` file:
 OPENAI_API_KEY=your_api_key_here
 ```
 
+#### 🎮 Usage & Demo
+1. **Simulation Mode**: Run `python3 main.py` without any keys to see the AGI's cognitive process in mock mode.
+2. **Gemini Mode**: Add `GEMINI_API_KEY` to `.env` and set `LLM_PROVIDER=gemini`.
+3. **Quota Management**: If you hit 429 errors on a free-tier key, set `DISABLE_REFINEMENT=True` in your `.env` to skip the multi-pass cognitive loops and save requests.
+
 #### Running the CLI
 ```bash
 python3 main.py
 ```
-
-> [!TIP]
-> **Simulation Mode (No API Key)**: If no `OPENAI_API_KEY` is found in your `.env`, the system will automatically enable **Simulation Mode**. This allows you to experience the framing, planning, and structural refinement loops without any external API costs.
 
 ---
 
