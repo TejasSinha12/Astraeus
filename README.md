@@ -108,10 +108,10 @@ Create a `.env` file:
 OPENAI_API_KEY=your_api_key_here
 ```
 
-#### 🎮 Usage & Demo
+### 🎮 Usage & Demo
 1. **Simulation Mode**: Run `python3 main.py` without any keys to see the AGI's cognitive process in mock mode.
-2. **Gemini Mode**: Add `GEMINI_API_KEY` to `.env` and set `LLM_PROVIDER=gemini`.
-3. **Quota Management**: If you hit 429 errors on a free-tier key, set `DISABLE_REFINEMENT=True` in your `.env` to skip the multi-pass cognitive loops and save requests.
+2. **Autonomous Git**: The AGI now has a `git_manager` tool. It can stage, commit, and push its own code changes during a mission.
+3. **OpenAI Mode**: Add `OPENAI_API_KEY` to `.env` to enable live LLM reasoning.
 
 #### Running the CLI
 ```bash
