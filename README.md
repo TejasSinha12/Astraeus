@@ -20,6 +20,7 @@ Ascension isolates functionality into specialized boundary layers:
 ### Tool Boundaries (`/tools`)
 - **Base Tool Interface**: Requires all tools to publish precise json schemas.
 - **Tool Executor**: Acts as a try/catch sandbox generating strings for short term ingestion regardless of tool success or failure.
+- **Concrete Tool Suite**: Pre-built tools including `WebSearchTool` (DuckDuckGo), `FileSystemTool` (Async Read/Write), and `CodeExecutionTool` (Sandboxed Python Subprocesses).
 
 ### Learning & Evals (`/learning` & `/evals` & `/optimization`)
 - **Feedback & Reflection**: Evaluates execution traces to generate new hypothesized heuristics (rules).
@@ -33,8 +34,12 @@ Ascension isolates functionality into specialized boundary layers:
 - **Versioning**: (`/versions`) Ability to snapshot and cleanly rollback FAISS vectors and heuristic rules.
 
 ### Swarm Management (`/agents` & `/api`)
+- **Agent Profiles**: Specialized swarm topologies like *Researcher*, *Coder*, and *Executive*, each with constrained tool registries and optimized system prompts.
 - **Multi-Agent Coordinator**: Routes tasks to available asynchronous `AutonomousAgent` instances.
 - **REST Interface**: Built on FastAPI to query swarm state, assign tasks, and trigger emergency global halts.
+
+## 📚 Project Ascension Wiki
+Read the full interactive architectural documentation here: **[https://astraeus-livid.vercel.app](https://astraeus-livid.vercel.app)**
 
 ## 🛠️ Getting Started
 
