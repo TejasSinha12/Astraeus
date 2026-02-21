@@ -13,7 +13,7 @@ from core.refinement_loop import RefinementLoop
 from tools.tool_registry import ToolRegistry
 from tools.tool_executor import ToolExecutor
 from tools.file_system_tool import FileSystemTool
-from tools.python_execution_tool import PythonInterpreterTool
+from tools.code_execution_tool import CodeExecutionTool
 from tools.git_tool import GitTool
 
 class CognitionCore:
@@ -32,7 +32,7 @@ class CognitionCore:
         self.refiner = RefinementLoop(engine=self.reasoning, token_controller=self.reasoning.tokens)
         self.tool_registry = ToolRegistry()
         self.tool_registry.register(FileSystemTool())
-        self.tool_registry.register(PythonInterpreterTool())
+        self.tool_registry.register(CodeExecutionTool())
         self.tool_registry.register(GitTool())
         self.tool_executor = ToolExecutor(registry=self.tool_registry)
         logger.info("CognitionCore initialized with RefinementLoop and Git support.")
