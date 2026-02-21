@@ -1,0 +1,31 @@
+---
+title: "Core Cognition Engine"
+description: "The central LLM abstraction layer for Pydantic-typed inference and structured reasoning steps."
+---
+
+# Overview
+
+The `reasoning_engine.py` functions as the primary abstraction barrier between **Project Ascension** and the underlying Language Model provider. Rather than streaming text openly, the Core Cognition Engine strictly enforces `pydantic` output schema constraints.
+
+<Alert>
+  The Core Cognition Engine is async-first. All tool execution loops must await output to prevent blocking the FastApi multi-agent backend.
+</Alert>
+
+## Goal Planner
+
+Unlike basic chained prompting, Ascension builds **Directed Acyclic Graphs (DAGs)**.
+
+When a complex objective is received, the `GoalPlanner` calculates independent operational strands. If a Goal is `Prepare a detailed competitive analysis of X`, the graph resolves to:
+1. Search market data (parallel)
+2. Scrape competitor sites (parallel)
+3. Synthesize findings (depends on 1 and 2)
+
+## Decision Engine Loop
+
+The immediate execution of an operation is governed by the `DecisionEngine`. After reviewing short term context, the engine is forced to output a `NextAction` with one of three states:
+- `USE_TOOL`
+- `TASK_COMPLETE`
+- `FAIL`
+
+### Meta-Cognition Checks
+Each action includes a floating point `confidence_score`. The AGI is penalized during the V2 offline training loop if it reports high confidence but triggers a terminal code execution error, ensuring that over time it "knows what it does not know."

@@ -1,0 +1,27 @@
+---
+title: "Swarm Coordination & API"
+description: "Scaling Project Ascension into multi-agent topologies via FastAPI."
+---
+
+# REST Interface
+
+Project Ascension includes a production-ready Web API to command and control the cognitive system externally.
+
+## Multi-Agent Topologies
+
+Because the `BaseAgent` instance wraps a stateless `CognitionCore`, you can spin up distinct agents optimized for different tasks (e.g., A "Researcher Agent", an "Execution Agent", and a "Code Writer Agent").
+
+The `multi_agent_coordinator.py` maintains an active registry of these nodes.
+
+### Dispatching Tasks
+
+Submit goals via JSON:
+```json
+POST /api/v1/mission
+{
+  "objective": "Build a React component",
+  "priority": "HIGH"
+}
+```
+
+The Coordinator parses the objective, decomposes it using the Master Planner, and delegates sub-graphs to the child Swarm nodes asynchronously. Wait for SSE (Server-Sent Events) to monitor realtime trace reasoning output across the Swarm.

@@ -1,0 +1,22 @@
+---
+title: "Continuous Learning Loop V2"
+description: "Statistical self-improvement bridging Self-Reflection with Heuristic A/B Optimization."
+---
+
+# Overview
+
+Ascension learns via **empirical validation** rather than blind text generation. 
+
+Standard LLM agents simply "reflect" on failures and add `"Do better next time"` to their prompt. Ascension evaluates mathematical performance.
+
+## The Architecture
+
+1. **Failure Ingestion**: A task fails. The telemetry database records it.
+2. **Qualitative Reflection**: The `<SelfReflectionModule>` analyzes the trajectory trace and hypothesizes a new semantic Rule.
+3. **The Sandbox Test**: The `<HeuristicOptimizer>` creates a temporary snapshot of the AGI and edits its system prompt to contain the new Rule.
+4. **Benchmark Suite**: The AGI must pass the `/evals` deterministic sandbox (Logic, Math, Planning checks).
+5. **Promotion**: If and only if the aggregate accuracy increases, the Rule is permanently attached to the active FAISS heuristic JSON, driving all future agent spawns.
+
+<Alert>
+  If you find your AGI degrading over time, trigger a System Rollback using the API to restore from the `/versions` backup arrays.
+</Alert>

@@ -1,0 +1,35 @@
+---
+title: "Sandboxed Tool Boundaries"
+description: "How Project Ascension restricts tool usage while allowing vast extensibility."
+---
+
+# Extending the AGI
+
+Ascension manages tools using a centralized `ToolRegistry`. 
+
+## Writing a Tool
+
+Every tool must inherit from `BaseTool`. You must strictly define the input `pydantic.BaseModel` for validation.
+
+```python
+from pydantic import BaseModel
+from tools.base_tool import BaseTool
+
+class ProcessQueryToolInput(BaseModel):
+    query: str
+
+class ProcessQueryTool(BaseTool):
+    name = "process_query"
+    description = "Searches the database."
+    args_schema = ProcessQueryToolInput
+    
+    def run(self, args: ProcessQueryToolInput) -> str:
+        # Implementation
+        return "Found data."
+```
+
+## The Sandbox Executor
+
+When the `DecisionEngine` invokes a tool, it is passed to the `ToolExecutor`. This isolated thread runs `try/catch` and enforces timeout blocks.
+
+If a tool crashes, the AGI does not. The traceback is caught, stringified, and returned directly to the Short Term Memory. The AGI will "see" the error, reflect, and attempt a different syntax on the next loop cycle.

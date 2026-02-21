@@ -1,0 +1,24 @@
+---
+title: "System Safety Layers"
+description: "How Project Ascension guarantees deterministic and safe system actions."
+---
+
+# The Threat Model
+
+An AGI with recursive reflection and autonomous tool-use requires zero-trust security architecture.
+
+## 1. Constraints Validations
+
+The `sandbox.py` enforces regex restrictions on all output text bound for Terminal, Operating System, or DB interactions. 
+- Recursive loops (`rm -rf /`) are intercepted pre-dispatch.
+- Hardcoded domain filters prevent unintended web-exfiltration.
+
+## 2. The Ethical Firewall
+
+If Ascension chooses an action with high entropy or system impact, a separate instance of the `ReasoningEngine` acts as an asynchronous sidecar (The Ethical Firewall). This second LLM is prompted strictly to evaluate the primary actor's intent against a localized alignment file. It can trigger an automatic hard stop if safety conditions fail.
+
+## 3. Versioning Control
+
+Every time the Learning Loop modifies a system heuristic, or the Indexer updates the FAISS vector database, the Memory State is saved in `/versions`.
+
+Because the entire "brain state" is portable, catastrophic degradation (hallucination collapse) can be cleanly rectified by loading an older snapshot.

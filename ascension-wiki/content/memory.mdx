@@ -1,0 +1,27 @@
+---
+title: "Vector vs Short-Term Memory"
+description: "A dual-tiered persistence system allowing the AGI to maintain contextual flow while archiving immutable lessons."
+---
+
+# Overview
+
+Project Ascension separates immediate working memory (what we call the **Short-Term Context Window**) from **Long-Term Episodic Memory** (`FAISS`).
+
+## Short Term Buffer
+
+At initialization, an Agent establishes a rotating memory array. Given the input constraints of LLMs (even large context models), dumping all historical context into a single prompt is computationally wasteful and dilutes the core attention heads during `USE_TOOL` iterations.
+
+The Short Term Buffer tracks the exact inputs, outputs, and system errors for *this specific session*. 
+
+<Alert>
+  The Context Window is pruned using a sliding-window algorithm. Older messages are summarized before eviction.
+</Alert>
+
+## FAISS Vector Index
+
+Long Term Memory is purely semantic. 
+
+When a session concludes, the `memory_indexer` extracts facts, tool usage heuristics, and knowledge points. These are embedded using an OpenAI or Local embedding model and inserted into a local `faiss` CPU database.
+
+### The Memory Optimizer
+Over time, vectors can degrade the quality of thought (creating hallucination feedback loops). The `Heuristic Optimizer` daemon runs offline, pulling retrieval telemetry from the `SQLite` tracking database. If a memory is retrieved 10+ times but fails to contribute to task success, it is physically pruned from the tree.
