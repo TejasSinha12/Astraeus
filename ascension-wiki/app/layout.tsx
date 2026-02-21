@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
 import { Inter, Fira_Code } from "next/font/google";
 import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
+import { Navbar } from "@/components/Navbar";
+import { ParticlesBackground } from "@/components/ui/ParticlesBackground";
+import { CustomCursor } from "@/components/ui/CustomCursor";
+import { Sidebar } from "@/components/Sidebar";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -17,25 +22,24 @@ export const metadata: Metadata = {
   description: "Advanced AGI research framework focused on modular cognition, autonomous reasoning, and recursive self-improvement.",
 };
 
-import { Sidebar } from "@/components/Sidebar";
-import { ParticlesBackground } from "@/components/ui/ParticlesBackground";
-import { CustomCursor } from "@/components/ui/CustomCursor";
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.variable} ${firaCode.variable} antialiased bg-background text-text-main selection:bg-primary/30 selection:text-white cursor-auto`}>
-        <CustomCursor />
-        <ParticlesBackground />
-        <Sidebar />
-        <main className="md:pl-64 flex-1 min-h-screen relative z-10">
-          {children}
-        </main>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" className="dark">
+        <body className={`${inter.variable} ${firaCode.variable} antialiased bg-background text-text-main selection:bg-primary/30 selection:text-white cursor-auto`}>
+          <CustomCursor />
+          <ParticlesBackground />
+          <Navbar />
+          <Sidebar />
+          <main className="md:pl-64 flex-1 min-h-screen relative z-10 pt-16">
+            {children}
+          </main>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

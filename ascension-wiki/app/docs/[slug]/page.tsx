@@ -1,14 +1,12 @@
-import { getDocBySlug, getAllDocSlugs } from "@/lib/mdx";
+import { getDocBySlug } from "@/lib/mdx";
 import { MDXRemote } from "next-mdx-remote/rsc";
 import { notFound } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Metadata } from "next";
 
-export async function generateStaticParams() {
-    const slugs = await getAllDocSlugs();
-    return slugs.map((slug) => ({ slug }));
-}
+// Force dynamic rendering — Clerk context requires a real request
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
     const { slug } = await params;
