@@ -23,9 +23,11 @@ The project has been upgraded to a full research environment with advanced visua
 Ascension isolates functionality into specialized boundary layers:
 
 ### Core Cognition (`/core`)
-- **Reasoning Engine**: Isolates LLM generation and parsing into strict schemas (powered by Pydantic).
+- **Structural Reasoning Engine**: Uses AST parsing to extract Python metadata (functions, deps, complexity), allowing the AGI to reason over architecture rather than raw text.
+- **Token Budget Controller**: Enforces hard token limits per task and implements adaptive context compression (Goal > Task > Short Memory > Long Memory).
+- **Iterative Refinement Loop**: Coordinates multi-pass code generation (Analysis -> Draft -> Critique -> Optimize) with measurable quality tracking.
 - **Goal Planner**: Deconstructs user input into Directed Acyclic Graphs (DAGs) of executable subtasks.
-- **Decision Engine**: Chooses the immediate tactical action (Tool Use, Summary, or Failure) based on context and dynamic Multi-Cognitive confidence scores.
+- **Decision Engine**: Multi-cognitive selection of tools, reflections, or completions based on structural context.
 
 ### Memory Systems (`/memory`)
 - **Short Term Memory**: Rotating temporal context preventing buffer overflow.
@@ -34,11 +36,11 @@ Ascension isolates functionality into specialized boundary layers:
 
 ### Tool Boundaries (`/tools`)
 - **Base Tool Interface**: Requires all tools to publish precise JSON schemas.
-- **Tool Executor**: Acts as a try/catch sandbox generating strings for short term ingestion regardless of tool success or failure.
-- **Concrete Tool Suite**: Production-ready tools:
+- **Tool Executor**: Acts as a try/catch sandbox generating strings for short term ingestion.
+- **Hardened Code Execution Sandbox**: Isolated subprocess execution with strict timeouts, memory limits, restricted imports, and token-light exception summarization.
+- **Concrete Tool Suite**:
   - `WebSearchTool` — DuckDuckGo async search
   - `FileSystemTool` — Sandboxed async file read/write/list
-  - `CodeExecutionTool` — Isolated Python subprocess sandbox
 
 ### Learning & Evals (`/learning`, `/evals`, `/optimization`)
 - **Feedback & Reflection**: Evaluates execution traces to generate new hypothesized heuristics (rules).
