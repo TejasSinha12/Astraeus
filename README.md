@@ -4,16 +4,17 @@
 
 Ascension is not just an LLM wrapper. It is a structured environment that separates intention, execution, memory retrieval, and self-evaluation into distinct asynchronous pipelines, creating a continuous quantitative learning loop.
 
-## 📚 Live Website & Wiki
+## 🔬 AGI Research Laboratory Interface
 
-**🌐 Main Website:** [https://astraeus-livid.vercel.app](https://astraeus-livid.vercel.app)
+The project has been upgraded to a full research environment with advanced visualization and telemetry tools:
 
-Features available on the live site:
-- Animated landing page with neural background
-- Clerk-authenticated Register / Login
-- Protected AGI Command Center Dashboard
-- Admin-only System Control Panel
-- Full MDX documentation wiki
+- **Benchmarks Dashboard**: Real-time statistical tracking of model performance across versions, including calibration curves and A/B test results.
+- **Evolution Timeline**: A vertical, animated history of heuristic promotions, system updates, and architectural milestones.
+- **Agent Arena**: A live simulation workbench with a React Flow-powered Reasoning DAG to observe cognitive loops in real time.
+- **Experiment Workbench**: Admin control panel for tweaking cognitive temperature, tool permissions, and heuristic rule injection.
+- **Cognition Map**: An interactive system diagram illustrating the high-level data flow between core modules.
+- **Live Event Stream**: A real-time terminal-style log system powered by Server-Sent Events (SSE).
+- **Technical Whitepaper**: MDX documentation with KaTeX math rendering for cognitive algorithms and statistical methodologies.
 
 ---
 
@@ -43,56 +44,44 @@ Ascension isolates functionality into specialized boundary layers:
 - **Feedback & Reflection**: Evaluates execution traces to generate new hypothesized heuristics (rules).
 - **Benchmark Sandbox**: Runs deterministic tests (`math`, `logic`, `planning`) against static AGI versions.
 - **Heuristic Optimizer**: A/B tests proposed rules numerically. Promotes rules to the System Prompt only if they empirically improve benchmark scores without triggering regression.
-- **Telemetry DB**: (`/metrics`) SQLite logs tracking rule weights, component hit-rates, and confidence calibration.
 
 ### Security Layers (`/safety`)
 - **Sandbox**: Restricts commands by regex and limits file access to specific directories.
 - **Ethical Firewall**: Moderates proposed dangerous actions using a constrained secondary AI check.
-- **Versioning**: (`/versions`) Ability to snapshot and cleanly rollback FAISS vectors and heuristic rules.
-
-### Swarm Management (`/agents`, `/api`)
-- **Agent Profiles**: Specialized swarm topologies:
-  - `Researcher_01` — WebSearch only, summarization focus
-  - `Coder_01` — FileSystem + Python execution
-  - `Executive_Alpha` — Orchestrator, no direct tool access
-- **Multi-Agent Coordinator**: Routes tasks to available asynchronous `AutonomousAgent` instances.
-- **REST Interface**: Built on FastAPI to query swarm state, assign tasks, and trigger emergency global halts.
+- **Versioning**: Snapshot and cleanly rollback FAISS vectors and heuristic rules.
 
 ---
 
 ## 🌐 Website & Frontend (`/ascension-wiki`)
 
-A production-grade Next.js 14 main website built with:
+A production-grade Next.js 16 (App Router) main website built with:
 
 | Feature | Implementation |
 |---|---|
-| Framework | Next.js 14 (App Router) + TypeScript |
-| Styling | Tailwind CSS + Glassmorphism |
-| Animations | Framer Motion (hero, cards, modals) |
-| Authentication | Clerk (Register, Login, UserButton) |
-| Role System | `admin` > `researcher` > `viewer` via Clerk Public Metadata |
-| Documentation | MDX with syntax highlighting |
-| Deployment | Vercel (auto-deploy on push) |
+| Framework | Next.js 16 + TypeScript |
+| Styling | Tailwind CSS 4 + Glassmorphism |
+| Animations | Framer Motion + CSS Neural Pulses |
+| Visualization | React Flow (DAGs) + Recharts (Analytics) |
+| State | Zustand (Global Sync) |
+| Streaming | Server-Sent Events (SSE) |
+| Auth / Roles | Clerk (admin > researcher > viewer) |
+| Math | KaTeX + remark-math + rehype-katex |
 
 ### Routes
 
 | Route | Access | Description |
 |---|---|---|
-| `/` | Public | Animated landing page |
+| `/` | Public | Animated landing page with magnetic cursor |
+| `/dashboard` | Protected | AGI Command Center dashboard |
+| `/benchmarks` | Researcher | Interactive Recharts dashboard |
+| `/evolution` | Public | Animated vertical history timeline |
+| `/arena` | Researcher | Live Agent Reasoning DAG (React Flow) |
+| `/experiments` | Admin | Workbench for cognitive tweaking |
+| `/cognition-map` | Public | Interactive system architecture diagram |
+| `/logs` | Admin | Real-time terminal SSE log stream |
+| `/whitepaper` | Viewer | Technical documentation with math |
 | `/docs/[slug]` | Public | MDX documentation wiki |
-| `/sign-in` | Public | Themed Clerk sign-in |
-| `/sign-up` | Public | Themed Clerk sign-up |
-| `/dashboard` | Authenticated | AGI Command Center — metrics, agents, heuristics |
-| `/control` | Admin only | Emergency halt, version rollback, optimizer toggle |
-
-### Role Assignment
-
-Roles are set via **Clerk Dashboard → Users → [user] → Public Metadata**:
-```json
-{ "role": "admin" }     // Full control panel access
-{ "role": "researcher" } // Benchmark & heuristic view
-{ "role": "viewer" }    // Read-only docs (default)
-```
+| `/control` | Admin | Emergency halt & version control |
 
 ---
 
@@ -117,12 +106,6 @@ Create a `.env` file:
 OPENAI_API_KEY=your_api_key_here
 ```
 
-#### Running the API Gateway
-```bash
-uvicorn api.rest_interface:app --reload
-```
-Access the REST swagger docs at `http://localhost:8000/docs`.
-
 #### Running the CLI
 ```bash
 python main.py
@@ -133,7 +116,7 @@ python main.py
 ### Website (Next.js Frontend)
 
 #### Prerequisites
-- Node.js 18+
+- Node.js 20+
 - A free [Clerk](https://clerk.com) account
 
 #### Installation
@@ -159,12 +142,6 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
-
-#### Deploying to Vercel
-1. Push to GitHub
-2. Import repo at [vercel.com](https://vercel.com) — set Root Directory to `ascension-wiki`
-3. Add the two Clerk env vars in **Settings → Environment Variables**
-4. Deploy ✅
 
 ---
 
