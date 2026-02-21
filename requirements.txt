@@ -7,3 +7,4 @@ faiss-cpu>=1.8.0
 numpy>=1.26.4
 chromadb>=0.5.3
 SQLAlchemy>=2.0.31
+duckduckgo-search>=5.3.0
