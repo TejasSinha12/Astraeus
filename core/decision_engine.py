@@ -22,6 +22,7 @@ class NextAction(BaseModel):
     Structured envelope for the Decision Engine's verdict.
     """
     thought_process: str = Field(description="Step by step reasoning for the decision.")
+    confidence_score: float = Field(description="0.0 to 1.0. How certain are you this action is mathematically/logically optimal. BE HONEST. Overconfidence is heavily penalized in system calibration loops.")
     action_type: str = Field(description="Must be one of: 'USE_TOOL', 'TASK_COMPLETE', 'FAIL'.")
     tool_call: Optional[ToolCallDecision] = Field(description="Populated if action_type is USE_TOOL.")
     response_or_summary: Optional[str] = Field(description="Populated if action_type is TASK_COMPLETE or FAIL. Summarizes outcome.")
@@ -65,6 +66,7 @@ class DecisionEngine:
             "2. Ensure arguments match the signature of the tools exactly.\n"
             "3. If the task is verified complete based on memory, return TASK_COMPLETE with a detailed summary.\n"
             "4. If progress is impossible, return FAIL with a reason.\n"
+            "5. META-COGNITION CALIBRATION: Evaluate your `confidence_score` critically. If you are hallucinating or guessing, lower the score below 0.5. Calibration metrics penalize high-confidence errors exponentially.\n"
         )
 
         user_prompt = f"Current Task:\n{task_description}\n\n"
