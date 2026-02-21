@@ -10,7 +10,10 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="min-h-screen pt-20 pb-16 px-4 sm:px-8 md:px-12 lg:px-20 max-w-7xl mx-auto flex flex-col items-center">
+    <div className="min-h-screen pt-20 pb-16 px-4 sm:px-8 md:px-12 lg:px-20 max-w-7xl mx-auto flex flex-col items-center relative overflow-hidden">
+      {/* Background Decorative Pulses */}
+      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[100px] neural-pulse pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-secondary/5 rounded-full blur-[80px] neural-pulse pointer-events-none" style={{ animationDelay: "1s" }} />
 
       {/* Hero Section */}
       <motion.section

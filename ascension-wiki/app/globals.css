@@ -12,6 +12,20 @@
   
   --font-sans: var(--font-inter), system-ui, sans-serif;
   --font-mono: var(--font-fira-code), ui-monospace, SFMono-Regular, monospace;
+
+  --animate-neural-pulse: neural-pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-border-glow: border-glow 6s linear infinite;
+}
+
+@keyframes neural-pulse {
+  0%, 100% { opacity: 0.2; transform: scale(1); filter: blur(10px); }
+  50% { opacity: 0.5; transform: scale(1.1); filter: blur(15px); }
+}
+
+@keyframes border-glow {
+  0% { border-color: rgba(0, 229, 255, 0.1); }
+  50% { border-color: rgba(0, 229, 255, 0.4); box-shadow: 0 0 15px rgba(0, 229, 255, 0.2); }
+  100% { border-color: rgba(0, 229, 255, 0.1); }
 }
 
 /* Custom Utilities for Glowing Effects and Glassmorphism */
@@ -35,6 +49,15 @@
 
 @utility box-glow {
   box-shadow: 0 0 15px rgba(0, 229, 255, 0.2), inset 0 0 10px rgba(0, 229, 255, 0.1);
+}
+
+@utility neural-pulse {
+  animation: var(--animate-neural-pulse);
+}
+
+@utility animated-border {
+  animation: var(--animate-border-glow);
+  border-width: 1px;
 }
 
 :root {

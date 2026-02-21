@@ -9,6 +9,8 @@ from utils.logger import logger
 from core.reasoning_engine import ReasoningEngine
 from core.goal_planner import GoalPlanner, Plan, TaskDefinition
 from core.decision_engine import DecisionEngine, NextAction
+from tools.tool_registry import ToolRegistry
+from tools.tool_executor import ToolExecutor
 
 class CognitionCore:
     """
@@ -23,6 +25,8 @@ class CognitionCore:
         self.reasoning = ReasoningEngine()
         self.planner = GoalPlanner(engine=self.reasoning)
         self.decision = DecisionEngine(engine=self.reasoning)
+        self.tool_registry = ToolRegistry()
+        self.tool_executor = ToolExecutor(registry=self.tool_registry)
         logger.info("CognitionCore initialized and sub-modules bootstrapped.")
 
     async def execute_goal(self, goal: str) -> None:
@@ -61,19 +65,10 @@ class CognitionCore:
         while step_count < config.MAX_PLANNING_STEPS:
             step_count += 1
             
-            # TODO: Fetch dynamically registered tools from tool_registry.py
-            dummy_tools = [
-                {
-                    "name": "read_file",
-                    "description": "Reads contents of a local file.",
-                    "schema": {"path": "string"}
-                }
-            ]
-
             decision: NextAction = await self.decision.decide_next_step(
                 task_description=task.description,
                 recent_memory=working_memory,
-                available_tools=dummy_tools
+                available_tools=self.tool_registry.get_all_schemas()
             )
 
             # Route Decision
@@ -90,8 +85,16 @@ class CognitionCore:
             elif decision.action_type == "USE_TOOL":
                 if decision.tool_call:
                     logger.info(f"Tool Dispatch -> {decision.tool_call.tool_name}({decision.tool_call.arguments})")
-                    # TODO: Execute via tool_executor
-                    working_memory += f"\n[Step {step_count}] Used {decision.tool_call.tool_name}. Outcome queued.\n"
+                    from core.decision_engine import ToolCallDecision
+                    
+                    tool_decision = ToolCallDecision(
+                        tool_name=decision.tool_call.tool_name, 
+                        arguments=decision.tool_call.arguments
+                    )
+                    
+                    tool_result = await self.tool_executor.execute(tool_decision)
+                    logger.debug(f"Tool Execution Result Loop: {len(tool_result)} bytes")
+                    working_memory += f"\n[Step {step_count}] Used {decision.tool_call.tool_name}. Outcome:\n{tool_result}\n"
                 
             else:
                 logger.warning(f"Unknown action type generated: {decision.action_type}")
