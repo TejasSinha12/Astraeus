@@ -19,6 +19,7 @@ class AscensionConfig(BaseSettings):
     OPENAI_API_KEY: Optional[str] = None
     DEFAULT_MODEL: str = "gpt-4o"
     EMBEDDING_MODEL: str = "text-embedding-3-small"
+    USE_MOCK: bool = False  # Set to True for running without API Key
 
     # Memory Settings
     VECTOR_DB_TYPE: str = "faiss"  # Or "chroma"

@@ -18,10 +18,10 @@ def create_researcher_agent(agent_id: str = "Researcher_01") -> AutonomousAgent:
         agent_id=agent_id,
         role="Senior Research Analyst"
     )
-    # The agent's cognition core is accessible via agent.core
-    agent.core.tool_registry.register(WebSearchTool())
+    # The agent's cognition core is accessible via agent.cognition
+    agent.cognition.tool_registry.register(WebSearchTool())
     
-    agent.core.reasoning.system_prompt += (
+    agent.cognition.reasoning.system_prompt += (
         "\n\nROLE OVERRIDE: You are a Research Analyst. Your sole job is to ingest queries, "
         "exhaustively use the `web_search` tool to find ground truth data, and then return "
         "a highly detailed, structured summary as a TASK_COMPLETE action."
@@ -36,10 +36,10 @@ def create_coder_agent(agent_id: str = "Coder_01", sandbox_dir: str = ".") -> Au
         agent_id=agent_id,
         role="Lead Software Engineer"
     )
-    agent.core.tool_registry.register(FileSystemTool(sandbox_dir=sandbox_dir))
-    agent.core.tool_registry.register(CodeExecutionTool())
+    agent.cognition.tool_registry.register(FileSystemTool(sandbox_dir=sandbox_dir))
+    agent.cognition.tool_registry.register(CodeExecutionTool())
     
-    agent.core.reasoning.system_prompt += (
+    agent.cognition.reasoning.system_prompt += (
         "\n\nROLE OVERRIDE: You are a Lead Software Engineer specialized in Structural Reasoning. "
         "Your job is to analyze code architecture using AST metadata, optimize for token efficiency, "
         "and implement robust, modular software. Always reason about structural dependencies "
@@ -60,7 +60,7 @@ def create_executive_agent(agent_id: str = "Executive_Alpha", child_agents: List
     
     available_children = ", ".join(child_agents) if child_agents else "None"
     
-    agent.core.reasoning.system_prompt += (
+    agent.cognition.reasoning.system_prompt += (
         "\n\nROLE OVERRIDE: You are the Swarm Executive. Do not write code or search the web directly. "
         "Your job is to break complex, ambiguous user requests into distinct subgoals and assign them "
         "to the specialist agents. \n"

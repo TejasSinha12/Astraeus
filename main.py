@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 # Ensure .env is loaded (for OpenAI API key)
 load_dotenv()
 
+from core_config import config
 from agents.profiles import create_researcher_agent, create_coder_agent
 from utils.logger import logger
 
@@ -16,6 +17,13 @@ async def interactive_shell():
     print("========================================")
     print("🚀 PROJECT ASCENSION - AGI TERMINAL")
     print("========================================")
+    
+    # Auto-detect Mock Mode
+    if not config.OPENAI_API_KEY:
+        config.USE_MOCK = True
+        print("\n[!] WARNING: No OpenAI API Key found.")
+        print("[!] AUTO-ENABLING SIMULATION MODE (Mock Execution)\n")
+    
     print("Available Agents:")
     print("1) Researcher_01 (WebSearch)")
     print("2) Coder_01 (FileSystem + PythonSandbox)")
@@ -49,10 +57,10 @@ async def interactive_shell():
             print(f"\n[{agent.agent_id} IS THINKING...]")
             # Note: actual execution requires the LLM loop implementation to be wired
             # internally. This triggers the highest-level plan generation:
-            result = await agent.core.execute_goal(goal)
+            result = await agent.cognition.execute_goal(goal)
             
             # Display Telemetry
-            tokens = agent.core.reasoning.tokens
+            tokens = agent.cognition.reasoning.tokens
             bandwidth = tokens.get_bandwidth_score()
             
             print("\n========================================")

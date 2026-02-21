@@ -110,8 +110,11 @@ OPENAI_API_KEY=your_api_key_here
 
 #### Running the CLI
 ```bash
-python main.py
+python3 main.py
 ```
+
+> [!TIP]
+> **Simulation Mode (No API Key)**: If no `OPENAI_API_KEY` is found in your `.env`, the system will automatically enable **Simulation Mode**. This allows you to experience the framing, planning, and structural refinement loops without any external API costs.
 
 ---
 

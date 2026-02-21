@@ -24,8 +24,8 @@ class NextAction(BaseModel):
     thought_process: str = Field(description="Step by step reasoning for the decision.")
     confidence_score: float = Field(description="0.0 to 1.0. How certain are you this action is mathematically/logically optimal. BE HONEST. Overconfidence is heavily penalized in system calibration loops.")
     action_type: str = Field(description="Must be one of: 'USE_TOOL', 'TASK_COMPLETE', 'FAIL'.")
-    tool_call: Optional[ToolCallDecision] = Field(description="Populated if action_type is USE_TOOL.")
-    response_or_summary: Optional[str] = Field(description="Populated if action_type is TASK_COMPLETE or FAIL. Summarizes outcome.")
+    tool_call: Optional[ToolCallDecision] = Field(default=None, description="Populated if action_type is USE_TOOL.")
+    response_or_summary: Optional[str] = Field(default=None, description="Populated if action_type is TASK_COMPLETE or FAIL. Summarizes outcome.")
 
 
 class DecisionEngine:
