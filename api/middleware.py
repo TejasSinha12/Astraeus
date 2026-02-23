@@ -21,8 +21,13 @@ async def rbac_middleware(request: Request, call_next):
         return await call_next(request)
 
     # 2. Path-based RBAC
+    if request.url.path.startswith("/admin/"):
+        if role.upper() != "ADMIN":
+            logger.warning(f"UNAUTHORIZED ADMIN ACCESS: User {user_id} (Role: {role}) attempted {request.url.path}")
+            raise HTTPException(status_code=403, detail="Superior administrative authority required.")
+
     if "/refactor" in request.url.path or "/experiment" in request.url.path:
-        if role not in ["RESEARCH", "ADMIN"]:
+        if role.upper() not in ["RESEARCH", "ADMIN"]:
             raise HTTPException(status_code=403, detail="Advanced evolution requires Research access.")
 
     # 3. Cost Metering Pre-check

@@ -72,3 +72,31 @@ class TokenAccountingSystem:
                 user = UserAccount(id=user_id, email=email, role=role, plan_id=plan_id, token_balance=5000)
                 db.add(user)
                 db.commit()
+
+    @staticmethod
+    def top_up_tokens(user_id: str, amount: int, reference_id: str) -> bool:
+        """
+        ATOMIC top-up of tokens. Increments balance and records credit transaction.
+        """
+        with SessionLocal() as db:
+            try:
+                user = db.query(UserAccount).filter(UserAccount.id == user_id).with_for_update().first()
+                if not user:
+                    return False
+                
+                user.token_balance += amount
+                
+                tx = TokenTransaction(
+                    user_id=user_id,
+                    amount=amount,
+                    transaction_type='CREDIT',
+                    reference_id=reference_id
+                )
+                db.add(tx)
+                db.commit()
+                logger.info(f"ATOMIC CREDIT: {amount} tokens to {user_id} (Ref: {reference_id})")
+                return True
+            except Exception as e:
+                db.rollback()
+                logger.error(f"TOKEN TOPUP ERROR: {e}")
+                return False

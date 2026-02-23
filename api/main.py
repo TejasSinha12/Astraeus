@@ -71,6 +71,24 @@ async def get_user_status(x_clerk_user_id: str = Header(...)):
         "access_level": access
     }
 
+class TopUpRequest(BaseModel):
+    user_id: str
+    amount: int
+
+@app.post("/admin/topup")
+async def top_up_tokens(
+    request: TopUpRequest,
+    x_clerk_user_role: str = Header(default="PUBLIC")
+):
+    if x_clerk_user_role.upper() != "ADMIN":
+        raise HTTPException(status_code=403, detail="Admin access required.")
+    
+    ref_id = f"admin_refill_{uuid.uuid4().hex[:8]}"
+    if TokenAccountingSystem.top_up_tokens(request.user_id, request.amount, ref_id):
+        return {"status": "success", "user_id": request.user_id, "new_amount": request.amount}
+    else:
+        raise HTTPException(status_code=400, detail="Failed to top up user balance.")
+
 @app.on_event("startup")
 def startup_db():
     from api.usage_db import init_platform_db, SessionLocal, SubscriptionPlan

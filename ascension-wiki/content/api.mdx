@@ -9,7 +9,7 @@ The Ascension Platform API provides programatic access to the Autonomous Swarm. 
 
 ### Base URL
 ```
-http://localhost:8000
+https://astraeus-r4pf.onrender.com
 ```
 
 ---
@@ -32,6 +32,12 @@ Project the token cost of a specific mission objective.
 - **Endpoint**: `POST /estimate`
 - **Body**: `{ "objective": "string" }`
 
+### Admin: Top Up Tokens (Privileged)
+Atomic recharge of a user's token balance.
+- **Endpoint**: `POST /admin/topup`
+- **Role Required**: `ADMIN`
+- **Body**: `{ "user_id": "clerk_user_id", "amount": 10000 }`
+
 ---
 
 ## ⚡ Mission Execution
@@ -47,9 +53,9 @@ Trigger a tactical mission with real-time SSE progress updates.
 ## 🛡️ Access Control
 | Role | Access Level | Permissions |
 |---|---|---|
-| Admin | 3 | Full system access, Refactoring, Governance |
+| Admin | 3 | Full system access, Top-ups, Refactoring, Governance |
 | Researcher | 2 | Swarm experiments, Benchmarks |
 | Public | 1 | Standard Coding Arena, Docs |
 
 > [!IMPORTANT]
-> Administrative actions like `refactor` or `experiment` will be rejected for users with Access Level 1.
+> Administrative actions like `refactor`, `experiment`, or `topup` will be rejected for users with Access Level 1.

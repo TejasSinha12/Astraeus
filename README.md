@@ -60,31 +60,42 @@ Ascension is built for falsifiability. It treats every architectural change as a
 
 ---
 
+### Production Cloud Stack 🌐
+- **Frontend**: [Vercel](https://astraeus-livid.vercel.app)
+- **Backend**: [Render.com](https://astraeus-r4pf.onrender.com)
+- **Database**: [Neon.tech](https://neon.tech) (PostgreSQL)
+
+---
+
 ## 🛠️ Getting Started
 
 ### Prerequisites
-- Python 3.12+
+- Python 3.10+
 - OpenAI API Key
-- Git (configured for autonomous versioning)
+- Neon.tech PostgreSQL (for production)
+- Clerk Account (for Auth)
 
-### Installation
+### Platform Settings
+1. **Frontend**: Set `NEXT_PUBLIC_PLATFORM_API_URL` to your Render backend.
+2. **Backend**: Set `DATABASE_URL` (Neon) and `OPENAI_API_KEY`.
+
+---
+
+## 💎 System Administration
+
+### Admin Token Management
+As a Platform Administrator (Role: `ADMIN`), you can recharge user token balances directly via the API:
+
 ```bash
-git clone https://github.com/TejasSinha12/Astraeus.git
-cd Astraeus
-pip install -r requirements.txt
+curl -X POST "https://astraeus-r4pf.onrender.com/admin/topup" \
+     -H "Content-Type: application/json" \
+     -H "x-clerk-user-role: ADMIN" \
+     -d '{"user_id": "USER_ID", "amount": 50000}'
 ```
-
-### Usage
-1. **CLI Mode**: `python3 main.py` for interactive swarm missions and real-time telemetry.
-2. **Launch Platform API**:
-   ```bash
-   uvicorn api.main:app --reload
-   ```
-3. **Simulation Mode**: Run without an API key to observe the swarm's cognitive planning in a mock environment.
 
 ---
 
 ## 🧬 Evolutionary Ethics & Security
 - **Hardened Sandbox**: Code execution is isolated with strict timeouts and resource caps.
+- **Atomic Accounting**: Token balances are managed with Row-Level Locking (PostgreSQL) to prevent race conditions.
 - **Rollback Triggers**: Automatic system rollback if evolutionary regressions exceed statistical bounds.
-- **Atomic Git Discipline**: Every swarm-led improvement is recorded with structured Conventional Commits.
