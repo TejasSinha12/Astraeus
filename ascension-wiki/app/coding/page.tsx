@@ -20,6 +20,8 @@ export default function CodingArena() {
     const [logs, setLogs] = useState<string[]>([]);
     const logEndRef = useRef<HTMLDivElement>(null);
 
+    const API_BASE_URL = process.env.NEXT_PUBLIC_PLATFORM_API_URL || "http://localhost:8000";
+
     useEffect(() => {
         if (user) fetchUserStatus();
     }, [user]);
@@ -30,7 +32,7 @@ export default function CodingArena() {
 
     const fetchUserStatus = async () => {
         try {
-            const res = await fetch("http://localhost:8000/user/status", {
+            const res = await fetch(`${API_BASE_URL}/user/status`, {
                 headers: { "x-clerk-user-id": user?.id || "" }
             });
             const data = await res.json();
@@ -46,7 +48,7 @@ export default function CodingArena() {
             return;
         }
         try {
-            const res = await fetch("http://localhost:8000/estimate", {
+            const res = await fetch(`${API_BASE_URL}/estimate`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ objective: val })
@@ -64,7 +66,7 @@ export default function CodingArena() {
         setLogs(["[SYSTEM] Initiating swarm connection...", "[SYSTEM] Validating token balance..."]);
 
         try {
-            const response = await fetch("http://localhost:8000/execute/stream", {
+            const response = await fetch(`${API_BASE_URL}/execute/stream`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
