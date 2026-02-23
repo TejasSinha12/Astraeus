@@ -81,7 +81,20 @@ class MetricsTracker:
             hw.weight += weight_delta
             # Clamp between 0 and 1
             hw.weight = max(0.0, min(1.0, hw.weight))
+    def record_swarm_metric(self, version_id: str, metric_type: str, value: float) -> None:
+        """
+        Records architectural or swarm cooperation metrics for version-driven evolution.
+        """
+        from metrics.db_schema import SwarmMetric
+        with SessionLocal() as db:
+            metric = SwarmMetric(
+                version_id=version_id,
+                metric_type=metric_type,
+                value=value,
+                timestamp=time.time()
+            )
+            db.add(metric)
             db.commit()
-            logger.info(f"Updated Heuristic '{rule_hash}' weight to {hw.weight:.2f}")
+            logger.info(f"Swarm Metric Logged: {metric_type}={value:.4f}")
 
 tracker = MetricsTracker()

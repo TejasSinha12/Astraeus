@@ -51,6 +51,18 @@ class HeuristicWeight(Base):
     rule_text = Column(String)
     weight = Column(Float, default=0.5)
 
+class SwarmMetric(Base):
+    """
+    Tracks high-level performance indicators for the multi-agent swarm.
+    """
+    __tablename__ = "swarm_metrics"
+
+    id = Column(Integer, primary_key=True)
+    version_id = Column(String, index=True)
+    metric_type = Column(String)  # 'EntropyReduction', 'AgreementRatio', 'EvolutionDelta'
+    value = Column(Float)
+    timestamp = Column(Float)
+
 # Initialize Sync Engine (SQLite for simplicity, Postgres for production)
 DB_PATH = f"sqlite:///{config.MEMORY_INDEX_PATH}_telemetry.db"
 engine = create_engine(DB_PATH, connect_args={"check_same_thread": False})

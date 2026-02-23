@@ -16,26 +16,36 @@ from tools.file_system_tool import FileSystemTool
 from tools.code_execution_tool import CodeExecutionTool
 from tools.git_tool import GitTool
 
+from core.swarm_orchestrator import SwarmOrchestrator
+from core.refactoring_engine import RefactoringEngine
+from core.evolution_manager import EvolutionManager
+
 class CognitionCore:
     """
     The orchestrator module that manages the AGI lifecycle for a given overarching objective.
-    It bridges components that haven't been mocked yet, acting as the nexus point.
+    Now upgraded to support Multi-Agent Swarm logic.
     """
 
     def __init__(self):
         """
-        Bootstraps all internal modules (Planner, Decision Engine, LLM router).
+        Bootstraps all internal modules (Swarm, Refactoring, Evolution).
         """
         self.reasoning = ReasoningEngine()
+        self.swarm = SwarmOrchestrator(reasoning_engine=self.reasoning)
+        self.evolver = EvolutionManager()
+        self.refactor_engine = RefactoringEngine(orchestrator=self.swarm)
+        
+        # Keep legacy single-agent components for fallback/hybrid tasks
         self.planner = GoalPlanner(engine=self.reasoning)
         self.decision = DecisionEngine(engine=self.reasoning)
         self.refiner = RefinementLoop(engine=self.reasoning, token_controller=self.reasoning.tokens)
+        
         self.tool_registry = ToolRegistry()
         self.tool_registry.register(FileSystemTool())
         self.tool_registry.register(CodeExecutionTool())
         self.tool_registry.register(GitTool())
         self.tool_executor = ToolExecutor(registry=self.tool_registry)
-        logger.info("CognitionCore initialized with RefinementLoop and Git support.")
+        logger.info("CognitionCore initialized with Swarm and Evolution tiers.")
 
     async def execute_goal(self, goal: str) -> None:
         """
