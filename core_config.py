@@ -1,6 +1,7 @@
 """
 Core configuration for Project Ascension.
 Loads settings from environment variables with sensible defaults.
+Current State: v2.0.0-PROD (Autonomous Swarm Platform)
 """
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
