@@ -58,6 +58,20 @@ class AuditLog(Base):
     metadata_json = Column(String) # JSON blob of request context
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
+class SwarmMission(Base):
+    """
+    Persistent repository for AI-generated codebases.
+    Ensures data survival across redeploys.
+    """
+    __tablename__ = "swarm_missions"
+    
+    id = Column(String, primary_key=True) # Mission UUID
+    user_id = Column(String, index=True)
+    objective = Column(String)
+    source_code = Column(String) # The tactical output
+    filename = Column(String)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+
 import os
 
 # Database connection logic

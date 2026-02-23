@@ -10,6 +10,7 @@ import uuid
 import time
 
 from core.cognition import CognitionCore
+from api.usage_db import SessionLocal, SwarmMission
 from utils.logger import logger
 
 class CoreAdapter:
@@ -56,17 +57,36 @@ class CoreAdapter:
         
         # PERSISTENCE LAYER: Save the generated codebase to the mission sandbox
         mission_id = str(uuid.uuid4())[:8]
-        sandbox_path = Path("api/sandbox/missions") / mission_id
-        sandbox_path.mkdir(parents=True, exist_ok=True)
         
-        # Detect if result is HTML/JS for better naming
+        # 1. Database Persistence (Primary for Production)
         file_ext = "html" if "<html" in result.lower() else "txt"
-        file_path = sandbox_path / f"mission_result.{file_ext}"
+        filename = f"mission_result.{file_ext}"
         
-        with open(file_path, "w") as f:
-            f.write(result)
-            
-        logger.info(f"ADAPTER: Mission {mission_id} persisted to {file_path}")
+        try:
+            with SessionLocal() as db:
+                mission = SwarmMission(
+                    id=mission_id,
+                    user_id=user_id,
+                    objective=objective,
+                    source_code=result,
+                    filename=filename
+                )
+                db.add(mission)
+                db.commit()
+                logger.info(f"ADAPTER: Mission {mission_id} persisted to DATABASE.")
+        except Exception as e:
+            logger.error(f"ADAPTER: Database persistence failed: {e}")
+
+        # 2. Filesystem Persistence (Secondary/Backup)
+        try:
+            sandbox_path = Path("api/sandbox/missions") / mission_id
+            sandbox_path.mkdir(parents=True, exist_ok=True)
+            file_path = sandbox_path / filename
+            with open(file_path, "w") as f:
+                f.write(result)
+            logger.info(f"ADAPTER: Mission {mission_id} persisted to FILESYSTEM: {file_path}")
+        except Exception as e:
+            logger.warning(f"ADAPTER: Filesystem persistence failed (Expected on ephemeral hosts): {e}")
 
         # Yield the final code result
         yield f"data: {json.dumps({'status': 'RESULT', 'message': result})}\n\n"
@@ -74,7 +94,7 @@ class CoreAdapter:
         completion_data = {
             'status': 'COMPLETED', 
             'message': 'Mission complete. Tactical output ready.',
-            'storage_path': str(file_path)
+            'storage_path': f"DATABASE://{mission_id}"
         }
         yield f"data: {json.dumps(completion_data)}\n\n"
 

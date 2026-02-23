@@ -3,58 +3,49 @@ from pathlib import Path
 from typing import List, Dict, Any
 import os
 
-router = APIRouter(prefix="/missions", tags=["Missions"])
+from api.usage_db import SessionLocal, SwarmMission
+from utils.logger import logger
 
-SANDBOX_DIR = Path("api/sandbox/missions")
+router = APIRouter(prefix="/missions", tags=["Missions"])
 
 @router.get("")
 async def list_missions() -> List[Dict[str, Any]]:
     """
-    Scans the sandbox directory and returns a list of persisted missions.
+    Returns a list of persisted missions from the database.
     """
-    if not SANDBOX_DIR.exists():
+    try:
+        with SessionLocal() as db:
+            missions = db.query(SwarmMission).order_by(SwarmMission.timestamp.desc()).all()
+            return [
+                {
+                    "id": m.id,
+                    "timestamp": m.timestamp.timestamp(),
+                    "has_result": bool(m.source_code),
+                    "objective": m.objective
+                } for m in missions
+            ]
+    except Exception as e:
+        logger.error(f"API: Failed to list missions: {e}")
         return []
-    
-    missions = []
-    for mission_dir in SANDBOX_DIR.iterdir():
-        if mission_dir.is_dir():
-            # Get basic metadata from file stats
-            stats = mission_dir.stat()
-            
-            # Find the result file
-            results = list(mission_dir.glob("mission_result.*"))
-            has_result = len(results) > 0
-            
-            missions.append({
-                "id": mission_dir.name,
-                "timestamp": stats.st_mtime,
-                "has_result": has_result,
-                "path": str(mission_dir)
-            })
-            
-    # Sort by recent
-    missions.sort(key=lambda x: x["timestamp"], reverse=True)
-    return missions
 
 @router.get("/{mission_id}/source")
 async def get_mission_source(mission_id: str):
     """
-    Returns the raw source code of a specific mission result.
+    Returns the raw source code of a specific mission from the database.
     """
-    mission_dir = SANDBOX_DIR / mission_id
-    if not mission_dir.exists():
-        raise HTTPException(status_code=404, detail="Mission not found.")
-    
-    results = list(mission_dir.glob("mission_result.*"))
-    if not results:
-        raise HTTPException(status_code=404, detail="No source code found for this mission.")
-    
-    source_file = results[0]
-    with open(source_file, "r") as f:
-        content = f.read()
-        
-    return {
-        "id": mission_id,
-        "filename": source_file.name,
-        "content": content
-    }
+    try:
+        with SessionLocal() as db:
+            mission = db.query(SwarmMission).filter(SwarmMission.id == mission_id).first()
+            if not mission:
+                raise HTTPException(status_code=404, detail="Mission not found.")
+            
+            return {
+                "id": mission.id,
+                "filename": mission.filename or "mission_result.code",
+                "content": mission.source_code
+            }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"API: Failed to retrieve mission source: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error retrieving artifact.")
