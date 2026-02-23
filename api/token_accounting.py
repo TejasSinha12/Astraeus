@@ -77,12 +77,22 @@ class TokenAccountingSystem:
     def top_up_tokens(user_id: str, amount: int, reference_id: str) -> bool:
         """
         ATOMIC top-up of tokens. Increments balance and records credit transaction.
+        Auto-provisions user if they don't exist.
         """
         with SessionLocal() as db:
             try:
                 user = db.query(UserAccount).filter(UserAccount.id == user_id).with_for_update().first()
                 if not user:
-                    return False
+                    # Auto-provision if missing
+                    user = UserAccount(
+                        id=user_id, 
+                        email=f"provisioned_{user_id[:8]}@ascension.ai", 
+                        role="PUBLIC", 
+                        plan_id="free_tier", 
+                        token_balance=0
+                    )
+                    db.add(user)
+                    db.flush() # Ensure ID is registered for the transaction join
                 
                 user.token_balance += amount
                 
@@ -94,7 +104,7 @@ class TokenAccountingSystem:
                 )
                 db.add(tx)
                 db.commit()
-                logger.info(f"ATOMIC CREDIT: {amount} tokens to {user_id} (Ref: {reference_id})")
+                logger.info(f"ATOMIC CREDIT (Auto-Prov): {amount} tokens to {user_id} (Ref: {reference_id})")
                 return True
             except Exception as e:
                 db.rollback()
