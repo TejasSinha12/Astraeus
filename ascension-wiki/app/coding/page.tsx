@@ -19,6 +19,7 @@ export default function CodingArena() {
     const [userStatus, setUserStatus] = useState({ balance: 0, plan: "...", access: 1 });
     const [logs, setLogs] = useState<string[]>([]);
     const [codeResult, setCodeResult] = useState<string | null>(null);
+    const [storagePath, setStoragePath] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"code" | "preview">("code");
     const logEndRef = useRef<HTMLDivElement>(null);
 
@@ -112,7 +113,12 @@ export default function CodingArena() {
                                 setCodeResult(data.message);
                                 setLogs(prev => [...prev, "[SUCCESS] Tactical mission output captured."]);
                             } else if (data.status === "PROCESSING") {
-                                // Keep-Alive pings: don't flood logs, just update status if needed
+                                // Keep-Alive pings
+                            } else if (data.status === "COMPLETED") {
+                                setLogs(prev => [...prev, `[${data.status}] ${data.message}`]);
+                                if ((data as any).storage_path) {
+                                    setStoragePath((data as any).storage_path);
+                                }
                             } else {
                                 setLogs(prev => [...prev, `[${data.status}] ${data.message}`]);
                             }
@@ -259,6 +265,20 @@ export default function CodingArena() {
                                         </div>
                                     )}
                                 </div>
+
+                                {storagePath && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="flex items-center gap-3 px-4 py-2 bg-white/[0.03] border border-white/5 rounded-lg"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <Terminal size={12} className="text-primary/50" />
+                                            <span className="text-[10px] font-mono text-muted uppercase tracking-widest">Storage Path:</span>
+                                        </div>
+                                        <code className="text-[10px] font-mono text-primary/80 break-all">{storagePath}</code>
+                                    </motion.div>
+                                )}
                             </motion.div>
                         )}
                     </AnimatePresence>

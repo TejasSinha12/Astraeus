@@ -3,8 +3,10 @@ Decoupling Layer for Ascension Platform.
 Wraps core intelligence components to prevent direct HTTP/Platform coupling.
 """
 from typing import AsyncGenerator
+from pathlib import Path
 import asyncio
 import json
+import uuid
 import time
 
 from core.cognition import CognitionCore
@@ -52,9 +54,27 @@ class CoreAdapter:
 
         result = await swarm_task
         
-        # Yield the final code result with explicit marker
+        # PERSISTENCE LAYER: Save the generated codebase to the mission sandbox
+        mission_id = str(uuid.uuid4())[:8]
+        sandbox_path = Path("api/sandbox/missions") / mission_id
+        sandbox_path.mkdir(parents=True, exist_ok=True)
+        
+        # Detect if result is HTML/JS for better naming
+        file_ext = "html" if "<html" in result.lower() else "txt"
+        file_path = sandbox_path / f"mission_result.{file_ext}"
+        
+        with open(file_path, "w") as f:
+            f.write(result)
+            
+        logger.info(f"ADAPTER: Mission {mission_id} persisted to {file_path}")
+
+        # Yield the final code result
         yield f"data: {json.dumps({'status': 'RESULT', 'message': result})}\n\n"
-        yield f"data: {json.dumps({'status': 'COMPLETED', 'message': 'Mission complete. Tactical output ready.'})}\n\n"
+        yield f"data: {json.dumps({
+            'status': 'COMPLETED', 
+            'message': 'Mission complete. Tactical output ready.',
+            'storage_path': str(file_path)
+        })}\n\n"
 
     async def execute_direct(self, objective: str) -> str:
         """
