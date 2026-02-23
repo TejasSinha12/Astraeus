@@ -1,0 +1,55 @@
+---
+title: "API Reference"
+description: "High-level documentation for the Ascension Platform API."
+---
+
+# API Reference ⚡
+
+The Ascension Platform API provides programatic access to the Autonomous Swarm. All endpoints require a valid Clerk User ID and sufficient token balance.
+
+### Base URL
+```
+http://localhost:8000
+```
+
+---
+
+## 🔐 Authentication
+Requests must include the internal Clerk headers:
+- `x-clerk-user-id`: Your unique user identifier.
+- `x-clerk-user-role`: `PUBLIC`, `RESEARCH`, or `ADMIN`.
+
+---
+
+## 💰 Token Management
+
+### Get User Status
+Returns balance, plan, and access level.
+- **Endpoint**: `GET /user/status`
+
+### Estimate Cost
+Project the token cost of a specific mission objective.
+- **Endpoint**: `POST /estimate`
+- **Body**: `{ "objective": "string" }`
+
+---
+
+## ⚡ Mission Execution
+
+### Stream Mission
+Trigger a tactical mission with real-time SSE progress updates.
+- **Endpoint**: `POST /execute/stream`
+- **Body**: `{ "objective": "string" }`
+- **Response**: `text/event-stream`
+
+---
+
+## 🛡️ Access Control
+| Role | Access Level | Permissions |
+|---|---|---|
+| Admin | 3 | Full system access, Refactoring, Governance |
+| Researcher | 2 | Swarm experiments, Benchmarks |
+| Public | 1 | Standard Coding Arena, Docs |
+
+> [!IMPORTANT]
+> Administrative actions like `refactor` or `experiment` will be rejected for users with Access Level 1.
