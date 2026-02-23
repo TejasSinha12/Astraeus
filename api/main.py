@@ -8,9 +8,11 @@ import uuid
 from api.token_accounting import TokenAccountingSystem
 from api.core_adapter import CoreAdapter
 from api.middleware import rbac_middleware, log_audit_trail
+from api.missions import router as missions_router
 from utils.logger import logger
 
 app = FastAPI(title="Ascension Intelligence Platform API (Hardened)")
+app.include_router(missions_router)
 
 # Enable CORS for frontend integration
 app.add_middleware(

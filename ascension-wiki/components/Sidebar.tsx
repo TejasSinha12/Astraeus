@@ -7,7 +7,7 @@ import { useUser } from "@clerk/nextjs";
 import {
     Brain, Database, Wrench, GraduationCap, ShieldAlert, Network, Menu, X,
     BarChart2, GitBranch, FlaskConical, Cpu, Map, ScrollText, Terminal,
-    LayoutDashboard, Shield, Code, Zap
+    LayoutDashboard, Shield, Code, Zap, Archive
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -29,6 +29,7 @@ const NAV_SECTIONS = [
         label: "Coding & API",
         items: [
             { name: "Coding Arena", href: "/coding", icon: Code },
+            { name: "Mission Archive", href: "/archive", icon: Archive },
             { name: "API Reference", href: "/docs/api", icon: Zap },
         ],
     },
