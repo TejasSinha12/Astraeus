@@ -58,12 +58,19 @@ class AuditLog(Base):
     metadata_json = Column(String) # JSON blob of request context
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
+import os
+
 # Database connection logic
-DB_URL = "sqlite:///./api_platform.db"
-engine = create_engine(DB_URL, connect_args={"check_same_thread": False})
+# Prioritize DATABASE_URL for Production (Railway PostgreSQL), fallback to SQLite for local
+DB_URL = os.getenv("DATABASE_URL", "sqlite:///./api_platform.db")
+
+# Handle Railway/Heroku style postgresql:// vs postgres://
+if DB_URL.startswith("postgres://"):
+    DB_URL = DB_URL.replace("postgres://", "postgresql://", 1)
+
+engine = create_engine(DB_URL, connect_args={"check_same_thread": False} if DB_URL.startswith("sqlite") else {})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def init_platform_db():
     Base.metadata.create_all(bind=engine)
-    # Seed default plans
-    # ...
+    # Seed default plans ...
