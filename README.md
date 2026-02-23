@@ -1,161 +1,90 @@
-# Project Ascension 🚀
+# Project Ascension 🚀 (v2.0.0)
 
-> A purely modular, statistically-backed AGI research framework designed for autonomous reasoning, iterative self-improvement, and multi-agent expansion.
+> A statistically governed **Autonomous Code Swarm** designed for measurable intelligence evolution, self-directed refactoring, and secure production-grade AGI orchestration.
 
-Ascension is not just an LLM wrapper. It is a structured environment that separates intention, execution, memory retrieval, and self-evaluation into distinct asynchronous pipelines, creating a continuous quantitative learning loop.
-
-## 🔬 AGI Research Laboratory Interface
-
-The project has been upgraded to a full research environment with advanced visualization and telemetry tools:
-
-- **Benchmarks Dashboard**: Real-time statistical tracking of model performance across versions, including calibration curves and A/B test results.
-- **Evolution Timeline**: A vertical, animated history of heuristic promotions, system updates, and architectural milestones.
-- **Agent Arena**: A live simulation workbench with a React Flow-powered Reasoning DAG to observe cognitive loops in real time.
-- **Experiment Workbench**: Admin control panel for tweaking cognitive temperature, tool permissions, and heuristic rule injection.
-- **Cognition Map**: An interactive system diagram illustrating the high-level data flow between core modules.
-- **Live Event Stream**: A real-time terminal-style log system powered by Server-Sent Events (SSE).
-- **Technical Whitepaper**: MDX documentation with KaTeX math rendering for cognitive algorithms and statistical methodologies.
+Ascension is a multi-agent evolutionary ecosystem. It moves beyond standard LLM agents by implementing a **Swarm Orchestrator** that coordinates specialized cognitive roles (Planner, Architect, Critic, etc.) under strict **Statistical Governance** and **Scientific Verification** protocols.
 
 ---
 
-## 🏗️ Architecture Design
+## 🐝 Autonomous Code Swarm
 
-Ascension isolates functionality into specialized boundary layers:
+Project Ascension leverages a distributed workforce of specialized agents:
 
-### Core Cognition (`/core`)
-- **Structural Reasoning Engine**: Uses AST parsing to extract Python metadata (functions, deps, complexity), allowing the AGI to reason over architecture rather than raw text.
-- **Token Budget Controller**: Enforces hard token limits per task and implements adaptive context compression (Goal > Task > Short Memory > Long Memory).
-- **Iterative Refinement Loop**: Coordinates multi-pass code generation (Analysis -> Draft -> Critique -> Optimize) with measurable quality tracking.
-- **Goal Planner**: Deconstructs user input into Directed Acyclic Graphs (DAGs) of executable subtasks.
-- **Decision Engine**: Multi-cognitive selection of tools, reflections, or completions based on structural context.
-
-### Memory Systems (`/memory`)
-- **Short Term Memory**: Rotating temporal context preventing buffer overflow.
-- **Vector Store**: Local FAISS implementation supporting scalable semantic search.
-- **Indexer & Optimizer**: Condenses noisy episodes into hard facts. Automatically purges low-signal, high-retrieval memories.
-
-### Tool Boundaries (`/tools`)
-- **Base Tool Interface**: Requires all tools to publish precise JSON schemas.
-- **Tool Executor**: Acts as a try/catch sandbox generating strings for short term ingestion.
-- **Hardened Code Execution Sandbox**: Isolated subprocess execution with strict timeouts, memory limits, restricted imports, and token-light exception summarization.
-- **Concrete Tool Suite**:
-  - `WebSearchTool` — DuckDuckGo async search
-  - `FileSystemTool` — Sandboxed async file read/write/list
-
-### Learning & Evals (`/learning`, `/evals`, `/optimization`)
-- **Feedback & Reflection**: Evaluates execution traces to generate new hypothesized heuristics (rules).
-- **Benchmark Sandbox**: Runs deterministic tests (`math`, `logic`, `planning`) against static AGI versions.
-- **Heuristic Optimizer**: A/B tests proposed rules numerically. Promotes rules to the System Prompt only if they empirically improve benchmark scores without triggering regression.
-
-### Security Layers (`/safety`)
-- **Sandbox**: Restricts commands by regex and limits file access to specific directories.
-- **Ethical Firewall**: Moderates proposed dangerous actions using a constrained secondary AI check.
-- **Versioning**: Snapshot and cleanly rollback FAISS vectors and heuristic rules.
+- **Planner**: Deconstructs objectives into measurable mission DAGs.
+- **Architect**: Designs structural solutions with AST/Code Graph awareness.
+- **Implementer**: Generates high-efficiency, sandboxed code.
+- **Critic & Optimizer**: Performs analytical auditing and performance tuning.
+- **Auditor**: Validates security constraints and compliance.
 
 ---
 
-## 🌐 Website & Frontend (`/ascension-wiki`)
+## 🛡️ Governance & Stability Tier
 
-A production-grade Next.js 16 (App Router) main website built with:
+To ensure safe and deterministic evolution, Ascension enforces a three-tier governance model:
 
-| Feature | Implementation |
-|---|---|
-| Framework | Next.js 16 + TypeScript |
-| Styling | Tailwind CSS 4 + Glassmorphism |
-| Animations | Framer Motion + CSS Neural Pulses |
-| Visualization | React Flow (DAGs) + Recharts (Analytics) |
-| State | Zustand (Global Sync) |
-| Streaming | Server-Sent Events (SSE) |
-| Auth / Roles | Clerk (admin > researcher > viewer) |
-| Math | KaTeX + remark-math + rehype-katex |
+- **Observe Mode**: Passive monitoring; the swarm proposes but never modifies.
+- **Simulated Mode**: Proposed refactors are executed in **Isolated Git Branches**. full benchmark suites and **Fitness Diff** analysis are performed before merging.
+- **Commit Mode**: Automatic code integration gated by statistical confidence thresholds and human-defined promotion rules.
 
-### Routes
+### Performance Indicators (Codebase Fitness)
+Every evolutionary cycle computes a composite **Fitness Score** based on:
+- **Structural Entropy**: Reduction in architectural complexity.
+- **Token Efficiency**: Improvement in logic density per token used.
+- **Maintainability Index**: Longitudinal tracking of codebase health.
+- **Benchmark Stability**: Deterministic replay validation.
 
-| Route | Access | Description |
-|---|---|---|
-| `/` | Public | Animated landing page with magnetic cursor |
-| `/dashboard` | Protected | AGI Command Center dashboard |
-| `/benchmarks` | Researcher | Interactive Recharts dashboard |
-| `/evolution` | Public | Animated vertical history timeline |
-| `/arena` | Researcher | Live Agent Reasoning DAG (React Flow) |
-| `/experiments` | Admin | Workbench for cognitive tweaking |
-| `/cognition-map` | Public | Interactive system architecture diagram |
-| `/logs` | Admin | Real-time terminal SSE log stream |
-| `/whitepaper` | Viewer | Technical documentation with math |
-| `/docs/[slug]` | Public | MDX documentation wiki |
-| `/control` | Admin | Emergency halt & version control |
+---
+
+## 🔬 Scientific Intelligence Verification
+
+Ascension is built for falsifiability. It treats every architectural change as a scientific experiment:
+
+- **A/B Evolution**: Parallel runs against a static control branch to validate intelligence gains.
+- **Hypothesis Tagging**: Agents must declare measurable targets (e.g., "Reduce entropy by 12%") before modification.
+- **Validation Audit**: Automatically generates reports comparing **Predicted vs. Actual** deltas with calibration accuracy metrics.
+- **Intelligence Drift Detection**: Prevents metric gaming and protects against plateauing mutation strategies.
+
+---
+
+## �️ Core Architecture
+
+### Platform API Gateway (`/api`)
+- **FastAPI Core**: Secure execution layer separating the Swarm from the public web.
+- **Clerk Auth**: JWT-based Role-Based Access Control (Admin > Researcher > Public).
+- **Token Accounting**: Comprehensive metering of request costs with persistent usage logs.
+
+### Cognition Tier (`/core`)
+- **Swarm Orchestrator**: Manages agent lifecycles and inter-agent communication protocols.
+- **Refactoring Engine**: AST-aware system that autonomously detects and fixes complexity bottlenecks.
+- **Evolution Manager**: System state snapshotting ("DNA" persistence) for longitudinal analysis.
 
 ---
 
 ## 🛠️ Getting Started
 
-### AGI Core (Python Backend)
-
-#### Prerequisites
+### Prerequisites
 - Python 3.12+
 - OpenAI API Key
+- Git (configured for autonomous versioning)
 
-#### Installation
-
+### Installation
 ```bash
 git clone https://github.com/TejasSinha12/Astraeus.git
 cd Astraeus
 pip install -r requirements.txt
 ```
 
-Create a `.env` file:
-```env
-OPENAI_API_KEY=your_api_key_here
-```
-
-### 🎮 Usage & Demo
-1. **Simulation Mode**: Run `python3 main.py` without any keys to see the AGI's cognitive process in mock mode.
-2. **Autonomous Git**: The AGI now has a `git_manager` tool. It can stage, commit, and push its own code changes during a mission.
-3. **OpenAI Mode**: Add `OPENAI_API_KEY` to `.env` to enable live LLM reasoning.
-
-#### Running the CLI
-```bash
-python3 main.py
-```
+### Usage
+1. **CLI Mode**: `python3 main.py` for interactive swarm missions and real-time telemetry.
+2. **Launch Platform API**:
+   ```bash
+   uvicorn api.main:app --reload
+   ```
+3. **Simulation Mode**: Run without an API key to observe the swarm's cognitive planning in a mock environment.
 
 ---
 
-### Website (Next.js Frontend)
-
-#### Prerequisites
-- Node.js 20+
-- A free [Clerk](https://clerk.com) account
-
-#### Installation
-
-```bash
-cd ascension-wiki
-npm install
-```
-
-Create `ascension-wiki/.env.local`:
-```env
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_publishable_key
-CLERK_SECRET_KEY=your_secret_key
-
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
-NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/dashboard
-```
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000).
-
----
-
-## 🧪 Development & Evaluation
-
-To extend the AGI:
-1. Inherit `BaseTool` in `/tools` and implement `execute()`.
-2. Register your tool with `ToolRegistry`.
-3. Add domain-specific datasets into `/evals/datasets/` to drive the Continuous Learning loop.
-4. Use an Agent Profile in `/agents/profiles.py` or create a new one.
+## 🧬 Evolutionary Ethics & Security
+- **Hardened Sandbox**: Code execution is isolated with strict timeouts and resource caps.
+- **Rollback Triggers**: Automatic system rollback if evolutionary regressions exceed statistical bounds.
+- **Atomic Git Discipline**: Every swarm-led improvement is recorded with structured Conventional Commits.
