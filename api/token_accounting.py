@@ -1,59 +1,74 @@
 """
-Token Accounting System for Ascension Platform.
-Handles verification of balances and deduction of request costs.
+Hardened Token Accounting System for Project Ascension.
+Provides atomic balance management, subscription plan enforcement, and transaction logging.
 """
-from typing import Optional
+from typing import Optional, Tuple
 from sqlalchemy.orm import Session
-from api.usage_db import UserAccount, APIUsageLog, SessionLocal
+from sqlalchemy import func
+from api.usage_db import UserAccount, TokenTransaction, SubscriptionPlan, SessionLocal
 from utils.logger import logger
 
 class TokenAccountingSystem:
     """
-    Financial governor for the public platform API.
+    Financial governor for the public platform API (Hardened Edition).
     """
 
     @staticmethod
-    def get_user_balance(user_id: str) -> int:
+    def get_user_status(user_id: str) -> Tuple[int, Optional[str], int]:
+        """
+        Returns (balance, plan_name, access_level)
+        """
         with SessionLocal() as db:
-            user = db.query(UserAccount).filter(UserAccount.id == user_id).first()
-            return user.token_balance if user else 0
+            result = db.query(UserAccount.token_balance, SubscriptionPlan.name, SubscriptionPlan.access_level)\
+                .outerjoin(SubscriptionPlan, UserAccount.plan_id == SubscriptionPlan.id)\
+                .filter(UserAccount.id == user_id).first()
+            return result if result else (0, None, 1)
 
     @staticmethod
-    def deduct_tokens(user_id: str, amount: int, endpoint: str) -> bool:
+    def deduct_tokens(user_id: str, amount: int, reference_id: str) -> bool:
         """
-        Deducts tokens from user balance and logs the transaction.
-        Returns False if insufficient funds.
+        ATOMIC deduction of tokens. Updates balance and creates a transaction record.
         """
         with SessionLocal() as db:
-            user = db.query(UserAccount).filter(UserAccount.id == user_id).first()
-            if not user or user.token_balance < amount:
-                logger.warning(f"INSUFFICIENT FUNDS: User {user_id} lacks {amount} tokens.")
+            try:
+                # Select user with for_update to prevent race conditions during balance checks
+                user = db.query(UserAccount).filter(UserAccount.id == user_id).with_for_update().first()
+                if not user or user.token_balance < amount:
+                    return False
+                
+                user.token_balance -= amount
+                
+                # Record transaction
+                tx = TokenTransaction(
+                    user_id=user_id,
+                    amount=-amount,
+                    transaction_type='DEBIT',
+                    reference_id=reference_id
+                )
+                db.add(tx)
+                db.commit()
+                logger.info(f"ATOMIC DEBIT: {amount} tokens from {user_id} (Ref: {reference_id})")
+                return True
+            except Exception as e:
+                db.rollback()
+                logger.error(f"TOKEN TRANSACTON ERROR: {e}")
                 return False
-            
-            user.token_balance -= amount
-            
-            # Log usage
-            log = APIUsageLog(
-                user_id=user_id,
-                endpoint=endpoint,
-                tokens_deducted=amount,
-                status_code=200
-            )
-            db.add(log)
-            db.commit()
-            
-            logger.info(f"TOKEN DEDUCTION: {amount} tokens from {user_id} for {endpoint}")
-            return True
 
     @staticmethod
-    def provision_user(user_id: str, email: str, role: str = "PUBLIC"):
+    def estimate_cost(objective: str) -> int:
         """
-        Ensures a user exists in the local accounting DB.
+        Calculates projected token cost based on task complexity.
         """
+        base_cost = 100
+        if "swarm" in objective.lower(): base_cost *= 10
+        if "refactor" in objective.lower(): base_cost *= 5
+        return base_cost
+
+    @staticmethod
+    def provision_user(user_id: str, email: str, role: str = "PUBLIC", plan_id: str = "free_tier"):
         with SessionLocal() as db:
             user = db.query(UserAccount).filter(UserAccount.id == user_id).first()
             if not user:
-                user = UserAccount(id=user_id, email=email, role=role)
+                user = UserAccount(id=user_id, email=email, role=role, plan_id=plan_id, token_balance=5000)
                 db.add(user)
                 db.commit()
-                logger.info(f"PROVISIONED NEW USER: {user_id} ({role})")

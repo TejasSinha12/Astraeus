@@ -1,71 +1,82 @@
-"""
-Ascension Platform API.
-Secure execution gateway with Clerk authentication and Token Accounting.
-"""
-from fastapi import FastAPI, Header, HTTPException, Depends
+from fastapi import FastAPI, Header, HTTPException, Depends, Request
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from typing import Optional, List
+import uuid
 
 from api.token_accounting import TokenAccountingSystem
-from core.cognition import CognitionCore
+from api.core_adapter import CoreAdapter
+from api.middleware import rbac_middleware, log_audit_trail
 from utils.logger import logger
 
-app = FastAPI(title="Ascension Intelligence Platform API")
+app = FastAPI(title="Ascension Intelligence Platform API (Hardened)")
 
-# Initialize global cognition instance
-cognition = CognitionCore()
+# Initialize decoupled service adapter
+adapter = CoreAdapter()
+
+# Attach RBAC Middleware
+@app.middleware("http")
+async def auth_middleware(request: Request, call_next):
+    return await rbac_middleware(request, call_next)
 
 class ExecutionRequest(BaseModel):
     objective: str
-    agent_type: str = "coder" # 'researcher' or 'coder'
 
 @app.get("/")
 async def root():
-    return {"status": "online", "platform": "Project Ascension", "api_version": "v1"}
+    return {"status": "online", "version": "v2.0.0-PROD"}
 
-@app.post("/execute")
-async def execute_task(
+@app.post("/estimate")
+async def get_cost_estimate(request: ExecutionRequest):
+    cost = TokenAccountingSystem.estimate_cost(request.objective)
+    return {"estimated_tokens": cost}
+
+@app.post("/execute/stream")
+async def execute_swarm_stream(
     request: ExecutionRequest,
     x_clerk_user_id: str = Header(...),
     x_clerk_user_role: str = Header(default="PUBLIC")
 ):
     """
-    Public execution endpoint. Verified via Clerk JWT (passed as header for this MVP).
-    Enforces token costs and role-based access.
+    Streaming Execution Gateway.
+    Progressive updates via SSE with usage metering.
     """
-    # 1. Verify User & Roles
-    # Swarm refactoring and experiments are restricted to RESEARCH/ADMIN roles.
-    is_admin_action = "refactor" in request.objective.lower() or "experiment" in request.objective.lower()
+    request_id = str(uuid.uuid4())
+    cost = TokenAccountingSystem.estimate_cost(request.objective)
     
-    if is_admin_action and x_clerk_user_role not in ["RESEARCH", "ADMIN"]:
-        raise HTTPException(status_code=403, detail="Unauthorized: Advanced evolutionary actions are restricted to research roles.")
-
-    # 2. Token Accounting
-    # Flat cost for now: 100 tokens per public request
-    cost = 100
-    if not TokenAccountingSystem.deduct_tokens(x_clerk_user_id, cost, "/execute"):
+    # Pre-deduction check
+    if not TokenAccountingSystem.deduct_tokens(x_clerk_user_id, cost, request_id):
         raise HTTPException(status_code=402, detail="Insufficient Token Balance.")
 
-    # 3. Route to Cognition Core
-    try:
-        logger.info(f"API GATEWAY: Routing task for {x_clerk_user_id} -> {request.objective[:50]}")
-        # Run via the swarm orchestrator
-        result = await cognition.swarm.execute_swarm_objective(request.objective)
-        return {"result": result, "status": "COMPLETED", "tokens_deducted": cost}
-    except Exception as e:
-        logger.error(f"API EXECUTION FAILURE: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    log_audit_trail(x_clerk_user_id, "SWARM_STREAM_EXEC", {"objective": request.objective, "req_id": request_id})
+    return StreamingResponse(adapter.run_swarm_stream(request.objective, x_clerk_user_id), media_type="text/event-stream")
 
-@app.get("/user/balance")
-async def get_balance(x_clerk_user_id: str = Header(...)):
-    balance = TokenAccountingSystem.get_user_balance(x_clerk_user_id)
-    return {"user_id": x_clerk_user_id, "token_balance": balance}
+@app.get("/user/status")
+async def get_user_status(x_clerk_user_id: str = Header(...)):
+    balance, plan, access = TokenAccountingSystem.get_user_status(x_clerk_user_id)
+    return {
+        "user_id": x_clerk_user_id,
+        "balance": balance,
+        "plan": plan,
+        "access_level": access
+    }
 
-# Internal startup routines
 @app.on_event("startup")
 def startup_db():
-    from api.usage_db import init_platform_db
+    from api.usage_db import init_platform_db, SessionLocal, SubscriptionPlan
     init_platform_db()
-    # Provision a test admin for evaluation
-    TokenAccountingSystem.provision_user("user_admin_01", "admin@ascension.ai", "ADMIN")
-    logger.info("Platform Intelligence API Started.")
+    
+    # Seed Plans if missing
+    with SessionLocal() as db:
+        if not db.query(SubscriptionPlan).first():
+            plans = [
+                SubscriptionPlan(id="free_tier", name="Free", monthly_token_limit=5000, access_level=1),
+                SubscriptionPlan(id="research_tier", name="Researcher", monthly_token_limit=50000, access_level=2),
+                SubscriptionPlan(id="admin_tier", name="Admin", monthly_token_limit=1000000, access_level=3)
+            ]
+            db.add_all(plans)
+            db.commit()
+            logger.info("API: Subscription plans seeded.")
+    
+    TokenAccountingSystem.provision_user("user_admin_01", "admin@ascension.ai", "ADMIN", "admin_tier")
+    logger.info("Platform Hardened Gateway Active.")
