@@ -70,11 +70,13 @@ class CoreAdapter:
 
         # Yield the final code result
         yield f"data: {json.dumps({'status': 'RESULT', 'message': result})}\n\n"
-        yield f"data: {json.dumps({
+        
+        completion_data = {
             'status': 'COMPLETED', 
             'message': 'Mission complete. Tactical output ready.',
             'storage_path': str(file_path)
-        })}\n\n"
+        }
+        yield f"data: {json.dumps(completion_data)}\n\n"
 
     async def execute_direct(self, objective: str) -> str:
         """
