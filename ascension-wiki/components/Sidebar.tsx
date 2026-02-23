@@ -114,7 +114,11 @@ export function Sidebar() {
                         ))}
                     </nav>
 
-                    <div className="mt-auto pt-4 border-t border-white/5">
+                    <div className="mt-auto pt-4 border-t border-white/5 space-y-2">
+                        <div className="flex items-center justify-between text-[10px] font-mono text-muted/40 uppercase tracking-tighter">
+                            <span>SESSION_ROLE</span>
+                            <span className={cn(isAdmin ? "text-primary" : "text-muted")}>{userRole.toUpperCase()}</span>
+                        </div>
                         <div className="flex items-center justify-between text-xs font-mono text-muted">
                             <span>SYSTEM_VER</span>
                             <span className="text-primary">v2.0.0-PROD</span>

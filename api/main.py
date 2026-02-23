@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Header, HTTPException, Depends, Request
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional, List
 import uuid
@@ -10,6 +11,15 @@ from api.middleware import rbac_middleware, log_audit_trail
 from utils.logger import logger
 
 app = FastAPI(title="Ascension Intelligence Platform API (Hardened)")
+
+# Enable CORS for frontend integration
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # In production, replace with specific domain
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Initialize decoupled service adapter
 adapter = CoreAdapter()
