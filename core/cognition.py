@@ -16,26 +16,34 @@ from tools.file_system_tool import FileSystemTool
 from tools.code_execution_tool import CodeExecutionTool
 from tools.git_tool import GitTool
 
+from core.governance_manager import GovernanceManager
+from core.stability_engine import StabilityEngine
+from metrics.reliability_tracker import ReliabilityTracker
 from core.swarm_orchestrator import SwarmOrchestrator
 from core.refactoring_engine import RefactoringEngine
 from core.evolution_manager import EvolutionManager
 
 class CognitionCore:
     """
-    The orchestrator module that manages the AGI lifecycle for a given overarching objective.
-    Now upgraded to support Multi-Agent Swarm logic.
+    The orchestrator module that manages the AGI lifecycle.
+    Upgraded to support Governing Stability and Multi-Agent Swarm.
     """
 
     def __init__(self):
         """
-        Bootstraps all internal modules (Swarm, Refactoring, Evolution).
+        Bootstraps all internal modules including the new Stability Tier.
         """
         self.reasoning = ReasoningEngine()
         self.swarm = SwarmOrchestrator(reasoning_engine=self.reasoning)
         self.evolver = EvolutionManager()
         self.refactor_engine = RefactoringEngine(orchestrator=self.swarm)
         
-        # Keep legacy single-agent components for fallback/hybrid tasks
+        # New Stability & Governance Layer
+        self.gov = GovernanceManager()
+        self.stability = StabilityEngine()
+        self.reliability = ReliabilityTracker()
+        
+        # Legacy components
         self.planner = GoalPlanner(engine=self.reasoning)
         self.decision = DecisionEngine(engine=self.reasoning)
         self.refiner = RefinementLoop(engine=self.reasoning, token_controller=self.reasoning.tokens)

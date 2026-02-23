@@ -69,6 +69,8 @@ async def interactive_shell():
             print(f"[#] Tokens Consumed: {tokens.task_usage}")
             print(f"[#] Bandwidth Score: {bandwidth:.2f}")
             print(f"[#] Swarm Health: 100% (Alpha-Registry Active)")
+            print(f"[#] Governance Mode: {agent.cognition.gov.config.mode.value.upper()}")
+            print(f"[#] Genetic Fitness: {agent.cognition.stability.calculate_fitness({}):.4f}")
             print(f"[#] Evolutionary Ver: {tracker.current_version}")
             print("========================================")
             

@@ -39,21 +39,36 @@ class GitTool(BaseTool):
     async def execute(self, **kwargs) -> str:
         action = kwargs.get("action", "")
         message = kwargs.get("message", "AGI: Automated Commit")
+        branch = kwargs.get("branch", "main")
 
         try:
             if action == 'status':
                 result = subprocess.run(["git", "status"], cwd=self.repo_dir, capture_output=True, text=True)
                 return result.stdout or result.stderr
 
+            elif action == 'create_branch':
+                subprocess.run(["git", "checkout", "-b", branch], cwd=self.repo_dir, check=True)
+                return f"Created and checked out experimental branch: {branch}"
+
             elif action == 'commit':
-                # Automated flow: add all, then commit
+                # Enforce Conventional Commits: type: scope -- summary
+                # e.g. FEAT: core -- added governance
+                if ":" not in message or "--" not in message:
+                    message = f"AUTO: swarm -- {message}"
+                
                 subprocess.run(["git", "add", "."], cwd=self.repo_dir, check=True)
                 result = subprocess.run(["git", "commit", "-m", message], cwd=self.repo_dir, capture_output=True, text=True)
-                return f"Staged all files and committed.\nOutput:\n{result.stdout or result.stderr}"
+                return f"Staged and committed with structured message.\nOutput:\n{result.stdout or result.stderr}"
 
             elif action == 'push':
-                result = subprocess.run(["git", "push"], cwd=self.repo_dir, capture_output=True, text=True)
-                return f"Attempted push to remote.\nOutput:\n{result.stdout or result.stderr}"
+                result = subprocess.run(["git", "push", "origin", branch], cwd=self.repo_dir, capture_output=True, text=True)
+                return f"Attempted push to remote branch {branch}.\nOutput:\n{result.stdout or result.stderr}"
+            
+            elif action == 'merge_branch':
+                # Merge into main
+                subprocess.run(["git", "checkout", "main"], cwd=self.repo_dir, check=True)
+                result = subprocess.run(["git", "merge", branch], cwd=self.repo_dir, capture_output=True, text=True)
+                return f"Merged {branch} into main.\nOutput:\n{result.stdout or result.stderr}"
 
             else:
                 return f"Error: Unknown action '{action}'"
