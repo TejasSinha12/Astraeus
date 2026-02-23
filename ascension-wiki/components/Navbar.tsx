@@ -2,18 +2,25 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import { useUser, UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { motion } from "framer-motion";
-import { Brain, Zap, LayoutDashboard, Shield } from "lucide-react";
+import { Brain, Zap, LayoutDashboard, Shield, Code } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const NAV_LINKS = [
-    { href: "/docs/core", label: "Docs" },
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-];
 
 export function Navbar() {
     const pathname = usePathname();
+    const { user } = useUser();
+
+    const userRole = (user?.publicMetadata?.role as string) || "PUBLIC";
+    const isAdmin = userRole === "ADMIN";
+
+    const navLinks = [
+        { href: "/docs/core", label: "Docs" },
+        ...(isAdmin
+            ? [{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard }]
+            : [{ href: "/coding", label: "Dashboard", icon: Code }] // Non-admins see Arena as their Dashboard
+        ),
+    ];
 
     return (
         <motion.header
@@ -35,7 +42,7 @@ export function Navbar() {
 
             {/* Nav Links */}
             <nav className="hidden md:flex items-center gap-1 mr-auto">
-                {NAV_LINKS.map((link) => (
+                {navLinks.map((link) => (
                     <Link
                         key={link.href}
                         href={link.href}
@@ -77,13 +84,15 @@ export function Navbar() {
                 </SignedOut>
 
                 <SignedIn>
-                    <Link
-                        href="/control"
-                        className="p-2 rounded-lg text-muted hover:text-red-400 hover:bg-red-500/10 transition-all"
-                        title="Admin Control"
-                    >
-                        <Shield size={17} />
-                    </Link>
+                    {isAdmin && (
+                        <Link
+                            href="/control"
+                            className="p-2 rounded-lg text-muted hover:text-red-400 hover:bg-red-500/10 transition-all"
+                            title="Admin Control"
+                        >
+                            <Shield size={17} />
+                        </Link>
+                    )}
                     <UserButton
                         appearance={{
                             elements: {

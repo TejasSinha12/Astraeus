@@ -29,7 +29,7 @@ export default function Home() {
           className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-primary text-xs font-mono uppercase tracking-widest mb-8 box-glow"
         >
           <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          System Operational • v0.1.0-alpha
+          System Operational • v2.0.0-PROD
         </motion.div>
 
         <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 mb-6 drop-shadow-[0_0_30px_rgba(0,229,255,0.2)]">
@@ -41,13 +41,13 @@ export default function Home() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4">
-          <Link href="/dashboard">
+          <Link href="/coding">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               className="px-8 py-4 rounded-lg bg-primary text-background font-bold flex items-center gap-2 transition-all hover:bg-primary/90 box-glow w-full sm:w-auto justify-center"
             >
-              Enter Research Portal
+              Enter Coding Arena
               <ArrowRight size={18} />
             </motion.button>
           </Link>

@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { useUser } from "@clerk/nextjs";
 import {
     Brain, Database, Wrench, GraduationCap, ShieldAlert, Network, Menu, X,
     BarChart2, GitBranch, FlaskConical, Cpu, Map, ScrollText, Terminal,
-    LayoutDashboard, Shield,
+    LayoutDashboard, Shield, Code, Zap
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,13 @@ const NAV_SECTIONS = [
         ],
     },
     {
+        label: "Coding & API",
+        items: [
+            { name: "Coding Arena", href: "/coding", icon: Code },
+            { name: "API Reference", href: "/docs/api", icon: Zap },
+        ],
+    },
+    {
         label: "Research Lab",
         items: [
             { name: "Benchmarks", href: "/benchmarks", icon: BarChart2 },
@@ -35,6 +43,7 @@ const NAV_SECTIONS = [
     },
     {
         label: "Admin",
+        isAdmin: true,
         items: [
             { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
             { name: "Experiments", href: "/experiments", icon: Cpu },
@@ -46,7 +55,13 @@ const NAV_SECTIONS = [
 
 export function Sidebar() {
     const pathname = usePathname();
+    const { user } = useUser();
     const [isOpen, setIsOpen] = useState(false);
+
+    const userRole = (user?.publicMetadata?.role as string) || "PUBLIC";
+    const isAdmin = userRole === "ADMIN";
+
+    const filteredSections = NAV_SECTIONS.filter(section => !section.isAdmin || isAdmin);
 
     return (
         <>
@@ -70,7 +85,7 @@ export function Sidebar() {
                     </Link>
 
                     <nav className="flex-1 space-y-6">
-                        {NAV_SECTIONS.map((section) => (
+                        {filteredSections.map((section) => (
                             <div key={section.label}>
                                 <p className="text-xs font-mono text-muted/60 uppercase tracking-widest mb-2 px-3">{section.label}</p>
                                 <div className="space-y-1">
@@ -101,7 +116,7 @@ export function Sidebar() {
                     <div className="mt-auto pt-4 border-t border-white/5">
                         <div className="flex items-center justify-between text-xs font-mono text-muted">
                             <span>SYSTEM_VER</span>
-                            <span className="text-primary">v0.1.0-alpha</span>
+                            <span className="text-primary">v2.0.0-PROD</span>
                         </div>
                     </div>
                 </div>
