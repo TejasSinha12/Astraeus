@@ -34,7 +34,7 @@ class ExecutionRequest(BaseModel):
 
 @app.get("/")
 async def root():
-    return {"status": "online", "version": "v2.0.0-PROD"}
+    return {"status": "online", "version": "v2.0.0-PROD", "commit": "a6fbe1a"}
 
 @app.post("/estimate")
 async def get_cost_estimate(request: ExecutionRequest):
