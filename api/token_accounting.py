@@ -58,11 +58,26 @@ class TokenAccountingSystem:
     def estimate_cost(objective: str) -> int:
         """
         Calculates projected token cost based on task complexity.
+        Uses scaling factors for project scope and agent mobilization.
         """
-        base_cost = 100
-        if "swarm" in objective.lower(): base_cost *= 10
-        if "refactor" in objective.lower(): base_cost *= 5
-        return base_cost
+        # Base metabolic cost for a tactical mission
+        cost = 50
+        
+        # Scaling based on objective depth (roughly prompt size)
+        cost += len(objective) // 2
+        
+        # Complexity Multipliers
+        obj_lower = objective.lower()
+        if any(w in obj_lower for w in ["ecommerce", "dashboard", "fullstack", "authentication"]):
+            cost *= 10  # Full system architectural scale
+        elif any(w in obj_lower for w in ["database", "api", "integration", "ui"]):
+            cost *= 5   # Component level scale
+            
+        # Swarm Multiplier (Requires multi-agent overhead)
+        if "swarm" in obj_lower or "mobile" in obj_lower:
+            cost *= 2
+            
+        return max(cost, 100) # Minimum platform fee
 
     @staticmethod
     def provision_user(user_id: str, email: str, role: str = "PUBLIC", plan_id: str = "free_tier"):

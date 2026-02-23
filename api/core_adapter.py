@@ -22,10 +22,11 @@ class CoreAdapter:
     async def run_swarm_stream(self, objective: str, user_id: str) -> AsyncGenerator[str, None]:
         """
         Executes a swarm task and yields progress updates as SSE events.
+        Includes Keep-Alive pings to prevent proxy timeouts during deep reasoning.
         """
         logger.info(f"ADAPTER: Starting stream for {user_id} -> {objective[:30]}...")
         
-        # We simulate the swarm life-cycle phases for UI richness
+        # Initial simulation phases for UI feedback
         phases = [
             ("PLANNING", "Swarm calibrating for objective..."),
             ("DESIGN", "Architecting structural implementation..."),
@@ -35,14 +36,25 @@ class CoreAdapter:
 
         for status, msg in phases:
             yield f"data: {json.dumps({'status': status, 'message': msg})}\n\n"
-            await asyncio.sleep(1.5) # Allow UI to breath during phase transitions
+            await asyncio.sleep(1.2)
 
-        # Execute actual swarm logic
-        result = await self.cognition.swarm.execute_swarm_objective(objective)
+        # Execute swarm logic with a keep-alive wrapper
+        swarm_task = asyncio.create_task(self.cognition.swarm.execute_swarm_objective(objective))
         
-        # Yield the final code result
+        while not swarm_task.done():
+            # Yield Keep-Alive ping to prevent 30s timeouts on Render/Vercel
+            yield f"data: {json.dumps({'status': 'PROCESSING', 'message': 'Swarm thinking...'})}\n\n"
+            try:
+                # Wait for task or timeout for the next ping
+                await asyncio.wait_for(asyncio.shield(swarm_task), timeout=5.0)
+            except asyncio.TimeoutError:
+                continue
+
+        result = await swarm_task
+        
+        # Yield the final code result with explicit marker
         yield f"data: {json.dumps({'status': 'RESULT', 'message': result})}\n\n"
-        yield f"data: {json.dumps({'status': 'COMPLETED', 'message': 'Mission complete. Balanced synchronized.'})}\n\n"
+        yield f"data: {json.dumps({'status': 'COMPLETED', 'message': 'Mission complete. Tactical output ready.'})}\n\n"
 
     async def execute_direct(self, objective: str) -> str:
         """

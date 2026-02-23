@@ -90,23 +90,34 @@ export default function CodingArena() {
             if (!reader) return;
 
             const decoder = new TextDecoder();
+            let buffer = ""; // SSE Reassembly Buffer
+
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
 
-                const chunk = decoder.decode(value, { stream: true });
-                const lines = chunk.split("\n");
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split("\n");
+
+                // Keep the last partial line in the buffer
+                buffer = lines.pop() || "";
+
                 for (const line of lines) {
-                    if (line.startsWith("data: ")) {
+                    const cleanLine = line.trim();
+                    if (cleanLine.startsWith("data: ")) {
                         try {
-                            const data: StreamMessage & { message: string } = JSON.parse(line.replace("data: ", ""));
+                            const data: StreamMessage & { message: string } = JSON.parse(cleanLine.replace("data: ", ""));
+
                             if (data.status === "RESULT") {
                                 setCodeResult(data.message);
+                                setLogs(prev => [...prev, "[SUCCESS] Tactical mission output captured."]);
+                            } else if (data.status === "PROCESSING") {
+                                // Keep-Alive pings: don't flood logs, just update status if needed
                             } else {
                                 setLogs(prev => [...prev, `[${data.status}] ${data.message}`]);
                             }
                         } catch (e) {
-                            console.error("Failed to parse SSE chunk", e);
+                            console.error("Failed to parse SSE line", cleanLine, e);
                         }
                     }
                 }
