@@ -55,11 +55,12 @@ const NAV_SECTIONS = [
 
 export function Sidebar() {
     const pathname = usePathname();
-    const { user } = useUser();
+    const { user, isLoaded } = useUser();
     const [isOpen, setIsOpen] = useState(false);
 
+    // Robust role check: defaults to false until loaded, handles case-insensitivity
     const userRole = (user?.publicMetadata?.role as string) || "PUBLIC";
-    const isAdmin = userRole === "ADMIN";
+    const isAdmin = isLoaded && userRole.toUpperCase() === "ADMIN";
 
     const filteredSections = NAV_SECTIONS.filter(section => !section.isAdmin || isAdmin);
 

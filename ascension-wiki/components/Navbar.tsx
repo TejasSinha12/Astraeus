@@ -9,10 +9,10 @@ import { cn } from "@/lib/utils";
 
 export function Navbar() {
     const pathname = usePathname();
-    const { user } = useUser();
+    const { user, isLoaded } = useUser();
 
     const userRole = (user?.publicMetadata?.role as string) || "PUBLIC";
-    const isAdmin = userRole === "ADMIN";
+    const isAdmin = isLoaded && userRole.toUpperCase() === "ADMIN";
 
     const navLinks = [
         { href: "/docs/core", label: "Docs" },
