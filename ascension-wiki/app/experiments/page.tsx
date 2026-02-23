@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { Play, Zap } from "lucide-react";
 import { RoleGate } from "@/components/auth/RoleGate";
 import { useExperimentStore } from "@/lib/store";
+import { TokenManagement } from "@/components/admin/TokenManagement";
 
 const TOOL_LABELS: Record<string, string> = {
     web_search: "Web Search",
@@ -55,6 +56,9 @@ export default function ExperimentsPage() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Left Config */}
                     <div className="lg:col-span-1 space-y-5">
+                        {/* Token Management */}
+                        <TokenManagement />
+
                         {/* Temperature */}
                         <div className="glass-card rounded-2xl border border-white/5 p-5">
                             <h2 className="text-xs font-mono text-muted uppercase tracking-widest mb-4">Temperature</h2>
