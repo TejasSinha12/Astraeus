@@ -22,6 +22,8 @@ from metrics.reliability_tracker import ReliabilityTracker
 from core.swarm_orchestrator import SwarmOrchestrator
 from core.refactoring_engine import RefactoringEngine
 from core.evolution_manager import EvolutionManager
+from core.experiment_manager import ExperimentManager
+from core.verification_reporter import ValidationReporter
 
 class CognitionCore:
     """
@@ -37,6 +39,8 @@ class CognitionCore:
         self.swarm = SwarmOrchestrator(reasoning_engine=self.reasoning)
         self.evolver = EvolutionManager()
         self.refactor_engine = RefactoringEngine(orchestrator=self.swarm)
+        self.experiments = ExperimentManager()
+        self.veracity = ValidationReporter()
         
         # New Stability & Governance Layer
         self.gov = GovernanceManager()
