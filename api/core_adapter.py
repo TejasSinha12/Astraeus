@@ -53,12 +53,17 @@ class CoreAdapter:
             except asyncio.TimeoutError:
                 continue
 
-        swarm_result = await swarm_task
-        
+        try:
+            swarm_result = await swarm_task
+        except Exception as e:
+            logger.error(f"ADAPTER: Swarm Execution Failed: {e}")
+            yield f"data: {json.dumps({'status': 'ERROR', 'message': f'Swarm critical failure: {str(e)}'})}\n\n"
+            return
+            
         # Extract structured data
-        content = swarm_result.get("content", "")
-        file_map = swarm_result.get("file_map", {})
-        is_multifile = swarm_result.get("is_multifile", False)
+        content = swarm_result.get("content", "") if swarm_result else ""
+        file_map = swarm_result.get("file_map", {}) if swarm_result else {}
+        is_multifile = swarm_result.get("is_multifile", False) if swarm_result else False
         
         # PERSISTENCE LAYER: Save the generated codebase to the mission sandbox
         mission_id = str(uuid.uuid4())[:8]
