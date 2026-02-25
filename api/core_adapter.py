@@ -53,13 +53,18 @@ class CoreAdapter:
             except asyncio.TimeoutError:
                 continue
 
-        result = await swarm_task
+        swarm_result = await swarm_task
+        
+        # Extract structured data
+        content = swarm_result.get("content", "")
+        file_map = swarm_result.get("file_map", {})
+        is_multifile = swarm_result.get("is_multifile", False)
         
         # PERSISTENCE LAYER: Save the generated codebase to the mission sandbox
         mission_id = str(uuid.uuid4())[:8]
         
         # 1. Database Persistence (Primary for Production)
-        file_ext = "html" if "<html" in result.lower() else "txt"
+        file_ext = "html" if "<html" in content.lower() else "txt"
         filename = f"mission_result.{file_ext}"
         
         try:
@@ -68,33 +73,36 @@ class CoreAdapter:
                     id=mission_id,
                     user_id=user_id,
                     objective=objective,
-                    source_code=result,
-                    filename=filename
+                    source_code=content,
+                    filename=filename,
+                    is_multifile=is_multifile,
+                    file_map=json.dumps(file_map) if is_multifile else None
                 )
                 db.add(mission)
                 db.commit()
-                logger.info(f"ADAPTER: Mission {mission_id} persisted to DATABASE.")
+                logger.info(f"ADAPTER: Mission {mission_id} persisted to DATABASE (Multi-file: {is_multifile}).")
         except Exception as e:
             logger.error(f"ADAPTER: Database persistence failed: {e}")
 
-        # 2. Filesystem Persistence (Secondary/Backup)
+        # 2. Filesystem Persistence (Secondary/Backup - Single file only for simplicity)
         try:
             sandbox_path = Path("api/sandbox/missions") / mission_id
             sandbox_path.mkdir(parents=True, exist_ok=True)
             file_path = sandbox_path / filename
             with open(file_path, "w") as f:
-                f.write(result)
+                f.write(content)
             logger.info(f"ADAPTER: Mission {mission_id} persisted to FILESYSTEM: {file_path}")
         except Exception as e:
-            logger.warning(f"ADAPTER: Filesystem persistence failed (Expected on ephemeral hosts): {e}")
+            logger.warning(f"ADAPTER: Filesystem persistence failed: {e}")
 
         # Yield the final code result
-        yield f"data: {json.dumps({'status': 'RESULT', 'message': result})}\n\n"
+        yield f"data: {json.dumps({'status': 'RESULT', 'message': content, 'is_multifile': is_multifile})}\n\n"
         
         completion_data = {
             'status': 'COMPLETED', 
             'message': 'Mission complete. Tactical output ready.',
-            'storage_path': f"DATABASE://{mission_id}"
+            'storage_path': f"DATABASE://{mission_id}",
+            'is_multifile': is_multifile
         }
         yield f"data: {json.dumps(completion_data)}\n\n"
 

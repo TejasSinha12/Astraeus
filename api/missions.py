@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException
-from pathlib import Path
+from fastapi.responses import StreamingResponse
 from typing import List, Dict, Any
-import os
-
+import io
+import zipfile
+import json
 from api.usage_db import SessionLocal, SwarmMission
 from utils.logger import logger
 
@@ -20,8 +21,9 @@ async def list_missions() -> List[Dict[str, Any]]:
                 {
                     "id": m.id,
                     "timestamp": m.timestamp.timestamp(),
-                    "has_result": bool(m.source_code),
-                    "objective": m.objective
+                    "has_result": bool(m.source_code or m.file_map),
+                    "objective": m.objective,
+                    "is_multifile": m.is_multifile
                 } for m in missions
             ]
     except Exception as e:
@@ -39,8 +41,17 @@ async def get_mission_source(mission_id: str):
             if not mission:
                 raise HTTPException(status_code=404, detail="Mission not found.")
             
+            # For multi-file, we return the map
+            if mission.is_multifile:
+                return {
+                    "id": mission.id,
+                    "is_multifile": True,
+                    "file_map": json.loads(mission.file_map) if m.file_map else {}
+                }
+
             return {
                 "id": mission.id,
+                "is_multifile": False,
                 "filename": mission.filename or "mission_result.code",
                 "content": mission.source_code
             }
@@ -49,3 +60,34 @@ async def get_mission_source(mission_id: str):
     except Exception as e:
         logger.error(f"API: Failed to retrieve mission source: {e}")
         raise HTTPException(status_code=500, detail="Internal server error retrieving artifact.")
+
+@router.get("/{mission_id}/export")
+async def export_mission_zip(mission_id: str):
+    """
+    Bundles the mission artifacts into a ZIP archive and streams it to the client.
+    """
+    try:
+        with SessionLocal() as db:
+            mission = db.query(SwarmMission).filter(SwarmMission.id == mission_id).first()
+            if not mission:
+                raise HTTPException(status_code=404, detail="Mission not found.")
+
+            zip_buffer = io.BytesIO()
+            with zipfile.ZipFile(zip_buffer, "a", zipfile.ZIP_DEFLATED, False) as zip_file:
+                if mission.is_multifile and mission.file_map:
+                    file_map = json.loads(mission.file_map)
+                    for path, content in file_map.items():
+                        zip_file.writestr(path, content)
+                else:
+                    filename = mission.filename or "mission_result.txt"
+                    zip_file.writestr(filename, mission.source_code or "")
+
+            zip_buffer.seek(0)
+            return StreamingResponse(
+                zip_buffer,
+                media_type="application/x-zip-compressed",
+                headers={"Content-Disposition": f"attachment; filename=mission_{mission_id}.zip"}
+            )
+    except Exception as e:
+        logger.error(f"API: Failed to export mission ZIP: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate ZIP archive.")

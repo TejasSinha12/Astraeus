@@ -54,6 +54,11 @@ class BenchmarkRunner:
         
         calc_error = (1.0 - reported_confidence) if success else reported_confidence
         
+        # Swarm Metrics (Mocked for now, to be wired to Orchestrator telemetry)
+        swarm_delegations = 5 # Planner, Architect, Implementer, Critic, Auditor
+        swarm_agreement = 0.92
+        swarm_efficiency = 1.0 / (steps * 1000) if steps > 0 else 0.0 # Ratio of success per token
+        
         return BenchmarkResult(
             task_id=task.id,
             category=task.category,
@@ -62,6 +67,9 @@ class BenchmarkRunner:
             matched_reasoning_paths=matched_paths,
             total_reasoning_paths=len(task.expected_reasoning_paths),
             confidence_error=calc_error,
+            swarm_delegation_depth=swarm_delegations,
+            swarm_token_efficiency=swarm_efficiency,
+            swarm_agreement_ratio=swarm_agreement,
             raw_output=f"Task {task.id} mock output completed in {time.time()-start_time:.2f}s"
         )
 
@@ -92,6 +100,10 @@ class BenchmarkRunner:
             c_res = [r for r in results if r.category == c]
             cat_acc[c] = sum([1 for r in c_res if r.success]) / len(c_res)
             
+        # Swarm Aggregates
+        avg_swarm_delegation = sum([r.swarm_delegation_depth or 0 for r in results]) / total
+        avg_swarm_agreement = sum([r.swarm_agreement_ratio or 0.0 for r in results]) / total
+            
         report = BenchmarkReport(
             version_hash=version_hash,
             total_tasks=total,
@@ -99,6 +111,8 @@ class BenchmarkRunner:
             category_accuracies=cat_acc,
             average_steps=avg_steps,
             average_confidence_error=avg_conf_error,
+            average_swarm_delegation=avg_swarm_delegation,
+            average_swarm_agreement=avg_swarm_agreement,
             results=results
         )
         

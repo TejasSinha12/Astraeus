@@ -26,6 +26,9 @@ class BenchmarkResult(BaseModel):
     matched_reasoning_paths: int
     total_reasoning_paths: int
     confidence_error: float # (1.0 - reported_confidence) if success=True else (reported_confidence)
+    swarm_delegation_depth: Optional[int] = Field(default=0, description="Number of agents invoked during the task.")
+    swarm_token_efficiency: Optional[float] = Field(default=0.0, description="Ratio of successful task completion per token consumed.")
+    swarm_agreement_ratio: Optional[float] = Field(default=0.0, description="Percentage of consensus reached during adversarial code review.")
     raw_output: str
     
 class BenchmarkReport(BaseModel):
@@ -38,4 +41,6 @@ class BenchmarkReport(BaseModel):
     category_accuracies: Dict[str, float]
     average_steps: float
     average_confidence_error: float # Closer to 0 is perfectly calibrated.
+    average_swarm_delegation: Optional[float] = 0.0
+    average_swarm_agreement: Optional[float] = 0.0
     results: List[BenchmarkResult]

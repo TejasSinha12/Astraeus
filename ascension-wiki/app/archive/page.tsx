@@ -22,14 +22,21 @@ interface MissionArtifact {
     id: string;
     timestamp: number;
     has_result: boolean;
-    path: string;
+    objective?: string;
+    is_multifile?: boolean;
 }
 
 export default function MissionArchive() {
     const [missions, setMissions] = useState<MissionArtifact[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedMission, setSelectedMission] = useState<string | null>(null);
-    const [missionSource, setMissionSource] = useState<{ content: string; filename: string } | null>(null);
+    const [missionSource, setMissionSource] = useState<{
+        content?: string;
+        filename?: string;
+        is_multifile?: boolean;
+        file_map?: Record<string, string>;
+    } | null>(null);
+    const [activeFile, setActiveFile] = useState<string | null>(null);
     const [fetchingSource, setFetchingSource] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -56,6 +63,7 @@ export default function MissionArchive() {
         if (selectedMission === id) {
             setSelectedMission(null);
             setMissionSource(null);
+            setActiveFile(null);
             return;
         }
 
@@ -65,10 +73,26 @@ export default function MissionArchive() {
             const res = await fetch(`${API_BASE_URL}/missions/${id}/source`);
             const data = await res.json();
             setMissionSource(data);
+
+            if (data.is_multifile && data.file_map) {
+                const files = Object.keys(data.file_map);
+                if (files.length > 0) setActiveFile(files[0]);
+            }
         } catch (e) {
             console.error("Failed to fetch mission source", e);
         } finally {
             setFetchingSource(false);
+        }
+    };
+
+    const handleExportZip = async (id: string) => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/missions/${id}/export`);
+            const blob = await res.json(); // Wait, it's a file response
+            // We should use window.open or a direct link for binary responses
+            window.open(`${API_BASE_URL}/missions/${id}/export`, "_blank");
+        } catch (e) {
+            console.error("Failed to export ZIP", e);
         }
     };
 
@@ -190,42 +214,86 @@ export default function MissionArchive() {
 
                                     <div className="flex items-center gap-2">
                                         <button
-                                            onClick={() => {
-                                                if (missionSource) {
-                                                    const blob = new Blob([missionSource.content], { type: "text/plain" });
-                                                    const url = URL.createObjectURL(blob);
-                                                    const a = document.createElement("a");
-                                                    a.href = url;
-                                                    a.download = missionSource.filename;
-                                                    a.click();
-                                                }
-                                            }}
-                                            className="p-2 hover:bg-white/10 rounded-lg text-muted hover:text-white transition-all flex items-center gap-2"
-                                            title="Download Artifact"
+                                            onClick={() => handleExportZip(selectedMission)}
+                                            className="p-2 hover:bg-white/10 rounded-lg text-muted hover:text-white transition-all flex items-center gap-2 border border-white/5 active:scale-95"
+                                            title="Export ZIP Bundle"
                                         >
-                                            <Download size={14} />
-                                            <span className="text-[10px] font-mono uppercase tracking-widest hidden md:inline">Download</span>
+                                            <Download size={14} className="text-primary" />
+                                            <span className="text-[10px] font-mono uppercase tracking-widest hidden md:inline">Export ZIP</span>
                                         </button>
+
+                                        {!missionSource?.is_multifile && (
+                                            <button
+                                                onClick={() => {
+                                                    const content = missionSource?.content;
+                                                    const filename = missionSource?.filename;
+                                                    if (content && filename) {
+                                                        const blob = new Blob([content], { type: "text/plain" });
+                                                        const url = URL.createObjectURL(blob);
+                                                        const a = document.createElement("a");
+                                                        a.href = url;
+                                                        a.download = filename;
+                                                        a.click();
+                                                    }
+                                                }}
+                                                className="p-2 hover:bg-white/10 rounded-lg text-muted hover:text-white transition-all flex items-center gap-2"
+                                                title="Download Raw File"
+                                            >
+                                                <FileText size={14} />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 
-                                <div className="flex-1 overflow-auto p-6 scrollbar-hide">
-                                    {fetchingSource ? (
-                                        <div className="h-full flex flex-col items-center justify-center gap-4 text-muted/30">
-                                            <Activity className="animate-spin text-primary/30" />
-                                            <span className="text-[10px] font-mono uppercase tracking-widest">Decrypting Sandbox Asset...</span>
+                                <div className="flex-1 flex overflow-hidden">
+                                    {/* Multi-file sidebar */}
+                                    {missionSource?.is_multifile && missionSource.file_map && (
+                                        <div className="w-48 border-r border-white/5 bg-black/20 overflow-y-auto p-2 flex flex-col gap-1">
+                                            <div className="px-3 py-2 text-[9px] font-mono text-muted uppercase tracking-widest opacity-40">Filesystem</div>
+                                            {Object.keys(missionSource.file_map).map(path => (
+                                                <button
+                                                    key={path}
+                                                    onClick={() => setActiveFile(path)}
+                                                    className={cn(
+                                                        "px-3 py-2 text-left text-[11px] font-mono rounded transition-all truncate",
+                                                        activeFile === path ? "bg-primary/20 text-primary" : "text-muted hover:text-white hover:bg-white/5"
+                                                    )}
+                                                >
+                                                    {path.split('/').pop()}
+                                                </button>
+                                            ))}
                                         </div>
-                                    ) : (
-                                        <pre className="text-sm font-mono text-white/90 leading-relaxed selection:bg-primary/30">
-                                            <code>{missionSource?.content}</code>
-                                        </pre>
                                     )}
+
+                                    <div className="flex-1 overflow-auto p-6 scrollbar-hide">
+                                        {fetchingSource ? (
+                                            <div className="h-full flex flex-col items-center justify-center gap-4 text-muted/30">
+                                                <Activity className="animate-spin text-primary/30" />
+                                                <span className="text-[10px] font-mono uppercase tracking-widest">Decrypting Sandbox Asset...</span>
+                                            </div>
+                                        ) : (
+                                            <pre className="text-sm font-mono text-white/90 leading-relaxed selection:bg-primary/30">
+                                                <code>
+                                                    {missionSource?.is_multifile
+                                                        ? (activeFile ? missionSource.file_map?.[activeFile] : "Select a file to view")
+                                                        : (missionSource?.content || "// No Tactical Output Detected")}
+                                                </code>
+                                            </pre>
+                                        )}
+                                    </div>
                                 </div>
 
                                 <div className="p-3 border-t border-white/5 bg-black/40 flex items-center justify-between px-6">
-                                    <div className="flex items-center gap-2 text-[9px] font-mono text-muted uppercase tracking-widest opacity-50">
-                                        <FileText size={10} />
-                                        Artifact ID: {selectedMission}
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-2 text-[9px] font-mono text-muted uppercase tracking-widest opacity-50">
+                                            <FileText size={10} />
+                                            ID: {selectedMission}
+                                        </div>
+                                        {missionSource?.is_multifile && (
+                                            <div className="text-[9px] font-mono text-primary/60 uppercase tracking-widest px-2 py-0.5 border border-primary/20 rounded-full">
+                                                Multi-File Project
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="flex items-center gap-2 text-[9px] font-mono text-primary uppercase tracking-[0.2em]">
                                         Secure Labs Storage

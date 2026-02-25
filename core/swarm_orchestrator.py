@@ -20,9 +20,10 @@ class SwarmOrchestrator:
         self.active_agents: Dict[str, AgentProfile] = AGENT_REGISTRY
         logger.info(f"SwarmOrchestrator online with {len(self.active_agents)} specialized agent profiles.")
 
-    async def execute_swarm_objective(self, objective: str) -> str:
+    async def execute_swarm_objective(self, objective: str) -> Dict[str, Any]:
         """
         Hierarchical execution objective through the swarm.
+        Returns a structured result: {"content": str, "is_multifile": bool, "file_map": dict}
         """
         logger.info(f"Swarm mobilization triggered for objective: {objective}")
 
@@ -32,11 +33,16 @@ class SwarmOrchestrator:
 
         # 2. DESIGN (Architect Agent)
         design = await self._delegate_to_agent("architect", f"Design the structural implementation for this plan: {plan}")
-        logger.info("Architecural Design phase complete.")
+        logger.info("Architectural Design phase complete.")
 
         # 3. IMPLEMENT & CRITIQUE LOOP (Implementer + Critic)
-        # Simplified linear flow for initial implementation; will be expanded to parallel swarm loops.
-        implementation = await self._delegate_to_agent("implementer", f"Execute this design: {design}")
+        # We instruct the implementer to use a multi-file JSON format if the objective is complex
+        implementer_prompt = (
+            f"Execute this design: {design}. "
+            "IMPORTANT: If the project requires multiple files, return a JSON object with filenames as keys "
+            "and file content as values. Otherwise, return the code directly."
+        )
+        implementation = await self._delegate_to_agent("implementer", implementer_prompt)
         
         critique = await self._delegate_to_agent("critic", f"Perform security and logic review of: {implementation}")
         
@@ -44,10 +50,40 @@ class SwarmOrchestrator:
         optimization = await self._delegate_to_agent("optimizer", f"Optimize this implementation based on critique: {implementation}\nCritique: {critique}")
         
         # 5. AUDIT (Auditor Agent)
-        audit_result = await self._delegate_to_agent("auditor", f"Verify and audit the following optimized solution: {optimization}")
+        audit_prompt = (
+            f"Verify and audit the following optimized solution: {optimization}. "
+            "Ensure the final output is finalized. If it's a multi-file project, ensure the JSON is valid."
+        )
+        audit_result = await self._delegate_to_agent("auditor", audit_prompt)
         
         logger.info("Swarm objective cycle finalized.")
-        return audit_result
+        
+        # Attempt to parse as multi-file JSON
+        try:
+            import json
+            # Extract JSON if wrapped in markdown
+            temp_result = audit_result.strip()
+            if temp_result.startswith("```json"):
+                temp_result = temp_result[7:-3].strip()
+            elif temp_result.startswith("{"):
+                pass # Already looks like JSON
+            
+            data = json.loads(temp_result)
+            if isinstance(data, dict) and len(data) > 0:
+                return {
+                    "is_multifile": True,
+                    "file_map": data,
+                    "content": audit_result # Keep raw for reference
+                }
+        except:
+            pass
+
+        # Fallback to single file
+        return {
+            "is_multifile": False,
+            "content": audit_result,
+            "file_map": {}
+        }
 
     async def _delegate_to_agent(self, agent_key: str, prompt: str) -> str:
         """

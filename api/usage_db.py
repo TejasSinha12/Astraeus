@@ -1,7 +1,7 @@
 """
 Database schema for public platform usage and token accounting.
 """
-from sqlalchemy import Column, String, Float, Integer, DateTime, create_engine
+from sqlalchemy import Column, String, Float, Integer, DateTime, Boolean, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import datetime
@@ -68,8 +68,10 @@ class SwarmMission(Base):
     id = Column(String, primary_key=True) # Mission UUID
     user_id = Column(String, index=True)
     objective = Column(String)
-    source_code = Column(String) # The tactical output
+    source_code = Column(String) # For single-file results (legacy/simple)
     filename = Column(String)
+    is_multifile = Column(Boolean, default=False)
+    file_map = Column(String) # JSON blob for multi-file: {"path/to/file.py": "content", ...}
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
 import os
