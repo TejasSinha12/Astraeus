@@ -52,6 +52,9 @@ class CoreAdapter:
                 await asyncio.wait_for(asyncio.shield(swarm_task), timeout=5.0)
             except asyncio.TimeoutError:
                 continue
+            except Exception:
+                # Task raised an exception, done() will be true, we handle it below
+                break
 
         try:
             swarm_result = await swarm_task

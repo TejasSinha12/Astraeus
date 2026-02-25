@@ -89,19 +89,29 @@ class SwarmOrchestrator:
         """
         Routes a subtask to a specific specialized agent.
         """
+        from core_config import config
+        
         agent = self.active_agents.get(agent_key)
         if not agent:
             raise ValueError(f"Agent profile {agent_key} not found in registry.")
 
         logger.debug(f"Delegating to {agent.name} (Role: {agent.role})...")
         
-        # We wrap the reasoning request with the agent's specific persona
-        response = await self.reasoning.generate_response(
-            system_prompt=agent.system_prompt,
-            user_prompt=prompt,
-            temperature=0.2 # Higher consistency across swarm
-        )
+        # Override the global task limit with the agent's independent heavy-duty budget
+        original_limit = config.TASK_TOKEN_LIMIT
+        config.TASK_TOKEN_LIMIT = agent.independent_token_budget
+        self.reasoning.tokens.reset_task_usage()
         
+        try:
+            # We wrap the reasoning request with the agent's specific persona
+            response = await self.reasoning.generate_response(
+                system_prompt=agent.system_prompt,
+                user_prompt=prompt,
+                temperature=0.2 # Higher consistency across swarm
+            )
+        finally:
+            config.TASK_TOKEN_LIMIT = original_limit
+            
         return response
 
 class consensus_resolution:
