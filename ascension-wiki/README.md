@@ -11,6 +11,7 @@ This is a production-grade Next.js 15+ (App Router) interface designed for real-
 - **Benchmarks Dashboard**: High-fidelity Recharts visualization of model performance milestones and fitness trajectories.
 - **Evolution Timeline**: An interactive history of structural self-refactoring and intelligence gains over time.
 - **Agent Arena (React Flow)**: A live Directed Acyclic Graph (DAG) visualizing inter-agent communication and hierarchical reasoning transitions within the swarm.
+- **Mission Archive Explorer**: An IDE-like sidebar for visualizing and downloading generated multi-file codebases as ZIP archives from previous sandbox missions.
 - **Experiment Workbench**: Control interface for hypothesis tagging, A/B evolution triggering, and plateau detection.
 - **Cognition Map**: Interactive system architecture visualization illustrating the data flow between core components.
 

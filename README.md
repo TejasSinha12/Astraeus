@@ -54,9 +54,14 @@ Ascension is built for falsifiability. It treats every architectural change as a
 - **Token Accounting**: Comprehensive metering of request costs with persistent usage logs.
 
 ### Cognition Tier (`/core`)
-- **Swarm Orchestrator**: Manages agent lifecycles and inter-agent communication protocols.
+- **Swarm Orchestrator**: Manages agent lifecycles and inter-agent communication protocols. Features dynamic token budgeting per specialized agent (e.g. 100k for Implementer, 30k for Auditor).
 - **Refactoring Engine**: AST-aware system that autonomously detects and fixes complexity bottlenecks.
 - **Evolution Manager**: System state snapshotting ("DNA" persistence) for longitudinal analysis.
+
+### Research Lab & Data Output 🧪
+- **Multi-File Generation**: The orchestrator instructs agents to seamlessly design complex, multi-file codebases and outputs them as highly structured JSON.
+- **Mission Export & Persistence**: The persistent PostgreSQL sandbox archives every iteration, and the API offers instant ZIP artifact bundling.
+- **SSE Streaming Gateway**: The backend adapter pipes real-time cognitive metrics over Server-Sent Events, protected by a global fault-tolerant exception trap.
 
 ---
 
