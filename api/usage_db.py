@@ -58,6 +58,35 @@ class AuditLog(Base):
     metadata_json = Column(String) # JSON blob of request context
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
+class SwarmCluster(Base):
+    """
+    Registry for independent swarm instances within the federation.
+    """
+    __tablename__ = "swarm_clusters"
+    
+    id = Column(String, primary_key=True) # Cluster UUID (e.g., 'us-east-1', 'private-alpha')
+    name = Column(String)
+    region = Column(String)
+    expertise_tags = Column(String) # JSON list: ["encryption", "react", "high-performance"]
+    api_url = Column(String) # For inter-swarm communication
+    governance_mode = Column(String, default="observe")
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class FederatedMemory(Base):
+    """
+    Vector-backed structural pattern storage for cross-swarm knowledge transfer.
+    """
+    __tablename__ = "federated_memory"
+    
+    id = Column(String, primary_key=True)
+    cluster_origin = Column(String, index=True) # ID of the cluster that discovered the pattern
+    pattern_type = Column(String) # 'ARCH_DAG', 'CODE_REFACTOR', 'SECURITY_PATCH'
+    embedding_json = Column(String) # JSON blob for vector similarity search
+    structural_metadata = Column(String) # JSON metadata of the innovation
+    confidence_score = Column(Float)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+
 class SwarmMission(Base):
     """
     Persistent repository for AI-generated codebases.
@@ -68,7 +97,6 @@ class SwarmMission(Base):
     id = Column(String, primary_key=True) # Mission UUID
     user_id = Column(String, index=True)
     cluster_id = Column(String, index=True, nullable=True) # ID of the swarm cluster that executed this
-    parent_id = Column(String, index=True, nullable=True) # ID of the ancestor mission
     parent_id = Column(String, index=True, nullable=True) # ID of the ancestor mission
     experiment_id = Column(String, index=True, nullable=True) # Associated A/B experiment
     objective = Column(String)
