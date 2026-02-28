@@ -67,6 +67,8 @@ class SwarmMission(Base):
     
     id = Column(String, primary_key=True) # Mission UUID
     user_id = Column(String, index=True)
+    cluster_id = Column(String, index=True, nullable=True) # ID of the swarm cluster that executed this
+    parent_id = Column(String, index=True, nullable=True) # ID of the ancestor mission
     parent_id = Column(String, index=True, nullable=True) # ID of the ancestor mission
     experiment_id = Column(String, index=True, nullable=True) # Associated A/B experiment
     objective = Column(String)
