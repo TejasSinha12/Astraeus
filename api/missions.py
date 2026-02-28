@@ -4,7 +4,7 @@ from typing import List, Dict, Any
 import io
 import zipfile
 import json
-from api.usage_db import SessionLocal, SwarmMission
+from api.usage_db import SessionLocal, SwarmMission, SwarmCluster
 from utils.logger import logger
 
 router = APIRouter(prefix="/missions", tags=["Missions"])
@@ -46,7 +46,7 @@ async def get_mission_source(mission_id: str):
                 return {
                     "id": mission.id,
                     "is_multifile": True,
-                    "file_map": json.loads(mission.file_map) if m.file_map else {}
+                    "file_map": json.loads(mission.file_map) if mission.file_map else {}
                 }
 
             return {
@@ -107,4 +107,24 @@ async def get_evolution_lineage() -> List[Dict[str, Any]]:
             ]
     except Exception as e:
         logger.error(f"API: Failed to fetch lineage: {e}")
+        return []
+
+@router.get("/federation/clusters")
+async def get_federation_clusters():
+    """Returns the registry of active swarm clusters in the federation."""
+    try:
+        with SessionLocal() as db:
+            clusters = db.query(SwarmCluster).all()
+            return [
+                {
+                    "id": c.id,
+                    "name": c.name,
+                    "region": c.region,
+                    "expertise": json.loads(c.expertise_tags) if c.expertise_tags else [],
+                    "mode": c.governance_mode,
+                    "is_active": c.is_active
+                } for c in clusters
+            ]
+    except Exception as e:
+        logger.error(f"API: Failed to fetch federation clusters: {e}")
         return []
