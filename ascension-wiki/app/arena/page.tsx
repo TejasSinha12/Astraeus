@@ -101,16 +101,47 @@ function buildGenealogyEdges(lineage: any[]) {
         }));
 }
 
+function buildFederationNodes(clusters: any[]) {
+    return clusters.map((c, i) => ({
+        id: c.id,
+        type: "agi",
+        position: { x: (i % 3) * 300, y: Math.floor(i / 3) * 150 },
+        data: {
+            label: `${c.name}\n[${c.region}]\nMode: ${c.mode}`,
+            status: c.is_active ? "done" : "idle",
+            color: c.is_active ? "#00e5ff" : "#ff4444"
+        }
+    }));
+}
+
+function buildFederationEdges(clusters: any[]) {
+    // Connect all clusters to a central 'GlobalCoordinator' if multiple exist
+    if (clusters.length < 2) return [];
+    return clusters.slice(1).map(c => ({
+        id: `link-${clusters[0].id}-${c.id}`,
+        source: clusters[0].id,
+        target: c.id,
+        style: { stroke: "rgba(0,229,255,0.3)", strokeWidth: 1, strokeDasharray: "5,5" },
+        animated: true
+    }));
+}
+
 export default function ArenaPage() {
     const { selectedAgent, task, isRunning, traceSteps, confidence, compareMode, setAgent, setTask, startSim, stopSim, pushStep, pushConfidence, reset, toggleCompareMode } = useAgentSimStore();
     const [lineage, setLineage] = useState<any[]>([]);
-    const [viewMode, setViewMode] = useState<"reasoning" | "genealogy">("reasoning");
+    const [clusters, setClusters] = useState<any[]>([]);
+    const [viewMode, setViewMode] = useState<"reasoning" | "genealogy" | "federation">("reasoning");
 
     useEffect(() => {
         fetch(`${API_URL}/missions/lineage`)
             .then(res => res.json())
             .then(data => setLineage(data))
             .catch(err => console.error("Failed to fetch lineage:", err));
+
+        fetch(`${API_URL}/missions/federation/clusters`)
+            .then(res => res.json())
+            .then(data => setClusters(data))
+            .catch(err => console.error("Failed to fetch clusters:", err));
     }, []);
 
     const runSim = useCallback(async () => {
@@ -124,8 +155,20 @@ export default function ArenaPage() {
         stopSim();
     }, [selectedAgent, startSim, stopSim, pushStep, pushConfidence]);
 
-    const nodes = viewMode === "reasoning" ? buildNodes(traceSteps) : buildGenealogyNodes(lineage);
-    const edges = viewMode === "reasoning" ? EDGES : buildGenealogyEdges(lineage);
+    const getNodes = () => {
+        if (viewMode === "reasoning") return buildNodes(traceSteps);
+        if (viewMode === "genealogy") return buildGenealogyNodes(lineage);
+        return buildFederationNodes(clusters);
+    };
+
+    const getEdges = () => {
+        if (viewMode === "reasoning") return EDGES;
+        if (viewMode === "genealogy") return buildGenealogyEdges(lineage);
+        return buildFederationEdges(clusters);
+    };
+
+    const nodes = getNodes();
+    const edges = getEdges();
     const confidenceData = confidence.map((v, i) => ({ step: i + 1, value: parseFloat((v * 100).toFixed(1)) }));
 
     return (
@@ -221,7 +264,7 @@ export default function ArenaPage() {
                     <div className="glass-card rounded-2xl border border-white/5 overflow-hidden" style={{ height: 420 }}>
                         <div className="p-4 border-b border-white/5 flex justify-between items-center">
                             <h2 className="text-xs font-mono text-muted uppercase tracking-widest">
-                                {viewMode === "reasoning" ? "Reasoning DAG" : "Evolution Genealogy"}
+                                {viewMode === "reasoning" ? "Reasoning DAG" : viewMode === "genealogy" ? "Evolution Genealogy" : "Federation Topology"}
                             </h2>
                             <div className="flex gap-2">
                                 <button onClick={() => setViewMode("reasoning")} className={`px-2 py-1 rounded text-[10px] font-mono uppercase transition-colors ${viewMode === "reasoning" ? "bg-primary/20 text-primary border border-primary/50" : "bg-white/5 text-muted hover:text-white"}`}>
@@ -229,6 +272,9 @@ export default function ArenaPage() {
                                 </button>
                                 <button onClick={() => setViewMode("genealogy")} className={`px-2 py-1 rounded text-[10px] font-mono uppercase transition-colors ${viewMode === "genealogy" ? "bg-primary/20 text-primary border border-primary/50" : "bg-white/5 text-muted hover:text-white"}`}>
                                     Genealogy
+                                </button>
+                                <button onClick={() => setViewMode("federation")} className={`px-2 py-1 rounded text-[10px] font-mono uppercase transition-colors ${viewMode === "federation" ? "bg-primary/20 text-primary border border-primary/50" : "bg-white/5 text-muted hover:text-white"}`}>
+                                    Federation
                                 </button>
                             </div>
                         </div>
