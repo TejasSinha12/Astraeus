@@ -18,6 +18,13 @@ try:
         if dialect == "sqlite":
             print("Applying SQLite migration for is_multifile and file_map...")
             try:
+                conn.execute(text("ALTER TABLE swarm_missions ADD COLUMN parent_id VARCHAR;"))
+                conn.execute(text("ALTER TABLE swarm_missions ADD COLUMN experiment_id VARCHAR;"))
+                print("Added lineage columns!")
+            except Exception as e:
+                print("Lineage columns might already exist:", str(e))
+                
+            try:
                 conn.execute(text("ALTER TABLE swarm_missions ADD COLUMN is_multifile BOOLEAN DEFAULT 0;"))
                 print("Added is_multifile!")
             except Exception as e:

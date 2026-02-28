@@ -22,7 +22,7 @@ class CoreAdapter:
     def __init__(self):
         self.cognition = CognitionCore()
 
-    async def run_swarm_stream(self, objective: str, user_id: str) -> AsyncGenerator[str, None]:
+    async def run_swarm_stream(self, objective: str, user_id: str, parent_id: Optional[str] = None, experiment_id: Optional[str] = None) -> AsyncGenerator[str, None]:
         """
         Executes a swarm task and yields progress updates as SSE events.
         Includes Keep-Alive pings to prevent proxy timeouts during deep reasoning.
@@ -80,6 +80,8 @@ class CoreAdapter:
                 mission = SwarmMission(
                     id=mission_id,
                     user_id=user_id,
+                    parent_id=parent_id,
+                    experiment_id=experiment_id,
                     objective=objective,
                     source_code=content,
                     filename=filename,

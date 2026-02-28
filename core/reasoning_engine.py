@@ -4,6 +4,7 @@ Handles generic inference requests against language models and enforces strict r
 """
 from typing import List, Dict, Any, Optional
 import openai
+import json
 from pydantic import BaseModel, ValidationError
 
 from core_config import config
@@ -145,6 +146,16 @@ class ReasoningEngine:
                     TaskDefinition(id="sim_2", description="Implement refined logic", dependencies=["sim_1"], expected_outcome="Optimized code produced")
                 ]
             )
+
+        # Mocking for Agent Spawner (Biosynthesis)
+        if "Generate a specialized AGI Agent Profile" in prompt:
+            return json.dumps({
+                "name": "QuantumExpert",
+                "role": "Post-Quantum Cryptographer",
+                "system_prompt": "You are a world-class expert in lattice-based and quantum-resistant cryptography.",
+                "specialization": "Quantum-Resistant Modules",
+                "suggested_key": "quantum_expert"
+            })
 
         # Mocking for RefinementLoop (Text)
         if "structural analysis" in prompt.lower():

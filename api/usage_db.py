@@ -67,6 +67,8 @@ class SwarmMission(Base):
     
     id = Column(String, primary_key=True) # Mission UUID
     user_id = Column(String, index=True)
+    parent_id = Column(String, index=True, nullable=True) # ID of the ancestor mission
+    experiment_id = Column(String, index=True, nullable=True) # Associated A/B experiment
     objective = Column(String)
     source_code = Column(String) # For single-file results (legacy/simple)
     filename = Column(String)

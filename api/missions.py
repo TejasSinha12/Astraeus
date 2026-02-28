@@ -88,6 +88,23 @@ async def export_mission_zip(mission_id: str):
                 media_type="application/x-zip-compressed",
                 headers={"Content-Disposition": f"attachment; filename=mission_{mission_id}.zip"}
             )
+@router.get("/lineage")
+async def get_evolution_lineage() -> List[Dict[str, Any]]:
+    """
+    Returns a global map of mission parent-child relationships for genealogy visualization.
+    """
+    try:
+        with SessionLocal() as db:
+            missions = db.query(SwarmMission).all()
+            return [
+                {
+                    "id": m.id,
+                    "parent_id": m.parent_id,
+                    "experiment_id": m.experiment_id,
+                    "objective": m.objective[:50],
+                    "timestamp": m.timestamp.timestamp()
+                } for m in missions
+            ]
     except Exception as e:
-        logger.error(f"API: Failed to export mission ZIP: {e}")
-        raise HTTPException(status_code=500, detail="Failed to generate ZIP archive.")
+        logger.error(f"API: Failed to fetch lineage: {e}")
+        return []

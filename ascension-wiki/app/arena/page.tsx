@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Square, RotateCcw, GitCompare } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
@@ -11,6 +11,8 @@ import "@xyflow/react/dist/style.css";
 import { RoleGate } from "@/components/auth/RoleGate";
 import { useAgentSimStore } from "@/lib/store";
 import { SIM_TRACE_SEQUENCES } from "@/lib/mock-data";
+
+const API_URL = process.env.NEXT_PUBLIC_PLATFORM_API_URL || "http://localhost:8000";
 
 // ─── Custom DAG Node ─────────────────────────────────────────────────────────
 function AGINode({ data }: { data: { label: string; status: "idle" | "active" | "done"; color: string } }) {
@@ -74,8 +76,42 @@ const EDGES = [
 
 const STEP_COLORS = { plan: "text-purple-400", decide: "text-primary", tool: "text-pink-400", reflect: "text-orange-400", complete: "text-green-400", fail: "text-red-400" };
 
+function buildGenealogyNodes(lineage: any[]) {
+    return lineage.map((m, i) => ({
+        id: m.id,
+        type: "agi",
+        position: { x: (i % 5) * 200, y: Math.floor(i / 5) * 100 },
+        data: {
+            label: `${m.id}\n${m.objective.substring(0, 15)}...`,
+            status: "done",
+            color: m.experiment_id ? "#f472b6" : "#00e5ff"
+        }
+    }));
+}
+
+function buildGenealogyEdges(lineage: any[]) {
+    return lineage
+        .filter(m => m.parent_id)
+        .map(m => ({
+            id: `e-${m.parent_id}-${m.id}`,
+            source: m.parent_id,
+            target: m.id,
+            style: { stroke: "rgba(255,255,255,0.2)", strokeWidth: 1.5 },
+            animated: true
+        }));
+}
+
 export default function ArenaPage() {
     const { selectedAgent, task, isRunning, traceSteps, confidence, compareMode, setAgent, setTask, startSim, stopSim, pushStep, pushConfidence, reset, toggleCompareMode } = useAgentSimStore();
+    const [lineage, setLineage] = useState<any[]>([]);
+    const [viewMode, setViewMode] = useState<"reasoning" | "genealogy">("reasoning");
+
+    useEffect(() => {
+        fetch(`${API_URL}/missions/lineage`)
+            .then(res => res.json())
+            .then(data => setLineage(data))
+            .catch(err => console.error("Failed to fetch lineage:", err));
+    }, []);
 
     const runSim = useCallback(async () => {
         startSim();
@@ -88,7 +124,8 @@ export default function ArenaPage() {
         stopSim();
     }, [selectedAgent, startSim, stopSim, pushStep, pushConfidence]);
 
-    const nodes = buildNodes(traceSteps);
+    const nodes = viewMode === "reasoning" ? buildNodes(traceSteps) : buildGenealogyNodes(lineage);
+    const edges = viewMode === "reasoning" ? EDGES : buildGenealogyEdges(lineage);
     const confidenceData = confidence.map((v, i) => ({ step: i + 1, value: parseFloat((v * 100).toFixed(1)) }));
 
     return (
@@ -182,10 +219,20 @@ export default function ArenaPage() {
 
                     {/* React Flow DAG */}
                     <div className="glass-card rounded-2xl border border-white/5 overflow-hidden" style={{ height: 420 }}>
-                        <div className="p-4 border-b border-white/5">
-                            <h2 className="text-xs font-mono text-muted uppercase tracking-widest">Reasoning DAG</h2>
+                        <div className="p-4 border-b border-white/5 flex justify-between items-center">
+                            <h2 className="text-xs font-mono text-muted uppercase tracking-widest">
+                                {viewMode === "reasoning" ? "Reasoning DAG" : "Evolution Genealogy"}
+                            </h2>
+                            <div className="flex gap-2">
+                                <button onClick={() => setViewMode("reasoning")} className={`px-2 py-1 rounded text-[10px] font-mono uppercase transition-colors ${viewMode === "reasoning" ? "bg-primary/20 text-primary border border-primary/50" : "bg-white/5 text-muted hover:text-white"}`}>
+                                    Reasoning
+                                </button>
+                                <button onClick={() => setViewMode("genealogy")} className={`px-2 py-1 rounded text-[10px] font-mono uppercase transition-colors ${viewMode === "genealogy" ? "bg-primary/20 text-primary border border-primary/50" : "bg-white/5 text-muted hover:text-white"}`}>
+                                    Genealogy
+                                </button>
+                            </div>
                         </div>
-                        <ReactFlow nodes={nodes} edges={EDGES} nodeTypes={nodeTypes} fitView proOptions={{ hideAttribution: true }}
+                        <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} fitView proOptions={{ hideAttribution: true }}
                             style={{ background: "transparent" }}>
                             <Background color="rgba(255,255,255,0.03)" gap={16} />
                             <Controls style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }} />

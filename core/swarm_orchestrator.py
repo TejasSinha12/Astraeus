@@ -18,6 +18,11 @@ class SwarmOrchestrator:
     def __init__(self, reasoning_engine: ReasoningEngine):
         self.reasoning = reasoning_engine
         self.active_agents: Dict[str, AgentProfile] = AGENT_REGISTRY
+        
+        # Meta-Evolutionary Modules
+        from core.agent_spawner import AgentSpawner
+        self.spawner = AgentSpawner(reasoning_engine)
+        
         logger.info(f"SwarmOrchestrator online with {len(self.active_agents)} specialized agent profiles.")
 
     async def execute_swarm_objective(self, objective: str) -> Dict[str, Any]:
@@ -85,6 +90,26 @@ class SwarmOrchestrator:
             "file_map": {}
         }
 
+    async def recursive_optimize(self, mission_telemetry: List[Dict[str, Any]]):
+        """
+        Self-modification hook. Analyzes past telemetry to propose improvements
+        to the swarm's own communication topology and agent hierarchy.
+        """
+        logger.info("ORCHESTRATOR: Initiating Recursive Cognitive Optimization...")
+        
+        # We use the Planner to reflect on the performance of the swarm
+        reflection_prompt = (
+            f"Review the following mission telemetry: {mission_telemetry}\n"
+            "Identify structural inefficiencies in the current swarm DAG. "
+            "Propose a more efficient delegation topology or new specialized roles."
+        )
+        
+        proposal = await self._delegate_to_agent("planner", reflection_prompt)
+        logger.info(f"Recursive Proposal Generated: {proposal[:100]}...")
+        
+        # Integrate with MetaGovernance for authorization
+        return proposal
+
     async def _delegate_to_agent(self, agent_key: str, prompt: str) -> str:
         """
         Routes a subtask to a specific specialized agent.
@@ -93,7 +118,13 @@ class SwarmOrchestrator:
         
         agent = self.active_agents.get(agent_key)
         if not agent:
-            raise ValueError(f"Agent profile {agent_key} not found in registry.")
+            # Check if we can autonomously spawn a missing specialist
+            logger.warning(f"ORCHESTRATOR: Agent {agent_key} not found. Attempting BIOSYNTHESIS...")
+            new_agent = await self.spawner.biosynthesize_specialist("Generic Task", f"Missing agent profile for key: {agent_key}")
+            if new_agent:
+                agent = new_agent
+            else:
+                raise ValueError(f"Agent profile {agent_key} not found and synthesis failed.")
 
         logger.debug(f"Delegating to {agent.name} (Role: {agent.role})...")
         
@@ -109,6 +140,12 @@ class SwarmOrchestrator:
                 user_prompt=prompt,
                 temperature=0.2 # Higher consistency across swarm
             )
+            
+            # Bottleneck Detection Logic
+            if "REASONING_FRAGMENTED" in response:
+                logger.warning("ORCHESTRATOR: Reasoning bottleneck detected. Spawning specialist...")
+                await self.spawner.biosynthesize_specialist(prompt, "Output indicated reasoning fragmentation.")
+                
         finally:
             config.TASK_TOKEN_LIMIT = original_limit
             
