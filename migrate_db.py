@@ -1,61 +1,61 @@
+"""
+Ascension Intelligence Platform - Database Migration Utility.
+Handles structural updates for swarm lineage, federated clusters, and the token economy.
+"""
 import os
-from sqlalchemy import create_engine
-from sqlalchemy.sql import text
+from sqlalchemy import create_engine, inspect, text
+from api.usage_db import engine, SwarmMission, SwarmCluster, FederatedMemory, UserBalance, TokenLedger, APIKey
+from utils.logger import logger
 
-# Handle Railway/Heroku/Neon style postgresql:// vs postgres://
-DB_URL = os.getenv("DATABASE_URL", "sqlite:///./api_platform.db")
-if DB_URL.startswith("postgres://"):
-    DB_URL = DB_URL.replace("postgres://", "postgresql://", 1)
+def migrate():
+    """Manually adds columns/tables for evolutionary lineage and distributed federation."""
+    inspector = inspect(engine)
+    tables = inspector.get_table_names()
 
-try:
-    engine = create_engine(DB_URL)
-    with engine.connect() as conn:
-        print(f"Connected to database at {DB_URL.split('@')[-1] if '@' in DB_URL else DB_URL}")
-        
-        # Check dialect
-        dialect = engine.dialect.name
-        
-        if dialect == "sqlite":
-            print("Applying SQLite migration for is_multifile and file_map...")
-            try:
-                conn.execute(text("ALTER TABLE swarm_missions ADD COLUMN parent_id VARCHAR;"))
-                conn.execute(text("ALTER TABLE swarm_missions ADD COLUMN experiment_id VARCHAR;"))
-                print("Added lineage columns!")
-            except Exception as e:
-                print("Lineage columns might already exist:", str(e))
-                
-            try:
-                conn.execute(text("ALTER TABLE swarm_missions ADD COLUMN is_multifile BOOLEAN DEFAULT 0;"))
-                print("Added is_multifile!")
-            except Exception as e:
-                print("is_multifile might already exist:", str(e))
-                
-            try:
-                conn.execute(text("ALTER TABLE swarm_missions ADD COLUMN file_map VARCHAR;"))
-                print("Added file_map!")
-            except Exception as e:
-                print("file_map might already exist:", str(e))
-                
-        elif dialect == "postgresql":
-            print("Applying PostgreSQL migration for is_multifile and file_map...")
-            try:
-                conn.execute(text("ALTER TABLE swarm_missions ADD COLUMN is_multifile BOOLEAN DEFAULT FALSE;"))
-                print("Added is_multifile!")
-            except Exception as e:
-                print("is_multifile might already exist:", str(e))
-                
-            try:
-                conn.execute(text("ALTER TABLE swarm_missions ADD COLUMN file_map TEXT;"))
-                print("Added file_map!")
-            except Exception as e:
-                print("file_map might already exist:", str(e))
-                
+    # 0. Ensure Core Tables Exist
+    if "swarm_missions" not in tables:
+        SwarmMission.__table__.create(engine)
+        logger.info("MIGRATION: Created 'swarm_missions' table.")
+    
+    # Refresh tables list
+    inspector = inspect(engine)
+    tables = inspector.get_table_names()
+
+    # 1. SwarmMission Lineage Columns (Phase 28)
+    if "swarm_missions" in tables:
+        columns = [c['name'] for c in inspector.get_columns('swarm_missions')]
+        with engine.connect() as conn:
+            if 'parent_id' not in columns:
+                conn.execute(text("ALTER TABLE swarm_missions ADD COLUMN parent_id VARCHAR"))
+                logger.info("MIGRATION: Added 'parent_id' to swarm_missions")
+            if 'experiment_id' not in columns:
+                conn.execute(text("ALTER TABLE swarm_missions ADD COLUMN experiment_id VARCHAR"))
+                logger.info("MIGRATION: Added 'experiment_id' to swarm_missions")
+            if 'cluster_id' not in columns:
+                conn.execute(text("ALTER TABLE swarm_missions ADD COLUMN cluster_id VARCHAR"))
+                logger.info("MIGRATION: Added 'cluster_id' to swarm_missions")
             conn.commit()
-            
-        else:
-            print(f"Unsupported database dialect for automatic migration: {dialect}")
-            print("Please manually add columns: is_multifile (Boolean), file_map (String/Text)")
-            
-    print("Migration complete!")
-except Exception as e:
-    print(f"Migration script failed: {e}")
+
+    # 2. Federation & Economy Tables (Phases 29-32)
+    if "swarm_clusters" not in tables:
+        SwarmCluster.__table__.create(engine)
+        logger.info("MIGRATION: Created 'swarm_clusters' table.")
+
+    if "federated_memory" not in tables:
+        FederatedMemory.__table__.create(engine)
+        logger.info("MIGRATION: Created 'federated_memory' table.")
+
+    if "user_balances" not in tables:
+        UserBalance.__table__.create(engine)
+        logger.info("MIGRATION: Created 'user_balances' table.")
+
+    if "token_ledger" not in tables:
+        TokenLedger.__table__.create(engine)
+        logger.info("MIGRATION: Created 'token_ledger' table.")
+
+    if "api_keys" not in tables:
+        APIKey.__table__.create(engine)
+        logger.info("MIGRATION: Created 'api_keys' table.")
+
+if __name__ == "__main__":
+    migrate()
