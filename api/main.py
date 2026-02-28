@@ -2,7 +2,7 @@ from fastapi import FastAPI, Header, HTTPException, Depends, Request
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import List
 import uuid
 
 from api.core_adapter import CoreAdapter

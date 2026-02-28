@@ -1,8 +1,9 @@
+from __future__ import annotations
 """
 Decoupling Layer for Ascension Platform.
 Wraps core intelligence components to prevent direct HTTP/Platform coupling.
 """
-from typing import AsyncGenerator, Optional
+from typing import AsyncGenerator
 from pathlib import Path
 import asyncio
 import json
@@ -22,7 +23,13 @@ class CoreAdapter:
     def __init__(self):
         self.cognition = CognitionCore()
 
-    async def run_swarm_stream(self, objective: str, user_id: str, parent_id: Optional[str] = None, experiment_id: Optional[str] = None) -> AsyncGenerator[str, None]:
+    async def run_swarm_stream(
+        self, 
+        objective: str, 
+        user_id: str, 
+        parent_id: str | None = None, 
+        experiment_id: str | None = None
+    ) -> AsyncGenerator[str, None]:
         """
         Executes a swarm task and yields progress updates as SSE events.
         Includes Keep-Alive pings to prevent proxy timeouts during deep reasoning.
@@ -63,10 +70,13 @@ class CoreAdapter:
             yield f"data: {json.dumps({'status': 'ERROR', 'message': f'Swarm critical failure: {str(e)}'})}\n\n"
             return
             
-        # Extract structured data
-        content = swarm_result.get("content", "") if swarm_result else ""
-        file_map = swarm_result.get("file_map", {}) if swarm_result else {}
-        is_multifile = swarm_result.get("is_multifile", False) if swarm_result else False
+        # Extract structured data with fallback safety
+        if not swarm_result:
+            swarm_result = {}
+
+        content = swarm_result.get("content", "Error: No output generated.")
+        file_map = swarm_result.get("file_map", {})
+        is_multifile = swarm_result.get("is_multifile", False)
         
         # PERSISTENCE LAYER: Save the generated codebase to the mission sandbox
         mission_id = str(uuid.uuid4())[:8]
@@ -94,7 +104,7 @@ class CoreAdapter:
         except Exception as e:
             logger.error(f"ADAPTER: Database persistence failed: {e}")
 
-        # 2. Filesystem Persistence (Secondary/Backup - Single file only for simplicity)
+        # 2. Filesystem Persistence (Secondary/Backup)
         try:
             sandbox_path = Path("api/sandbox/missions") / mission_id
             sandbox_path.mkdir(parents=True, exist_ok=True)
