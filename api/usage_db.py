@@ -87,6 +87,47 @@ class FederatedMemory(Base):
     confidence_score = Column(Float)
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
+class UserBalance(Base):
+    """
+    Economic state for a user within the Ascension Marketplace.
+    """
+    __tablename__ = "user_balances"
+    
+    user_id = Column(String, primary_key=True)
+    credit_balance = Column(Float, default=100.0) # Consumable execution units
+    reputation_score = Column(Float, default=1.0) # Governance weight (earned, not bought)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+class TokenLedger(Base):
+    """
+    Cryptographically signed audit trail for all economic transactions.
+    """
+    __tablename__ = "token_ledger"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String, index=True)
+    transaction_type = Column(String) # 'DEBIT', 'CREDIT', 'REFUND', 'REPUTATION_GAIN'
+    amount = Column(Float)
+    reason = Column(String)
+    previous_hash = Column(String) # Reference to the previous record for integrity
+    signature = Column(String) # HMAC-SHA256 signature of the record
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+
+class APIKey(Base):
+    """
+    Scoped programmatic access keys for external developers.
+    """
+    __tablename__ = "api_keys"
+    
+    id = Column(String, primary_key=True) # Hashed key prefix
+    user_id = Column(String, index=True)
+    key_hash = Column(String, unique=True)
+    scopes = Column(String) # JSON list: ["execute", "research", "read_lineage"]
+    monthly_quota = Column(Float, default=1000.0)
+    current_usage = Column(Float, default=0.0)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
 class SwarmMission(Base):
     """
     Persistent repository for AI-generated codebases.
