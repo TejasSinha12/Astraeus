@@ -88,6 +88,12 @@ async def export_mission_zip(mission_id: str):
                 media_type="application/x-zip-compressed",
                 headers={"Content-Disposition": f"attachment; filename=mission_{mission_id}.zip"}
             )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"API: Export failed: {e}")
+        raise HTTPException(status_code=500, detail="Internal server error generating ZIP.")
+
 @router.get("/lineage")
 async def get_evolution_lineage() -> List[Dict[str, Any]]:
     """
