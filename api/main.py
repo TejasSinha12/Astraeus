@@ -5,14 +5,24 @@ from pydantic import BaseModel
 from typing import Optional, List
 import uuid
 
-from api.token_accounting import TokenAccountingSystem
 from api.core_adapter import CoreAdapter
 from api.middleware import rbac_middleware, log_audit_trail
 from api.missions import router as missions_router
+from api.economy_interface import router as economy_router
+from api.stripe_bridge import router as stripe_router
+
+from core.token_ledger import TokenLedgerService
+from core.pricing_engine import AdaptivePricingEngine
+from core.global_coordinator import GlobalCoordinator
+from core.reasoning_engine import ReasoningEngine
+from core.abuse_detector import AbuseDetector
+
 from utils.logger import logger
 
 app = FastAPI(title="Ascension Intelligence Platform API (Hardened)")
 app.include_router(missions_router)
+app.include_router(economy_router)
+app.include_router(stripe_router)
 
 # Enable CORS for frontend integration
 app.add_middleware(
@@ -22,6 +32,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Initialize Economy Services
+reasoning = ReasoningEngine()
+coordinator = GlobalCoordinator(reasoning)
+ledger_service = TokenLedgerService()
+pricing_engine = AdaptivePricingEngine(coordinator)
+abuse_detector = AbuseDetector()
 
 # Initialize decoupled service adapter
 adapter = CoreAdapter()
@@ -36,11 +53,12 @@ class ExecutionRequest(BaseModel):
 
 @app.get("/")
 async def root():
-    return {"status": "online", "version": "v2.0.0-PROD", "commit": "a6fbe1a"}
+    return {"status": "online", "version": "v3.0.0-ECONOMY", "commit": "eb2acad"}
 
 @app.post("/estimate")
 async def get_cost_estimate(request: ExecutionRequest):
-    cost = TokenAccountingSystem.estimate_cost(request.objective)
+    # Use the new pricing engine for dynamic quotes
+    cost = pricing_engine.calculate_cost(request.objective, "GLOBAL_PROBE")
     return {"estimated_tokens": cost}
 
 @app.post("/execute/stream")
@@ -51,45 +69,48 @@ async def execute_swarm_stream(
 ):
     """
     Streaming Execution Gateway.
-    Progressive updates via SSE with usage metering.
+    Now enforced by Signed Ledger and Abuse Detection.
     """
-    request_id = str(uuid.uuid4())
-    cost = TokenAccountingSystem.estimate_cost(request.objective)
-    
-    # Pre-deduction check
-    if not TokenAccountingSystem.deduct_tokens(x_clerk_user_id, cost, request_id):
-        raise HTTPException(status_code=402, detail="Insufficient Token Balance.")
+    # 1. Anti-Abuse Check
+    if not abuse_detector.check_for_abuse(x_clerk_user_id, 0.0): # 0.0 as we compute cost next
+        raise HTTPException(status_code=429, detail="Resource burst limit exceeded.")
 
-    log_audit_trail(x_clerk_user_id, "SWARM_STREAM_EXEC", {"objective": request.objective, "req_id": request_id})
+    # 2. Dynamic Pricing
+    cost = pricing_engine.calculate_cost(request.objective, "DEFAULT")
+    
+    # 3. Signed Transaction Pre-Check (Debit)
+    success = await ledger_service.process_transaction(
+        user_id=x_clerk_user_id,
+        amount=-cost,
+        tx_type="DEBIT",
+        reason=f"Mission Execution: {request.objective[:30]}..."
+    )
+    
+    if not success:
+        raise HTTPException(status_code=402, detail="Insufficient credits in signed ledger.")
+
+    log_audit_trail(x_clerk_user_id, "SWARM_STREAM_EXEC", {"objective": request.objective, "cost": cost})
     return StreamingResponse(adapter.run_swarm_stream(request.objective, x_clerk_user_id), media_type="text/event-stream")
 
 @app.get("/user/status")
 async def get_user_status(x_clerk_user_id: str = Header(...)):
-    balance, plan, access = TokenAccountingSystem.get_user_status(x_clerk_user_id)
-    return {
-        "user_id": x_clerk_user_id,
-        "balance": balance,
-        "plan": plan,
-        "access_level": access
-    }
-
-class TopUpRequest(BaseModel):
-    user_id: str
-    amount: int
-
-@app.post("/admin/topup")
-async def top_up_tokens(
-    request: TopUpRequest,
-    x_clerk_user_role: str = Header(default="PUBLIC")
-):
-    if x_clerk_user_role.upper() != "ADMIN":
-        raise HTTPException(status_code=403, detail="Admin access required.")
-    
-    ref_id = f"admin_refill_{uuid.uuid4().hex[:8]}"
-    if TokenAccountingSystem.top_up_tokens(request.user_id, request.amount, ref_id):
-        return {"status": "success", "user_id": request.user_id, "new_amount": request.amount}
-    else:
-        raise HTTPException(status_code=400, detail="Failed to top up user balance.")
+    # Fetch from the new UserBalance table
+    from api.usage_db import SessionLocal, UserBalance
+    with SessionLocal() as db:
+        balance = db.get(UserBalance, x_clerk_user_id)
+        if not balance:
+            # Auto-provision if accessed
+            balance = UserBalance(user_id=x_clerk_user_id, credit_balance=100.0)
+            db.add(balance)
+            db.commit()
+            db.refresh(balance)
+            
+        return {
+            "user_id": x_clerk_user_id,
+            "balance": balance.credit_balance,
+            "reputation": balance.reputation_score,
+            "tier": "RESEARCHER" if balance.reputation_score > 5.0 else "PUBLIC"
+        }
 
 @app.on_event("startup")
 def startup_db():
@@ -108,5 +129,4 @@ def startup_db():
             db.commit()
             logger.info("API: Subscription plans seeded.")
     
-    TokenAccountingSystem.provision_user("user_admin_01", "admin@ascension.ai", "ADMIN", "admin_tier")
-    logger.info("Platform Hardened Gateway Active.")
+    logger.info("Ascension Intelligence Economy Online.")

@@ -2,7 +2,7 @@
 Decoupling Layer for Ascension Platform.
 Wraps core intelligence components to prevent direct HTTP/Platform coupling.
 """
-from typing import AsyncGenerator
+from typing import AsyncGenerator, Optional
 from pathlib import Path
 import asyncio
 import json
