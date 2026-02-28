@@ -27,6 +27,10 @@ class ConsensusEngine:
         self.proposals: Dict[str, Proposal] = {}
         logger.info(f"CONSENSUS-ENG: Engine online with {len(cluster_ids)} peer clusters.")
 
+    def get_quorum_threshold(self) -> int:
+        """Returns the number of 'YES' votes required for a majority."""
+        return max(2, len(self.cluster_ids) // 2 + 1)
+
     def submit_proposal(self, proposal_id: str, cluster_id: str, summary: str) -> Proposal:
         """
         Submits a new refactor proposal for federation-wide voting.

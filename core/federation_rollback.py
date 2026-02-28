@@ -45,7 +45,8 @@ class FederationRollbackManager:
         )
         
         # Mocking immediate safety quorum for recovery
-        for cluster in self.clusters[:self.consensus.quorum_threshold]:
+        threshold = self.consensus.get_quorum_threshold()
+        for cluster in self.clusters[:threshold]:
             self.consensus.cast_vote(proposal_id, cluster, True)
 
 import time
