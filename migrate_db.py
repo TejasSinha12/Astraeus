@@ -73,5 +73,16 @@ def migrate():
         BenchmarkChallenge.__table__.create(engine)
         logger.info("MIGRATION: Created 'benchmark_challenges' table.")
 
+    # Check for missing columns in existing tables
+    with engine.connect() as conn:
+        columns = [c['name'] for c in inspect(engine).get_columns("api_keys")]
+        if "label" not in columns:
+            conn.execute(text("ALTER TABLE api_keys ADD COLUMN label VARCHAR"))
+            logger.info("MIGRATION: Added 'label' column to 'api_keys' table.")
+        if "expires_at" not in columns:
+            conn.execute(text("ALTER TABLE api_keys ADD COLUMN expires_at DATETIME"))
+            logger.info("MIGRATION: Added 'expires_at' column to 'api_keys' table.")
+        conn.commit()
+
 if __name__ == "__main__":
     migrate()

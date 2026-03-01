@@ -2,7 +2,7 @@
 Production API Key Manager for Ascension.
 Handles scoped permissions, rate limiting, and secure key validation.
 """
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, Any
 import secrets
 import hashlib
 import datetime
@@ -26,6 +26,7 @@ class ProductionAPIKeyManager:
         try:
             with SessionLocal() as db:
                 new_key = APIKey(
+                    id=f"KEY-{secrets.token_hex(4).upper()}",
                     key_hash=key_hash,
                     user_id=user_id,
                     label=label,

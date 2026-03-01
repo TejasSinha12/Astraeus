@@ -121,13 +121,15 @@ class APIKey(Base):
     """
     __tablename__ = "api_keys"
     
-    id = Column(String, primary_key=True) # Hashed key prefix
+    id = Column(String, primary_key=True) # Unique key ID
     user_id = Column(String, index=True)
     key_hash = Column(String, unique=True)
+    label = Column(String) # Human-readable key name
     scopes = Column(String) # JSON list: ["execute", "research", "read_lineage"]
     monthly_quota = Column(Float, default=1000.0)
     current_usage = Column(Float, default=0.0)
     is_active = Column(Boolean, default=True)
+    expires_at = Column(DateTime, nullable=True)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
 class SwarmMission(Base):
@@ -164,9 +166,6 @@ class ResearchArtifact(Base):
     significance_score = Column(Float) # Statistical delta / p-value
     integrity_hash = Column(String) # Cryptographic signature for audit
     citation_id = Column(String) # Auto-generated DOI style ID
-    telemetry_bundle_path = Column(String) # Path to raw JSON logs/mutations
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
-
     telemetry_bundle_path = Column(String) # Path to raw JSON logs/mutations
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
