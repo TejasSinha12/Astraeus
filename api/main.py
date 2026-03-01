@@ -10,6 +10,7 @@ from api.middleware import rbac_middleware, log_audit_trail
 from api.missions import router as missions_router
 from api.economy_interface import router as economy_router
 from api.stripe_bridge import router as stripe_router
+from api.research_interface import router as research_router
 
 from core.token_ledger import TokenLedgerService
 from core.pricing_engine import AdaptivePricingEngine
@@ -23,6 +24,7 @@ app = FastAPI(title="Ascension Intelligence Platform API (Hardened)")
 app.include_router(missions_router)
 app.include_router(economy_router)
 app.include_router(stripe_router)
+app.include_router(research_router)
 
 # Enable CORS for frontend integration
 app.add_middleware(
