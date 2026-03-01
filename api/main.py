@@ -11,6 +11,7 @@ from api.missions import router as missions_router
 from api.economy_interface import router as economy_router
 from api.stripe_bridge import router as stripe_router
 from api.research_interface import router as research_router
+from api.institutional_interface import router as institutional_router
 
 from core.token_ledger import TokenLedgerService
 from core.pricing_engine import AdaptivePricingEngine
@@ -25,6 +26,7 @@ app.include_router(missions_router)
 app.include_router(economy_router)
 app.include_router(stripe_router)
 app.include_router(research_router)
+app.include_router(institutional_router)
 
 # Enable CORS for frontend integration
 app.add_middleware(
