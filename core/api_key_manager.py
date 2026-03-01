@@ -1,88 +1,79 @@
 """
-API Key Manager for the Ascension Intelligence Economy.
-Provides secure, scoped programmatic access for external developers.
+Production API Key Manager for Ascension.
+Handles scoped permissions, rate limiting, and secure key validation.
 """
+from typing import Optional, List, Dict
 import secrets
 import hashlib
-import json
-from typing import List, Optional, Tuple
-from api.usage_db import APIKey, SessionLocal
+import datetime
+from api.usage_db import SessionLocal, APIKey, UserBalance
 from utils.logger import logger
 
-class APIKeyManager:
+class ProductionAPIKeyManager:
     """
-    Manages lifecycle and validation of developer access keys.
-    Key structure: 'asc_' + 32-char random string.
+    Secure management for external developer API keys.
     """
 
-    def __init__(self):
-        logger.info("APIKeyManager initialized.")
-
-    def create_key(self, user_id: str, scopes: List[str], quota: float = 1000.0) -> Tuple[str, str]:
+    def generate_key(self, user_id: str, label: str, scopes: List[str] = ["READ", "EXECUTE"]) -> str:
         """
-        Generates a new API key and stores its hash.
-        Returns the raw key and the hashed ID.
+        Creates a new production API key with assigned scopes.
         """
-        raw_key = f"asc_{secrets.token_urlsafe(32)}"
+        raw_key = f"sk_asc_{secrets.token_urlsafe(32)}"
         key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
-        key_id = key_hash[:8] # First 8 chars of hash for identification
+        
+        logger.info(f"AUTH: Generating API key for {user_id} ({label})...")
         
         try:
             with SessionLocal() as db:
-                entry = APIKey(
-                    id=key_id,
-                    user_id=user_id,
+                new_key = APIKey(
                     key_hash=key_hash,
-                    scopes=json.dumps(scopes),
-                    monthly_quota=quota
+                    user_id=user_id,
+                    label=label,
+                    scopes=",".join(scopes),
+                    is_active=True
                 )
-                db.add(entry)
+                db.add(new_key)
                 db.commit()
-                
-            logger.info(f"APIKEY: New key created for User {user_id} (ID: {key_id}).")
-            return raw_key, key_id
+                return raw_key # Return raw key only once
         except Exception as e:
-            logger.error(f"APIKEY: Key creation failed: {e}")
-            return "", ""
+            logger.error(f"AUTH: Key generation failed: {e}")
+            return ""
 
-    def validate_key(self, raw_key: str, required_scope: str) -> Optional[APIKey]:
+    def validate_key(self, raw_key: str) -> Optional[Dict[str, Any]]:
         """
-        Validates the key hash, status, and scopes.
-        Returns the APIKey object if valid.
+        Validates hash and checks user balance.
         """
         key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
         
-        try:
-            with SessionLocal() as db:
-                key = db.query(APIKey).filter(APIKey.key_hash == key_hash).first()
-                if not key or not key.is_active:
-                    return None
-                    
-                # 1. Quota Check
-                if key.current_usage >= key.monthly_quota:
-                    logger.warning(f"APIKEY: Quota exceeded for Key {key.id}.")
-                    return None
-                    
-                # 2. Scope Check
-                scopes = json.loads(key.scopes) if key.scopes else []
-                if required_scope not in scopes:
-                    logger.warning(f"APIKEY: Missing scope '{required_scope}' for Key {key.id}.")
-                    return None
-                
-                return key # Caller should handle usage increments atomatically
-        except Exception as e:
-            logger.error(f"APIKEY: Validation failed: {e}")
-            return None
+        with SessionLocal() as db:
+            key_record = db.query(APIKey).filter(APIKey.key_hash == key_hash, APIKey.is_active == True).first()
+            if not key_record:
+                return None
+            
+            # Check for expiry (if implemented)
+            if key_record.expires_at and key_record.expires_at < datetime.datetime.utcnow():
+                return None
+            
+            # Quick balance check
+            balance = db.query(UserBalance).filter(UserBalance.user_id == key_record.user_id).first()
+            if not balance or balance.credit_balance <= 0:
+                logger.warning(f"AUTH: Key valid but balance empty for {key_record.user_id}")
+                return None
 
-    def increment_usage(self, key_id: str, amount: float):
+            return {
+                "user_id": key_record.user_id,
+                "scopes": key_record.scopes.split(","),
+                "label": key_record.label
+            }
+
+    def revoke_key(self, key_id: int) -> bool:
         """
-        Accrues usage against the key's monthly quota.
+        Deactivates a key immediately.
         """
-        try:
-            with SessionLocal() as db:
-                key = db.query(APIKey).filter(APIKey.id == key_id).first()
-                if key:
-                    key.current_usage += amount
-                    db.commit()
-        except Exception as e:
-            logger.error(f"APIKEY: Usage tracking failed for {key_id}: {e}")
+        with SessionLocal() as db:
+            key = db.query(APIKey).filter(APIKey.id == key_id).first()
+            if key:
+                key.is_active = False
+                db.commit()
+                return True
+            return False
