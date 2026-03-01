@@ -5,6 +5,7 @@ from sqlalchemy import Column, String, Float, Integer, DateTime, Boolean, create
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import datetime
+import os
 
 Base = declarative_base()
 
@@ -29,6 +30,7 @@ class UserAccount(Base):
     id = Column(String, primary_key=True) # Clerk User ID
     email = Column(String, unique=True)
     plan_id = Column(String, index=True)
+    org_id = Column(String, index=True, nullable=True) # Multitenancy link
     role = Column(String, default="PUBLIC")
     token_balance = Column(Integer, default=1000)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
@@ -137,6 +139,7 @@ class SwarmMission(Base):
     
     id = Column(String, primary_key=True) # Mission UUID
     user_id = Column(String, index=True)
+    org_id = Column(String, index=True, nullable=True) # Multitenancy link
     cluster_id = Column(String, index=True, nullable=True) # ID of the swarm cluster that executed this
     parent_id = Column(String, index=True, nullable=True) # ID of the ancestor mission
     experiment_id = Column(String, index=True, nullable=True) # Associated A/B experiment
@@ -164,7 +167,51 @@ class ResearchArtifact(Base):
     telemetry_bundle_path = Column(String) # Path to raw JSON logs/mutations
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
-import os
+    telemetry_bundle_path = Column(String) # Path to raw JSON logs/mutations
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class Organization(Base):
+    """
+    Multi-tenant container for institutional users and research missions.
+    """
+    __tablename__ = "organizations"
+    
+    id = Column(String, primary_key=True)
+    name = Column(String, unique=True)
+    domain = Column(String) # Allowed email domains
+    api_quota = Column(Float, default=10000.0)
+    governance_policy = Column(String) # JSON configuration
+    sso_config = Column(String) # Metadata for OAuth/OIDC
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class ValidatorNode(Base):
+    """
+    Registry for external decentralized validator nodes participating in the research ecosystem.
+    """
+    __tablename__ = "validator_nodes"
+    
+    id = Column(String, primary_key=True)
+    owner_id = Column(String, index=True)
+    reputation_staked = Column(Float, default=0.0)
+    uptime_score = Column(Float, default=1.0)
+    total_validations = Column(Integer, default=0)
+    is_active = Column(Boolean, default=True)
+    last_ping = Column(DateTime)
+
+class BenchmarkChallenge(Base):
+    """
+    Structured challenges submitted by institutions for swarm competition.
+    """
+    __tablename__ = "benchmark_challenges"
+    
+    id = Column(String, primary_key=True)
+    org_id = Column(String, index=True)
+    title = Column(String)
+    objective = Column(String)
+    evaluation_criteria = Column(String) # JSON logic for scoring
+    prize_tokens = Column(Float)
+    deadline = Column(DateTime)
+    is_live = Column(Boolean, default=False)
 
 # Database connection logic
 # Prioritize DATABASE_URL for Production (Railway PostgreSQL), fallback to SQLite for local
