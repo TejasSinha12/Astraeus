@@ -84,7 +84,7 @@ class ResearchSynthesisLayer:
         """
         Persists the initial draft of a ResearchArtifact to the database.
         """
-        artifact_id = f"RES-{hashlib.md2(bundle.title.encode()).hexdigest()[:8]}"
+        artifact_id = f"RES-{hashlib.md5(bundle.title.encode()).hexdigest()[:8]}"
         
         try:
             with SessionLocal() as db:
