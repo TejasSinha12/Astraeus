@@ -1,47 +1,33 @@
 # Project Ascension 🚀 (v5.0.0)
 
-> **Institutional-Grade AI Infrastructure**: A unified, monetizable ecosystem for autonomous research, multi-tenant intelligence orchestration, and cryptographically verifiable scientific discovery.
+> **Swarm-as-a-Service**: A production-grade AI execution API for deploying multi-agent reasoning with deterministic logs, structured telemetry, and enterprise auditability.
 
-Ascension is no longer just a swarm; it is a **Global Intelligence Marketplace**. It bridges the gap between raw LLM reasoning and professional research by providing a production-hardened platform for institutions, enterprises, and individual developers.
-
----
-
-## 🏛️ Institutional Intelligence Layer
-
-Ascension provides a multi-tenant framework designed for high-stakes research environments:
-
-- **Organizational Orchestration**: Isolated research containers for universities and labs with custom governance and RBAC.
-- **Grant Automation Engine**: Automatically generates peer-review grade research proposals aligned with global funding themes (NSF, DARPA).
-- **Decentralized Validation Network**: A consensus-based network of external nodes that verifies swarm findings and manages reputation through staking.
-- **Tournament Orchestrator**: Facilitates live benchmark challenges and competitive swarm evolution cycles with transparent scoring.
+Ascension is a developer-first AI infrastructure platform. It replaces direct LLM calls with a high-performance **Swarm Execution API**, providing the orchestration, observability, and governance layers required for production-ready AI applications.
 
 ---
 
-## 💎 Revenue-Grade Infrastructure
+## 💎 Core Technical Pillars
 
-Designed for commercial execution and investor-grade operational maturity:
+### 1. Swarm Execution API
+- **Multi-Agent Reasoning**: High-performance endpoints for specialized agent orchestration.
+- **Deterministic Logs**: Atomic execution flows with reproducible results.
+- **Fitness-Gated Promotion**: Automated validation of agent-generated code and logic.
 
-- **Production REST API**: Secure, high-performance endpoints with hashed API key management and scoped permissions.
-- **Stripe-Integrated Billing**: Real-time credit top-ups and token-based metering for sustainable AGI execution.
-- **Signed Billing Ledger**: A PostgreSQL-backed financial record of every model call, recorded with `HMAC-SHA256` integrity.
-- **OpenTelemetry Observability**: Distributed tracing and request auditing for absolute transparency and stability.
+### 2. Developer Infrastructure
+- **Scoped API Keys**: Secure programmatic access with granular permissions.
+- **Cost-Aware Metering**: Real-time token consumption and cost tracking.
+- **Stripe Billing Bridge**: Integrated credit management and automated top-ups.
 
----
-
-## 🐝 Autonomous Code Swarm
-
-Project Ascension's cognitive core continues to leverage its specialized workforce:
-
-- **Planner**: Deconstructs objectives into measurable mission DAGs.
-- **Architect**: Designs structural solutions with AST/Code Graph awareness.
-- **Implementer**: Generates high-efficiency, sandboxed code.
-- **Auditor**: Validates security constraints and performance deltas.
+### 3. Enterprise Governance Layer
+- **OpenTelemetry Tracing**: Distributed tracing across the entire request lifecycle.
+- **Signed Billing Ledger**: PostgreSQL-backed, HMAC-SHA256 integrity for financial audits.
+- **RBAC & Multi-tenancy**: Organization-level control and compliance-ready telemetry exports.
 
 ---
 
 ## 🔬 Scientific Verification Tier
 
-Every architectural change is treated as a verifiable experiment:
+Ascension treats AI execution as a verifiable experiment, ensuring reliability for high-stakes applications:
 
 - **A/B Evolution**: Parallel runs against a static control branch to validate intelligence gains.
 - **Fitness Diff Analysis**: Computes structural entropy reduction and token efficiency gains per cycle.
