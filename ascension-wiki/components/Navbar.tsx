@@ -78,7 +78,7 @@ export function Navbar() {
                             className="px-4 py-1.5 text-sm font-bold rounded-lg bg-primary text-background hover:bg-primary/90 transition-colors box-glow flex items-center gap-2"
                         >
                             <Zap size={14} />
-                            Get Access
+                            Get API Key
                         </motion.button>
                     </Link>
                 </SignedOut>
