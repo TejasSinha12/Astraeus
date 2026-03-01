@@ -6,7 +6,7 @@ from typing import List, Dict, Any, Optional
 from pydantic import BaseModel
 
 from core.marketplace import MarketplaceManager, MarketplaceCapability
-from core.api_key_manager import APIKeyManager
+from core.api_key_manager import ProductionAPIKeyManager
 from core.token_ledger import TokenLedgerService
 from api.billing_exporter import BillingExporter
 from utils.logger import logger
@@ -14,7 +14,7 @@ from utils.logger import logger
 router = APIRouter(prefix="/economy", tags=["Economy"])
 
 marketplace = MarketplaceManager()
-key_manager = APIKeyManager()
+key_manager = ProductionAPIKeyManager()
 ledger = TokenLedgerService()
 
 class APIKeyRequest(BaseModel):
@@ -34,7 +34,7 @@ async def create_api_key(request: APIKeyRequest):
     """
     Generates a new developer access key with scoped permissions.
     """
-    raw_key, key_id = key_manager.create_key(request.user_id, request.scopes, request.quota)
+    raw_key = key_manager.generate_key(request.user_id, label="Economy Interface Key", scopes=request.scopes)
     if not raw_key:
         raise HTTPException(status_code=500, detail="Failed to create API key.")
     
