@@ -1,45 +1,45 @@
-# Ascension Intelligence Platform 🌐 (v2.0.0)
+# Ascension Intelligence Platform 🌐 (v5.0.0)
 
-> The primary research interface and mission control for the Project Ascension Autonomous Code Swarm.
+> The centralized gateway for institutional research, commercial AGI execution, and decentralized intelligence validation.
 
-This is a production-grade Next.js 15+ (App Router) interface designed for real-time observation, orchestration, and scientific verification of AGI cognitive processes.
+This is a production-grade Next.js 15+ interface designed for the **Project Ascension Ecosystem**. It serves as the visual command center for both autonomous research cycles and monetizable infrastructure management.
 
 ---
 
-## 🔬 Intelligence Research Features
+## 🔬 Institutional & Research Features
 
+- **Grant Automation Dashboard**: Visual interface for tracking AI-generated research proposals and funding alignment.
+- **Tournament Arena**: Real-time visualization of competitive swarm evolution and institutional benchmark challenges.
+- **Validation Tracker**: Interface for decentralized nodes to monitor and verify intelligence artifacts.
 - **Benchmarks Dashboard**: High-fidelity Recharts visualization of model performance milestones and fitness trajectories.
-- **Evolution Timeline**: An interactive history of structural self-refactoring and intelligence gains over time.
-- **Agent Arena (React Flow)**: A live Directed Acyclic Graph (DAG) visualizing inter-agent communication and hierarchical reasoning transitions within the swarm.
-- **Mission Archive Explorer**: An IDE-like sidebar for visualizing and downloading generated multi-file codebases as ZIP archives from previous sandbox missions.
-- **Experiment Workbench**: Control interface for hypothesis tagging, A/B evolution triggering, and plateau detection.
-- **Cognition Map**: Interactive system architecture visualization illustrating the data flow between core components.
+- **Agent Arena (React Flow)**: A live Directed Acyclic Graph (DAG) visualizing communication within the swarm.
 
 ---
 
-## 🏗️ Platform Architecture
+## 💎 Commercial & Developer Tools
 
-The website acts as a secure frontend consumer for the **Project Ascension Platform API**:
+- **Developer Billing Portal**: Integrated Stripe interface for top-ups, transaction history, and token usage analytics.
+- **API Key Management**: Secure console for generating, revoking, and scoping programmatic access keys.
+- **Mission Archive**: IDE-like explorer for visualizing and downloading generated codebases as ZIP archives.
+- **Usage Telemetry**: Real-time instrumentation dashboard showing OpenTelemetry traces and request auditing.
 
-- **Secure Execution Gateway**: All requests are routed through a FastAPI intermediary (`/api`) to protect the Ascension Core from direct public exposure.
+---
+
+## 🏗️ Technical Architecture
+
+The Wiki acts as the primary consumer for the **Project Ascension API**:
+
+- **Next.js 15 (App Router)**: Optimized for high-performance data streaming and SEO.
 - **Role-Based Access (Clerk)**:
-  - **Public**: Basic execution and documentation access.
-  - **Researcher**: Access to benchmarks, arena, and longitudinal studies.
-  - **Admin**: Full control over swarm governance, refactoring, and experiment parameters.
-- **Token Accounting**: Real-time integration with the backend token meter, displaying user balances and session costs.
+  - **Public**: Basic execution and documentation.
+  - **Researcher**: Access to benchmarks, arena, and institutional tools.
+  - **Enterprise**: Custom organization control and high-performance swarm priority.
+  - **Admin**: Full system governance and billing management.
+- **PostgreSQL Persistence**: All mission data and billing records are stored via the backend at Neon.tech.
 
 ---
 
-## 🛠️ Development & Installation
-
-### Prerequisites
-- Node.js 20+
-- A [Clerk](https://clerk.com) account (for Auth and RBAC)
-
-### Installation
-```bash
-npm install
-```
+## 🛠️ Configuration
 
 ### Environment Setup
 Create a `.env.local` file:
@@ -48,19 +48,12 @@ NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 
 # API Connection
-NEXT_PUBLIC_PLATFORM_API_URL=http://localhost:8000
+NEXT_PUBLIC_PLATFORM_API_URL=https://astraeus-r4pf.onrender.com
 ```
-
-### Run the Interface
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to access the Intelligence Platform.
 
 ---
 
-## 🛡️ Security & Privacy
-- **JWT-Gated Routing**: Clerk handles all authentication and secure session management.
-- **Sanitized Telemetry**: Live log streams (SSE) are filtered to prevent leaking sensitive system prompts or environment keys.
-- **Evolution Isolation**: All autonomous refactoring takes place in isolated branches, with the frontend acting as the validation gate.
+## 🛡️ Privacy & Compliance
+- **JWT-Gated Security**: All sensitive actions are protected by Clerk-authenticated session tokens.
+- **Immutable Ledgers**: Economic data displayed in the dashboard is synced with the cryptographically signed backend ledger.
+- **Sanitized Streams**: Logs and telemetry are filtered to protect proprietary system prompts and keys.

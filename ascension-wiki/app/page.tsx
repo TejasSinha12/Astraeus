@@ -29,15 +29,15 @@ export default function Home() {
           className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-primary text-xs font-mono uppercase tracking-widest mb-8 box-glow"
         >
           <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          System Operational • v2.0.0-PROD
+          System Operational • v5.0.0-PROD
         </motion.div>
 
         <h1 className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-b from-white to-white/60 mb-6 drop-shadow-[0_0_30px_rgba(0,229,255,0.2)]">
-          Engineering <span className="text-primary text-glow">Autonomous</span><br />Intelligence
+          Monetizable <span className="text-primary text-glow">AGI</span><br />Infrastructure
         </h1>
 
         <p className="text-lg md:text-xl text-muted max-w-3xl mx-auto mb-10 leading-relaxed">
-          A purely modular, statistically-backed AGI research framework designed for autonomous reasoning, iterative self-improvement, and multi-agent expansion.
+          A production-grade, institutional intelligence layer designed for high-performance reasoning, automated grant generation, and cryptographically verifiable research.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4">

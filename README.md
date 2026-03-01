@@ -1,74 +1,51 @@
-# Project Ascension 🚀 (v2.0.0)
+# Project Ascension 🚀 (v5.0.0)
 
-> A statistically governed **Autonomous Code Swarm** designed for measurable intelligence evolution, self-directed refactoring, and secure production-grade AGI orchestration.
+> **Institutional-Grade AI Infrastructure**: A unified, monetizable ecosystem for autonomous research, multi-tenant intelligence orchestration, and cryptographically verifiable scientific discovery.
 
-Ascension is a multi-agent evolutionary ecosystem. It moves beyond standard LLM agents by implementing a **Swarm Orchestrator** that coordinates specialized cognitive roles (Planner, Architect, Critic, etc.) under strict **Statistical Governance** and **Scientific Verification** protocols.
+Ascension is no longer just a swarm; it is a **Global Intelligence Marketplace**. It bridges the gap between raw LLM reasoning and professional research by providing a production-hardened platform for institutions, enterprises, and individual developers.
+
+---
+
+## 🏛️ Institutional Intelligence Layer
+
+Ascension provides a multi-tenant framework designed for high-stakes research environments:
+
+- **Organizational Orchestration**: Isolated research containers for universities and labs with custom governance and RBAC.
+- **Grant Automation Engine**: Automatically generates peer-review grade research proposals aligned with global funding themes (NSF, DARPA).
+- **Decentralized Validation Network**: A consensus-based network of external nodes that verifies swarm findings and manages reputation through staking.
+- **Tournament Orchestrator**: Facilitates live benchmark challenges and competitive swarm evolution cycles with transparent scoring.
+
+---
+
+## 💎 Revenue-Grade Infrastructure
+
+Designed for commercial execution and investor-grade operational maturity:
+
+- **Production REST API**: Secure, high-performance endpoints with hashed API key management and scoped permissions.
+- **Stripe-Integrated Billing**: Real-time credit top-ups and token-based metering for sustainable AGI execution.
+- **Signed Billing Ledger**: A PostgreSQL-backed financial record of every model call, recorded with `HMAC-SHA256` integrity.
+- **OpenTelemetry Observability**: Distributed tracing and request auditing for absolute transparency and stability.
 
 ---
 
 ## 🐝 Autonomous Code Swarm
 
-Project Ascension leverages a distributed workforce of specialized agents:
+Project Ascension's cognitive core continues to leverage its specialized workforce:
 
 - **Planner**: Deconstructs objectives into measurable mission DAGs.
 - **Architect**: Designs structural solutions with AST/Code Graph awareness.
 - **Implementer**: Generates high-efficiency, sandboxed code.
-- **Critic & Optimizer**: Performs analytical auditing and performance tuning.
-- **Auditor**: Validates security constraints and compliance.
+- **Auditor**: Validates security constraints and performance deltas.
 
 ---
 
-## 🛡️ Governance & Stability Tier
+## 🔬 Scientific Verification Tier
 
-To ensure safe and deterministic evolution, Ascension enforces a three-tier governance model:
-
-- **Observe Mode**: Passive monitoring; the swarm proposes but never modifies.
-- **Simulated Mode**: Proposed refactors are executed in **Isolated Git Branches**. full benchmark suites and **Fitness Diff** analysis are performed before merging.
-- **Commit Mode**: Automatic code integration gated by statistical confidence thresholds and human-defined promotion rules.
-
-### Performance Indicators (Codebase Fitness)
-Every evolutionary cycle computes a composite **Fitness Score** based on:
-- **Structural Entropy**: Reduction in architectural complexity.
-- **Token Efficiency**: Improvement in logic density per token used.
-- **Maintainability Index**: Longitudinal tracking of codebase health.
-- **Benchmark Stability**: Deterministic replay validation.
-
----
-
-## 🔬 Scientific Intelligence Verification
-
-Ascension is built for falsifiability. It treats every architectural change as a scientific experiment:
+Every architectural change is treated as a verifiable experiment:
 
 - **A/B Evolution**: Parallel runs against a static control branch to validate intelligence gains.
-- **Hypothesis Tagging**: Agents must declare measurable targets (e.g., "Reduce entropy by 12%") before modification.
-- **Validation Audit**: Automatically generates reports comparing **Predicted vs. Actual** deltas with calibration accuracy metrics.
-- **Intelligence Drift Detection**: Prevents metric gaming and protects against plateauing mutation strategies.
-
----
-
-## �️ Core Architecture
-
-### Platform API Gateway (`/api`)
-- **FastAPI Core**: Secure execution layer separating the Swarm from the public web.
-- **Clerk Auth**: JWT-based Role-Based Access Control (Admin > Researcher > Public).
-- **Token Accounting**: Comprehensive metering of request costs with persistent usage logs.
-
-### Cognition Tier (`/core`)
-- **Swarm Orchestrator**: Manages agent lifecycles and inter-agent communication protocols. Features dynamic token budgeting per specialized agent (e.g. 100k for Implementer, 30k for Auditor).
-- **Refactoring Engine**: AST-aware system that autonomously detects and fixes complexity bottlenecks.
-- **Evolution Manager**: System state snapshotting ("DNA" persistence) for longitudinal analysis.
-
-### Research Lab & Data Output 🧪
-- **Multi-File Generation**: The orchestrator instructs agents to seamlessly design complex, multi-file codebases and outputs them as highly structured JSON.
-- **Mission Export & Persistence**: The persistent PostgreSQL sandbox archives every iteration, and the API offers instant ZIP artifact bundling.
-- **SSE Streaming Gateway**: The backend adapter pipes real-time cognitive metrics over Server-Sent Events, protected by a global fault-tolerant exception trap.
-
----
-
-### Production Cloud Stack 🌐
-- **Frontend**: [Vercel](https://astraeus-livid.vercel.app)
-- **Backend**: [Render.com](https://astraeus-r4pf.onrender.com)
-- **Database**: [Neon.tech](https://neon.tech) (PostgreSQL)
+- **Fitness Diff Analysis**: Computes structural entropy reduction and token efficiency gains per cycle.
+- **Hypothesis Tagging**: Agents declare measurable targets before modification, ensuring falsifiability.
 
 ---
 
@@ -77,30 +54,26 @@ Ascension is built for falsifiability. It treats every architectural change as a
 ### Prerequisites
 - Python 3.10+
 - OpenAI API Key
-- Neon.tech PostgreSQL (for production)
-- Clerk Account (for Auth)
+- PostgreSQL (Database)
+- Redis (for Rate Limiting)
+- Stripe Account (for Billing Integration)
 
-### Platform Settings
-1. **Frontend**: Set `NEXT_PUBLIC_PLATFORM_API_URL` to your Render backend.
-2. **Backend**: Set `DATABASE_URL` (Neon) and `OPENAI_API_KEY`.
-
----
-
-## 💎 System Administration
-
-### Admin Token Management
-As a Platform Administrator (Role: `ADMIN`), you can recharge user token balances directly via the API:
-
-```bash
-curl -X POST "https://astraeus-r4pf.onrender.com/admin/topup" \
-     -H "Content-Type: application/json" \
-     -H "x-clerk-user-role: ADMIN" \
-     -d '{"user_id": "USER_ID", "amount": 50000}'
-```
+### Deployment
+1. **Frontend**: Deploy the [Next.js Wiki](https://astraeus-livid.vercel.app) to Vercel.
+2. **Backend**: Deploy the [FastAPI Gateway](https://astraeus-r4pf.onrender.com) to Render or Railway.
+3. **Database**: Provision a PostgreSQL instance (Neon.tech recommended).
 
 ---
 
-## 🧬 Evolutionary Ethics & Security
-- **Hardened Sandbox**: Code execution is isolated with strict timeouts and resource caps.
-- **Atomic Accounting**: Token balances are managed with Row-Level Locking (PostgreSQL) to prevent race conditions.
-- **Rollback Triggers**: Automatic system rollback if evolutionary regressions exceed statistical bounds.
+## 🌐 Public Endpoints
+- **Missions**: `/api/missions`
+- **Institutional Control**: `/api/institutional`
+- **Production Reasoning**: `/v1/execute/swarm/reasoning`
+- **Developer Billing**: `/api/billing`
+
+---
+
+## 🧬 Ethics & Security
+- **Hardened Sandbox**: Code execution is isolated with strict resource caps.
+- **Transparent Auditing**: Every cognitive step is logged and traceable via OpenTelemetry spans.
+- **Reputation Governance**: System evolution is gated by non-transferable reputation tokens earned through valid research contributions.
