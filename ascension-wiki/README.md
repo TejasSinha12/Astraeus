@@ -1,41 +1,38 @@
-# Ascension Intelligence Platform 🌐 (v5.0.0)
+# Ascension Platform Gateway 🌐 (v5.0.0)
 
-> The centralized gateway for institutional research, commercial AGI execution, and decentralized intelligence validation.
+> **The Swarm Management Console**: A production-grade interface for managing API execution, real-time telemetry, and enterprise-grade governance.
 
-This is a production-grade Next.js 15+ interface designed for the **Project Ascension Ecosystem**. It serves as the visual command center for both autonomous research cycles and monetizable infrastructure management.
-
----
-
-## 🔬 Institutional & Research Features
-
-- **Grant Automation Dashboard**: Visual interface for tracking AI-generated research proposals and funding alignment.
-- **Tournament Arena**: Real-time visualization of competitive swarm evolution and institutional benchmark challenges.
-- **Validation Tracker**: Interface for decentralized nodes to monitor and verify intelligence artifacts.
-- **Benchmarks Dashboard**: High-fidelity Recharts visualization of model performance milestones and fitness trajectories.
-- **Agent Arena (React Flow)**: A live Directed Acyclic Graph (DAG) visualizing communication within the swarm.
+This is the primary developer and administrator interface for the **Project Ascension Ecosystem**. It provides high-fidelity visualization and control over the Swarm Execution API and its underlying infrastructure.
 
 ---
 
-## 💎 Commercial & Developer Tools
+## � Platform Pillars
 
-- **Developer Billing Portal**: Integrated Stripe interface for top-ups, transaction history, and token usage analytics.
-- **API Key Management**: Secure console for generating, revoking, and scoping programmatic access keys.
-- **Mission Archive**: IDE-like explorer for visualizing and downloading generated codebases as ZIP archives.
-- **Usage Telemetry**: Real-time instrumentation dashboard showing OpenTelemetry traces and request auditing.
+### 1. Swarm Execution API
+- **Execution Arena**: Real-time visualization of multi-agent reasoning flows and agent orchestration.
+- **Mission Archive**: Full persistence layer for every swarm execution, with ZIP artifact bundling and code visualization.
+- **Benchmarks Dashboard**: High-fidelity tracking of model performance, token efficiency, and fitness deltas.
+
+### 2. Developer Infrastructure
+- **API Key Console**: Secure management of programmatic access keys with granular, scoped permissions.
+- **Billing Portal**: Integrated Stripe bridge for real-time credit top-ups, transaction history, and metering analytics.
+- **Usage Telemetry**: Integrated OpenTelemetry dashboard showcasing live request spans and execution traces.
+
+### 3. Enterprise Governance
+- **Audit Logs**: Cryptographically signed records of all administrative and execution actions.
+- **RBAC Management**: Multi-tenant organization control with role-based visibility (Admin / Enterprise / Developer).
+- **Compliance Export**: Standardized telemetry exports for external auditing and institutional reporting.
 
 ---
 
-## 🏗️ Technical Architecture
+## 🏗️ Technical Stack
 
-The Wiki acts as the primary consumer for the **Project Ascension API**:
+The gateway is built as a highly optimized consumer for the **Project Ascension REST API**:
 
-- **Next.js 15 (App Router)**: Optimized for high-performance data streaming and SEO.
-- **Role-Based Access (Clerk)**:
-  - **Public**: Basic execution and documentation.
-  - **Researcher**: Access to benchmarks, arena, and institutional tools.
-  - **Enterprise**: Custom organization control and high-performance swarm priority.
-  - **Admin**: Full system governance and billing management.
-- **PostgreSQL Persistence**: All mission data and billing records are stored via the backend at Neon.tech.
+- **Framework**: Next.js 15+ (App Router)
+- **Authentication**: Clerk JWT-based RBAC
+- **Visualization**: Framer Motion, Recharts, React Flow
+- **Observability**: OpenTelemetry / Structured Logging
 
 ---
 
@@ -53,7 +50,7 @@ NEXT_PUBLIC_PLATFORM_API_URL=https://astraeus-r4pf.onrender.com
 
 ---
 
-## 🛡️ Privacy & Compliance
-- **JWT-Gated Security**: All sensitive actions are protected by Clerk-authenticated session tokens.
-- **Immutable Ledgers**: Economic data displayed in the dashboard is synced with the cryptographically signed backend ledger.
-- **Sanitized Streams**: Logs and telemetry are filtered to protect proprietary system prompts and keys.
+## 🛡️ Operational Security
+- **JWT-Gated Security**: All API interactions are gated by Clerk-authenticated session tokens.
+- **Immutable Ledgers**: Economic and execution data is synced from the cryptographically signed PostgreSQL backend.
+- **Sanitized Streams**: Live logs and telemetry are filtered to protect system prompts and environment keys.
