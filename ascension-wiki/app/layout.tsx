@@ -18,8 +18,8 @@ const firaCode = Fira_Code({
 });
 
 export const metadata: Metadata = {
-  title: "Project Ascension | AGI Research Framework",
-  description: "Advanced AGI research framework focused on modular cognition, autonomous reasoning, and recursive self-improvement.",
+  title: "Ascension | Production AGI Infrastructure",
+  description: "Institutional-grade AI infrastructure for high-performance reasoning, automated research, and cryptographically verifiable AGI orchestration.",
 };
 
 export default function RootLayout({

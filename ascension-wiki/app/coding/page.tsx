@@ -338,7 +338,8 @@ export default function CodingArena() {
                                 <div className={cn("w-2 h-2 rounded-full", isExecuting ? "bg-primary animate-pulse shadow-[0_0_15px_rgba(0,229,255,1)]" : "bg-muted/20")} />
                                 <span className="text-[9px] font-mono text-muted uppercase tracking-[0.2em]">{isExecuting ? "Neural Processing" : "Link Idle"}</span>
                             </div>
-                            <span className="text-[9px] font-mono text-muted/20">Astraeus v2.0.0</span>
+                            <span className="text-[9px] font-mono text-muted/20">Astraeus v5.0.0
+                            </span>
                         </div>
                     </div>
 

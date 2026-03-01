@@ -122,7 +122,8 @@ export function Sidebar() {
                         </div>
                         <div className="flex items-center justify-between text-xs font-mono text-muted">
                             <span>SYSTEM_VER</span>
-                            <span className="text-primary">v2.0.0-PROD</span>
+                            <span className="text-primary">v5.0.0
+                                -PROD</span>
                         </div>
                     </div>
                 </div>
