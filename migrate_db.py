@@ -4,7 +4,7 @@ Handles structural updates for swarm lineage, federated clusters, and the token 
 """
 import os
 from sqlalchemy import create_engine, inspect, text
-from api.usage_db import engine, SwarmMission, SwarmCluster, FederatedMemory, UserBalance, TokenLedger, APIKey
+from api.usage_db import engine, SwarmMission, SwarmCluster, FederatedMemory, UserBalance, TokenLedger, APIKey, ResearchArtifact
 from utils.logger import logger
 
 def migrate():
@@ -56,6 +56,10 @@ def migrate():
     if "api_keys" not in tables:
         APIKey.__table__.create(engine)
         logger.info("MIGRATION: Created 'api_keys' table.")
+
+    if "research_artifacts" not in tables:
+        ResearchArtifact.__table__.create(engine)
+        logger.info("MIGRATION: Created 'research_artifacts' table.")
 
 if __name__ == "__main__":
     migrate()

@@ -147,6 +147,23 @@ class SwarmMission(Base):
     file_map = Column(String) # JSON blob for multi-file: {"path/to/file.py": "content", ...}
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
+class ResearchArtifact(Base):
+    """
+    Formal scientific records generated from platform telemetry and evolution cycles.
+    """
+    __tablename__ = "research_artifacts"
+    
+    id = Column(String, primary_key=True)
+    title = Column(String)
+    abstract = Column(String)
+    content_md = Column(String) # Peer-review grade research content
+    status = Column(String, default="DRAFT") # DRAFT, VALIDATED, PUBLISHED
+    significance_score = Column(Float) # Statistical delta / p-value
+    integrity_hash = Column(String) # Cryptographic signature for audit
+    citation_id = Column(String) # Auto-generated DOI style ID
+    telemetry_bundle_path = Column(String) # Path to raw JSON logs/mutations
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
 import os
 
 # Database connection logic
