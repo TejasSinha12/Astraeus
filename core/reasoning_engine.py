@@ -101,9 +101,11 @@ class ReasoningEngine:
                 
                 return parsed_response
 
-        except openai.RateLimitError as e:
-            # Handle Insufficient Quota specifically
-            if "insufficient_quota" in str(e).lower():
+        except Exception as e:
+            err_msg = str(e).lower()
+            
+            # 1. Detect Quota/Billing Exhaustion (429)
+            if "insufficient_quota" in err_msg or "quota_exceeded" in err_msg:
                 logger.critical("CRITICAL: OpenAI API Quota Exceeded. Verify billing at https://platform.openai.com/account/billing")
                 
                 if config.ENABLE_AUTO_MOCK_FALLBACK:
@@ -112,11 +114,13 @@ class ReasoningEngine:
                     return await self._generate_mock_response(user_prompt, response_model)
                 
                 raise RuntimeError("MISSION_FAILED: LLM Provider Quota Exceeded. Please check OpenAI billing.")
-            
-            logger.error(f"ReasoningEngine hit rate limit: {e}")
-            raise RuntimeError(f"Engine rate limit: {e}")
 
-        except Exception as e:
+            # 2. General OpenAI API Errors
+            if "openai" in err_msg:
+                logger.error(f"ReasoningEngine hit provider error: {e}")
+                raise RuntimeError(f"Engine provider error: {e}")
+
+            # 3. Generic Fallback
             logger.error(f"ReasoningEngine failed during generation: {e}")
             raise RuntimeError(f"Engine generation error: {e}")
 
