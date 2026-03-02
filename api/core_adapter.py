@@ -66,8 +66,14 @@ class CoreAdapter:
         try:
             swarm_result = await swarm_task
         except Exception as e:
-            logger.error(f"ADAPTER: Swarm Execution Failed: {e}")
-            yield f"data: {json.dumps({'status': 'ERROR', 'message': f'Swarm critical failure: {str(e)}'})}\n\n"
+            msg = str(e)
+            if "MISSION_FAILED" in msg:
+                # User-friendly billing error
+                clean_msg = msg.replace("MISSION_FAILED: ", "")
+                yield f"data: {json.dumps({'status': 'ERROR', 'message': f'Engine Notice: {clean_msg}'})}\n\n"
+            else:
+                logger.error(f"ADAPTER: Swarm Execution Failed: {e}")
+                yield f"data: {json.dumps({'status': 'ERROR', 'message': f'Swarm critical failure: {msg}'})}\n\n"
             return
             
         # Extract structured data with fallback safety
