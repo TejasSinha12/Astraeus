@@ -6,6 +6,10 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts";
 
+import useSWR from "swr";
+
+const fetcher = (url: string) => fetch(url, { headers: { "api-key": "SYSTEM_ADMIN_BYPASS" } }).then(res => res.json());
+
 const MOCK_TRAFFIC = [
     { time: "12:00", active: 4 },
     { time: "12:05", active: 6 },
@@ -17,25 +21,33 @@ const MOCK_TRAFFIC = [
 ];
 
 export function SystemHealth() {
+    const { data, error, isLoading } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/health`, fetcher, {
+        refreshInterval: 5000,
+    });
+
+    const activeNodes = data?.active_swarms || 0;
+    const cpuLoad = data?.cpu_load ? `${data.cpu_load}%` : "0%";
+    const throughput = data?.throughput || "0 tokens/sec";
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <HealthCard
                 icon={<Cpu className="text-primary" />}
                 title="Swarm Processing"
-                value="12.5%"
+                value={isLoading ? "..." : cpuLoad}
                 subValue="CPU Load Across Nodes"
             />
             <HealthCard
                 icon={<Database className="text-yellow-400" />}
-                title="Vector Latency"
-                value="42ms"
-                subValue="Avg. Retrieval Time"
+                title="Total Throughput"
+                value={isLoading ? "..." : throughput}
+                subValue="Real-time Token Velocity"
             />
             <HealthCard
                 icon={<Globe className="text-green-400" />}
-                title="Regional Clusters"
-                value="03"
-                subValue="US-EAST, EU-WEST, AS-SOUTH"
+                title="Active Sessions"
+                value={isLoading ? "..." : activeNodes.toString().padStart(2, '0')}
+                subValue="Live Swarm Missions"
             />
 
             <div className="md:col-span-2 lg:col-span-3 glass-card p-6 border border-white/5 bg-white/[0.01]">

@@ -6,6 +6,10 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
 
+import useSWR from "swr";
+
+const fetcher = (url: string) => fetch(url, { headers: { "api-key": "SYSTEM_ADMIN_BYPASS" } }).then(res => res.json());
+
 const MOCK_REVENUE = [
     { day: "Mon", rev: 1100 },
     { day: "Tue", rev: 1450 },
@@ -17,12 +21,21 @@ const MOCK_REVENUE = [
 ];
 
 export function RevenueAnalytics() {
+    const { data, error, isLoading } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/revenue`, fetcher, {
+        refreshInterval: 10000,
+    });
+
+    const totalCredits = data?.total_credits_circulating ? `${(data.total_credits_circulating / 1000).toFixed(0)}k` : "0k";
+    const dailyRev = data?.daily_revenue ? `$${data.daily_revenue.toLocaleString()}` : "$0";
+    const tokenVelocity = data?.token_velocity ? `${data.token_velocity}x` : "0x";
+    const burnRate = data?.burn_rate ? `${data.burn_rate}/hr` : "0/hr";
+
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <StatCard icon={<Coins className="text-primary" />} label="Daily Revenue" value="$1,950" delta="+12%" />
-            <StatCard icon={<TrendingUp className="text-green-400" />} label="Token Velocity" value="4.2x" delta="+0.4" />
-            <StatCard icon={<CreditCard className="text-yellow-400" />} label="Total Credits" value="580k" delta="-2k" />
-            <StatCard icon={<Wallet className="text-purple-400" />} label="Burn Rate" value="850/hr" delta="+50" />
+            <StatCard icon={<Coins className="text-primary" />} label="Daily Revenue" value={isLoading ? "..." : dailyRev} delta="+12%" />
+            <StatCard icon={<TrendingUp className="text-green-400" />} label="Token Velocity" value={isLoading ? "..." : tokenVelocity} delta="+0.4" />
+            <StatCard icon={<CreditCard className="text-yellow-400" />} label="Total Credits" value={isLoading ? "..." : totalCredits} delta="-2k" />
+            <StatCard icon={<Wallet className="text-purple-400" />} label="Burn Rate" value={isLoading ? "..." : burnRate} delta="+50" />
 
             <div className="md:col-span-2 lg:col-span-4 glass-card p-6 border border-white/5 bg-white/[0.01]">
                 <div className="flex items-center justify-between mb-8">

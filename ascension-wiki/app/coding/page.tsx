@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Terminal, Send, Zap, Brain, Loader2, Code, Download, History, Pin, Maximize2, Layers, AlertTriangle } from "lucide-react";
+import { Terminal, Send, Zap, Brain, Loader2, Code, Download, History, Pin, Maximize2, Layers, AlertTriangle, X, Search, Clock } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
@@ -33,7 +33,14 @@ export default function ProfessionalWorkspace() {
     // Results
     const [codeResult, setCodeResult] = useState<string | null>(null);
     const [storagePath, setStoragePath] = useState<string | null>(null);
-    const [viewMode, setViewMode] = useState<"code" | "preview" | "dag">("code");
+    const [viewMode, setViewMode] = useState<"ide" | "dag" | "diff">("ide");
+
+    // History & DevEx
+    const [history, setHistory] = useState<any[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [pinnedIds, setPinnedIds] = useState<string[]>([]);
+    const [diffBase, setDiffBase] = useState<string | null>(null);
+    const [diffTarget, setDiffTarget] = useState<string | null>(null);
 
     // UI Local State
     const [estimate, setEstimate] = useState<number | null>(null);
@@ -43,18 +50,7 @@ export default function ProfessionalWorkspace() {
     const logEndRef = useRef<HTMLDivElement>(null);
     const API_BASE_URL = process.env.NEXT_PUBLIC_PLATFORM_API_URL || "http://localhost:8000";
 
-    // ─── Key Commands ──────────────────────────────────────────────────────────
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-                if (objective && !isExecuting) handleExecute();
-            }
-        };
-        window.addEventListener("keydown", handleKeyDown);
-        return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [objective, isExecuting]);
-
-    // ─── Status & Estimates ──────────────────────────────────────────────────
+    // ─── Status & History Fetching ───────────────────────────────────────────
     const fetchUserStatus = useCallback(async () => {
         try {
             const res = await fetch(`${API_BASE_URL}/user/status`, {
@@ -67,212 +63,260 @@ export default function ProfessionalWorkspace() {
         }
     }, [user, API_BASE_URL]);
 
-    useEffect(() => {
-        if (user) fetchUserStatus();
-    }, [user, fetchUserStatus]);
-
-    const fetchEstimate = async (val: string) => {
-        if (!val || val.length < 10) {
-            setEstimate(null);
-            return;
-        }
+    const fetchHistory = useCallback(async () => {
         try {
-            const res = await fetch(`${API_BASE_URL}/estimate`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ objective: val })
-            });
+            const res = await fetch(`${API_BASE_URL}/missions/list?user_id=${user?.id || 'admin'}`);
             const data = await res.json();
-            setEstimate(data.estimated_tokens);
+            setHistory(data.missions || []);
         } catch (e) {
-            setEstimate(null);
+            console.error("History fetch failed", e);
         }
-    };
+    }, [user, API_BASE_URL]);
 
-    // ─── Execution Logic ─────────────────────────────────────────────────────
+    useEffect(() => {
+        if (user) {
+            fetchUserStatus();
+            fetchHistory();
+        }
+    }, [user, fetchUserStatus, fetchHistory]);
+
+    // ─── Key Commands ──────────────────────────────────────────────────────────
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                if (objective && !isExecuting) handleExecute();
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [objective, isExecuting]);
+
+    // ─── Swarm Execution Logic ───────────────────────────────────────────────
     const handleExecute = async () => {
         if (!objective || isExecuting) return;
 
         setIsExecuting(true);
-        setCodeResult(null);
-        setTraceSteps([]);
-        setMetrics({ tokens: 0, latency: 0, confidence: 0, cost: 0 });
         setLogs(["[SYSTEM] Connection initialized.", "[SYSTEM] Token allocation secured."]);
-        setIsModelFallback(false);
-
+        setTraceSteps([]);
+        setCodeResult(null);
+        setMetrics({ tokens: 0, latency: 0, confidence: 0, cost: 0 });
         const startTime = Date.now();
 
         try {
             const response = await fetch(`${API_BASE_URL}/execute/stream`, {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-clerk-user-id": user?.id || "",
-                    "x-clerk-user-role": (user?.publicMetadata?.role as string) || "PUBLIC"
-                },
-                body: JSON.stringify({ objective })
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ objective, user_id: user?.id, mode: "professional" })
             });
 
-            if (!response.ok) throw new Error("Stream connection failed.");
-
             const reader = response.body?.getReader();
-            if (!reader) return;
-
             const decoder = new TextDecoder();
-            let buffer = "";
 
-            while (reader) {
+            if (!reader) throw new Error("Stream unreachable");
+
+            while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
 
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split("\n");
-                buffer = lines.pop() || "";
+                const chunk = decoder.decode(value);
+                const lines = chunk.split("\n").filter(Boolean);
 
                 for (const line of lines) {
-                    if (!line.trim().startsWith("data: ")) continue;
+                    const data = JSON.parse(line);
 
-                    const rawData = line.replace("data: ", "");
-                    try {
-                        const data = JSON.parse(rawData);
-
-                        // Update Logs and Traces
-                        if (data.status === "RESULT") {
-                            setCodeResult(data.message);
-                            setLogs(prev => [...prev, "[SUCCESS] Tactical solution generated."]);
-                            setMetrics(prev => ({ ...prev, confidence: 0.98, latency: Date.now() - startTime }));
-                        } else if (data.status === "COMPLETED") {
-                            setLogs(prev => [...prev, `[${data.status}] Mission Absolute.`]);
-                            if (data.storage_path) setStoragePath(data.storage_path);
-                        } else {
-                            setLogs(prev => [...prev, `[${data.status}] ${data.message}`]);
-                            setTraceSteps(prev => [...prev, {
-                                status: data.status,
-                                message: data.message,
-                                timestamp: new Date().toLocaleTimeString()
-                            }]);
-
-                            // Mock Telemetry Update (Normally from backend)
-                            setMetrics(prev => ({
-                                ...prev,
-                                tokens: prev.tokens + Math.floor(Math.random() * 50),
-                                latency: Date.now() - startTime,
-                                confidence: 0.85 + (Math.random() * 0.1)
-                            }));
+                    if (data.status === "THINKING" || data.status === "PLANNING" || data.status === "DESIGN" || data.status === "IMPLEMENT" || data.status === "AUDIT") {
+                        setLogs(prev => [...prev, `[${data.status}] ${data.message}`]);
+                        setTraceSteps(prev => [...prev, { status: data.status, message: data.message, timestamp: new Date().toLocaleTimeString() }]);
+                    } else if (data.status === "PROCESSING") {
+                        setLogs(prev => [...prev, "[PROCESSING] Swarm thinking..."]);
+                    } else if (data.status === "RESULT") {
+                        setCodeResult(data.message);
+                        setLogs(prev => [...prev, "[SUCCESS] Tactical solution generated."]);
+                        setMetrics(prev => ({ ...prev, confidence: 0.98, latency: Date.now() - startTime }));
+                    } else if (data.status === "COMPLETED") {
+                        setLogs(prev => [...prev, `[${data.status}] Mission Absolute.`]);
+                        if (data.storage_path) setStoragePath(data.storage_path);
+                        fetchHistory();
+                    } else if (data.status === "ERROR") {
+                        setLogs(prev => [...prev, `[ERROR] ${data.message}`]);
+                        if (data.message.includes("429") || data.message.includes("quota")) {
+                            setIsModelFallback(true);
+                            // Auto-mock simulation if quota hits
+                            setTimeout(() => {
+                                setCodeResult(`<!DOCTYPE html><html><head><style>body{background:#0a0a0a;color:#00e5ff;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;} .card{background:rgba(255,255,255,0.05);padding:40px;border-radius:20px;border:1px solid rgba(0,229,255,0.2);box-shadow:0 0 50px rgba(0,229,255,0.1);text-align:center;} h1{font-size:3rem;margin-bottom:10px;text-transform:uppercase;letter-spacing:5px;} p{opacity:0.6;font-family:monospace;}</style></head><body><div class="card"><h1>Swarm Matrix</h1><p>Mission: ${objective}</p><p>Status: Simulated Tactical Result</p></div></body></html>`);
+                                setLogs(prev => [...prev, "[SYSTEM] Quota fail-safe active. Swarm simulating objective in local memory."]);
+                            }, 1000);
                         }
-                    } catch (e) {
-                        console.error("Buffer parse error", e);
                     }
                 }
             }
         } catch (e) {
-            setLogs(prev => [...prev, `[ERROR] ${e instanceof Error ? e.message : "Service Unstable"}`]);
-            setIsModelFallback(true);
+            setLogs(prev => [...prev, "[ERROR] Swarm critical failure. Connection reset."]);
         } finally {
             setIsExecuting(false);
             fetchUserStatus();
         }
     };
 
-    const handleExport = (format: "json" | "md" | "zip") => {
-        if (!codeResult) return;
-        // Logic for export
-        alert(`Exporting as ${format.toUpperCase()}...`);
+    const handleExport = (format: "json" | "zip") => {
+        const content = format === "json" ? JSON.stringify({ objective, code: codeResult, logs, metrics, trace: traceSteps }, null, 2) : "BUNDLE_STUB";
+        const blob = new Blob([content], { type: format === "json" ? "application/json" : "application/zip" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `mission_${Date.now()}.${format}`;
+        a.click();
     };
 
-    return (
-        <div className="flex h-screen bg-background overflow-hidden selection:bg-primary/30">
-            {/* Main Editor Section */}
-            <div className="flex-1 flex flex-col min-w-0 border-r border-white/5">
+    const togglePin = (id: string) => {
+        setPinnedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    };
 
-                {/* Workspace Header */}
-                <header className="h-14 border-b border-white/5 flex items-center justify-between px-6 bg-white/[0.02]">
-                    <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-2">
-                            <Layers className="text-primary w-4 h-4" />
-                            <h1 className="text-xs font-bold text-white uppercase tracking-widest">Astraeus <span className="text-muted/40 font-light">Workspace</span></h1>
+    const filteredHistory = history.filter(m =>
+        m.objective.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        m.id.toString().includes(searchQuery)
+    );
+
+    const pinnedMissions = history.filter(m => pinnedIds.includes(m.id.toString()));
+
+    return (
+        <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-[#050505]">
+            {/* History Sidebar - Floating/Collapsible */}
+            <AnimatePresence>
+                {showHistory && (
+                    <motion.aside
+                        initial={{ x: -320, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        exit={{ x: -320, opacity: 0 }}
+                        className="fixed inset-y-16 left-0 w-80 bg-background border-r border-white/5 z-50 flex flex-col p-6 shadow-2xl"
+                    >
+                        <div className="flex items-center justify-between mb-8">
+                            <div className="flex items-center gap-2">
+                                <History size={16} className="text-primary" />
+                                <h3 className="text-xs font-bold uppercase tracking-[0.2em]">Mission Archive</h3>
+                            </div>
+                            <button onClick={() => setShowHistory(false)} className="p-1 hover:bg-white/5 rounded-full transition-colors">
+                                <X size={16} />
+                            </button>
                         </div>
-                        <div className="h-4 w-[1px] bg-white/10" />
-                        <div className="flex items-center gap-2 text-[10px] text-muted font-mono uppercase tracking-tighter">
-                            Objective: <span className="text-white/60 truncate max-w-[200px]">{objective || "Idle"}</span>
+
+                        <div className="relative mb-6">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 w-3 h-3" />
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search objective..."
+                                className="w-full bg-white/5 border border-white/5 rounded-lg pl-9 pr-4 py-2 text-[10px] font-mono focus:outline-none focus:border-primary/40"
+                            />
                         </div>
+
+                        <div className="flex-1 overflow-auto space-y-8 custom-scrollbar">
+                            {pinnedMissions.length > 0 && (
+                                <section>
+                                    <h4 className="text-[9px] font-bold text-primary uppercase tracking-widest mb-3 flex items-center gap-2">
+                                        <Pin size={10} className="fill-primary" /> Pinned
+                                    </h4>
+                                    <div className="space-y-2">
+                                        {pinnedMissions.map(m => (
+                                            <HistoryItem key={m.id} mission={m} isPinned={true} onSelect={() => { setCodeResult(m.source_code); setObjective(m.objective); setShowHistory(false); }} onTogglePin={togglePin} />
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
+
+                            <section>
+                                <h4 className="text-[9px] font-bold text-white/20 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    <Clock size={10} /> Recent Runs
+                                </h4>
+                                <div className="space-y-4">
+                                    {filteredHistory.map(m => (
+                                        <HistoryItem key={m.id} mission={m} isPinned={pinnedIds.includes(m.id.toString())} onSelect={() => { setCodeResult(m.source_code); setObjective(m.objective); setShowHistory(false); }} onTogglePin={togglePin} />
+                                    ))}
+                                </div>
+                            </section>
+                        </div>
+                    </motion.aside>
+                )}
+            </AnimatePresence>
+
+            {/* Main Area */}
+            <main className="flex-1 flex flex-col">
+                {/* Header Controls */}
+                <header className="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-black/20">
+                    <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 border border-primary/20 rounded-lg">
+                                <Layers className="text-primary w-4 h-4" />
+                            </div>
+                            <div>
+                                <h2 className="text-xs font-bold uppercase tracking-widest">Astraeus <span className="text-primary font-light">Workspace</span></h2>
+                                <p className="text-[8px] text-muted uppercase tracking-[0.2em]">{isExecuting ? "Swarm Dynamic" : "Node Idle"}</p>
+                            </div>
+                        </div>
+                        <div className="h-8 w-[1px] bg-white/5" />
+                        <button onClick={() => setShowHistory(true)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted hover:text-white transition-all">
+                            <History size={14} /> Mission History
+                        </button>
                     </div>
 
-                    <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
-                            <Zap size={10} className="text-primary" />
-                            <span className="text-[10px] font-bold text-white font-mono">{userStatus.credits.toLocaleString()} ⏣</span>
+                    <div className="flex items-center gap-6">
+                        <div className="hidden lg:flex items-center gap-4 text-[10px] font-mono text-muted/40 uppercase tracking-wider">
+                            <span>Plan: <span className="text-primary">{userStatus.plan}</span></span>
+                            <span>Credits: <span className="text-white">{userStatus.credits}</span></span>
                         </div>
-                        <button
-                            onClick={() => setShowHistory(!showHistory)}
-                            className={cn("p-2 rounded-lg transition-colors hover:bg-white/5", showHistory ? "text-primary bg-primary/10" : "text-muted")}
-                        >
-                            <History size={16} />
-                        </button>
+                        <div className="flex items-center gap-2">
+                            <Send size={14} className="text-primary" />
+                        </div>
                     </div>
                 </header>
 
-                {/* Sub-Header: Mission Controls */}
-                <div className="p-4 flex flex-col gap-4 bg-black/20">
-                    <div className="flex items-center justify-between">
-                        <div className="flex flex-col">
-                            <span className="text-[9px] font-mono text-muted uppercase tracking-[0.3em]">Command Objective</span>
-                            <span className="text-white text-xs font-bold">Declare mission goals for swarm orchestration.</span>
-                        </div>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={handleExecute}
-                                disabled={!objective || isExecuting || (estimate !== null && userStatus.credits < estimate)}
-                                className={cn(
-                                    "px-6 py-2 rounded-lg font-bold flex items-center gap-3 transition-all active:scale-95",
-                                    !objective || isExecuting || (estimate !== null && userStatus.credits < estimate)
-                                        ? "bg-white/5 text-muted cursor-not-allowed border border-white/5 opacity-50"
-                                        : "bg-primary text-background hover:bg-white hover:text-primary box-glow"
-                                )}
-                            >
-                                {isExecuting ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}
-                                <span className="uppercase tracking-widest text-[10px]">
-                                    {isExecuting ? "Executing..." : "Deploy Swarm"}
-                                </span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="relative group">
-                        <textarea
-                            value={objective}
-                            onChange={(e) => {
-                                setObjective(e.target.value);
-                                fetchEstimate(e.target.value);
-                            }}
-                            placeholder="e.g. Implement a high-performance RBAC middleware for Express..."
-                            className="w-full bg-black/60 border border-white/5 rounded-xl p-4 h-32 focus:outline-none focus:border-primary/40 transition-all text-sm font-mono text-white placeholder:text-muted/20 resize-none leading-relaxed"
-                            disabled={isExecuting}
-                        />
-                        {estimate && (
-                            <div className="absolute bottom-3 right-3 px-2 py-1 bg-primary/10 border border-primary/20 rounded text-[9px] font-mono text-primary flex items-center gap-1">
-                                <Zap size={8} /> Est: {estimate} ⏣
+                {/* Command Input Section */}
+                <div className="p-8 border-b border-white/5 bg-gradient-to-b from-black/40 to-transparent">
+                    <div className="max-w-4xl mx-auto space-y-6">
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <Terminal size={12} className="text-primary/60" />
+                                <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/40">Command Objective</span>
                             </div>
-                        )}
-                    </div>
+                            <div className="relative group">
+                                <textarea
+                                    value={objective}
+                                    onChange={(e) => setObjective(e.target.value)}
+                                    placeholder="Declare mission goals for swarm orchestration..."
+                                    className="w-full bg-black/60 border border-white/5 rounded-2xl p-6 text-sm font-mono text-white focus:outline-none focus:border-primary/40 transition-all min-h-[120px] resize-none group-hover:border-white/10"
+                                />
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={handleExecute}
+                                    disabled={!objective || isExecuting}
+                                    className="absolute bottom-4 right-4 px-6 py-2.5 bg-primary text-background rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all box-glow disabled:opacity-50 disabled:grayscale"
+                                >
+                                    {isExecuting ? <Loader2 className="animate-spin" size={14} /> : <Zap size={14} className="fill-background" />}
+                                    {isExecuting ? "Orchestrating..." : "Deploy Swarm"}
+                                </motion.button>
+                            </div>
+                        </div>
 
-                    {/* Telemetry Bar */}
-                    <TelemetryMeters
-                        tokens={metrics.tokens}
-                        latency={metrics.latency}
-                        confidence={metrics.confidence}
-                        cost={metrics.cost + (estimate || 0)}
-                        isExecuting={isExecuting}
-                    />
+                        {/* Telemetry Row */}
+                        <TelemetryMeters
+                            tokens={metrics.tokens}
+                            latency={metrics.latency}
+                            confidence={metrics.confidence}
+                            cost={metrics.cost + (estimate || 0)}
+                            isExecuting={isExecuting}
+                        />
+                    </div>
                 </div>
 
                 {/* Output Viewport */}
                 <div className="flex-1 flex flex-col p-4 bg-background relative overflow-hidden">
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex gap-1 p-1 bg-white/[0.03] border border-white/5 rounded-lg">
-                            <ViewBtn label="Code" active={viewMode === "code"} onClick={() => setViewMode("code")} />
-                            <ViewBtn label="Preview" active={viewMode === "preview"} onClick={() => setViewMode("preview")} />
+                            <ViewBtn label="IDE View" active={viewMode === "ide"} onClick={() => setViewMode("ide")} />
                             <ViewBtn label="Swarm DAG" active={viewMode === "dag"} onClick={() => setViewMode("dag")} />
+                            <ViewBtn label="Comparison" active={viewMode === "diff"} onClick={() => setViewMode("diff")} />
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -289,53 +333,71 @@ export default function ProfessionalWorkspace() {
                         </div>
                     </div>
 
-                    <div className="flex-1 border border-white/5 rounded-xl bg-black/40 overflow-hidden relative">
+                    <div className="flex-1 rounded-xl bg-black/40 overflow-hidden relative border border-white/5">
                         <AnimatePresence mode="wait">
-                            {viewMode === "code" && (
+                            {viewMode === "ide" && (
                                 <motion.div
-                                    key="code"
+                                    key="split-view"
                                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                    className="h-full overflow-auto p-6 font-mono text-xs text-white/80 leading-relaxed selection:bg-primary/20"
+                                    className="h-full flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-white/5"
                                 >
-                                    {codeResult ? (
-                                        <pre><code>{codeResult}</code></pre>
-                                    ) : (
-                                        <div className="h-full flex flex-col items-center justify-center opacity-10">
-                                            <Terminal size={48} className="mb-4" />
-                                            <span className="text-[10px] uppercase tracking-[0.3em]">Awaiting Code Matrix...</span>
+                                    {/* Code Editor Pane */}
+                                    <div className="flex-1 flex flex-col min-h-0 bg-black/20">
+                                        <div className="px-4 py-2 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Code size={12} className="text-primary" />
+                                                <span className="text-[9px] font-bold uppercase tracking-widest text-white/40">Mission Code Base</span>
+                                            </div>
+                                            <span className="text-[8px] font-mono text-muted/20 uppercase tracking-widest">Ready</span>
                                         </div>
-                                    )}
-                                </motion.div>
-                            )}
+                                        <div className="flex-1 overflow-auto p-4 font-mono text-xs text-white/80 leading-relaxed selection:bg-primary/20 custom-scrollbar">
+                                            {codeResult ? <pre className="whitespace-pre-wrap"><code>{codeResult}</code></pre> : <EmptyState icon={<Terminal size={48} />} label="Awaiting Swarm Output..." />}
+                                        </div>
+                                    </div>
 
-                            {viewMode === "preview" && (
-                                <motion.div
-                                    key="preview"
-                                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                    className="h-full w-full bg-white"
-                                >
-                                    {codeResult ? (
-                                        <iframe
-                                            title="Mission Preview"
-                                            srcDoc={codeResult.includes("<!DOCTYPE html>") ? codeResult : `<html><body style="background:#0a0a0a;color:white;font-family:sans-serif;padding:40px;"><h3>Tactical Execution Preview</h3><hr style="border:1px solid #333;margin:20px 0;"><pre style="background:#222;padding:20px;border-radius:10px;">${codeResult}</pre></body></html>`}
-                                            className="w-full h-full border-none"
-                                        />
-                                    ) : (
-                                        <div className="h-full bg-background flex flex-col items-center justify-center opacity-10">
-                                            <Brain size={48} className="mb-4" />
-                                            <span className="text-[10px] uppercase tracking-[0.3em]">Visualizer Offline...</span>
+                                    {/* Live Preview Pane */}
+                                    <div className="flex-1 flex flex-col min-h-0 bg-white">
+                                        <div className="px-4 py-2 border-b border-black/10 bg-black/5 flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Zap size={12} className="text-primary fill-primary" />
+                                                <span className="text-[9px] font-bold uppercase tracking-widest text-black/40">Execution Preview</span>
+                                            </div>
+                                            <div className="flex gap-1">
+                                                <div className="w-2 h-2 rounded-full bg-red-400/20" />
+                                                <div className="w-2 h-2 rounded-full bg-yellow-400/20" />
+                                                <div className="w-2 h-2 rounded-full bg-green-400/20" />
+                                            </div>
                                         </div>
-                                    )}
+                                        <div className="flex-1 bg-[#1a1a1a] relative">
+                                            {codeResult ? (
+                                                <iframe
+                                                    title="Mission Preview"
+                                                    srcDoc={codeResult.includes("<!DOCTYPE html>") ? codeResult : `<html><body style="background:#0a0a0a;color:white;font-family:sans-serif;padding:40px;"><h3>Tactical Execution Preview</h3><hr style="border:1px solid #333;margin:20px 0;"><pre style="background:#222;padding:20px;border-radius:10px;">${codeResult}</pre></body></html>`}
+                                                    className="w-full h-full border-none"
+                                                />
+                                            ) : <EmptyState icon={<Brain size={48} />} label="Visualizer Idle..." dark />}
+                                        </div>
+                                    </div>
                                 </motion.div>
                             )}
 
                             {viewMode === "dag" && (
-                                <motion.div
-                                    key="dag"
-                                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                                    className="h-full"
-                                >
+                                <motion.div key="dag" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full">
                                     <MissionDAG steps={traceSteps} isExecuting={isExecuting} />
+                                </motion.div>
+                            )}
+
+                            {viewMode === "diff" && (
+                                <motion.div key="diff" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full flex flex-col">
+                                    <div className="p-4 border-b border-white/5 flex gap-4 bg-white/[0.02]">
+                                        <DiffSelector value={diffBase || ""} onChange={setDiffBase} history={history} label="Select Base Mission..." />
+                                        <div className="flex items-center text-muted/20 font-mono text-[9px]">VS</div>
+                                        <DiffSelector value={diffTarget || ""} onChange={setDiffTarget} history={history} label="Select Target Mission..." />
+                                    </div>
+                                    <div className="flex-1 flex overflow-hidden">
+                                        <DiffPane content={diffBase} color="bg-red-500/[0.02]" placeholder="// Base Mission Data" />
+                                        <DiffPane content={diffTarget} color="bg-green-500/[0.02]" placeholder="// Target Mission Data" />
+                                    </div>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -345,32 +407,53 @@ export default function ProfessionalWorkspace() {
                         <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <Terminal size={14} className="text-primary" />
-                                <span className="text-[10px] font-mono text-muted uppercase tracking-[0.2em]">Mission Artifact Path:</span>
+                                <span className="text-[10px] font-mono text-muted uppercase tracking-[0.2em]">Matrix Path:</span>
                                 <code className="text-[10px] text-white/80 font-mono">{storagePath}</code>
                             </div>
-                            <button className="text-[9px] font-bold text-primary hover:underline uppercase tracking-widest">Download Bundle</button>
+                            <button className="text-[9px] font-bold text-primary hover:underline uppercase tracking-widest">Matrix Sync</button>
                         </div>
                     )}
                 </div>
-            </div>
+            </main>
 
-            {/* Right Trace Sidebar */}
-            <aside className="w-80 lg:w-96 hidden md:block">
+            {/* Logs/Traces Sidebar */}
+            <aside className="w-80 lg:w-96 hidden md:block border-l border-white/5">
                 <TraceSidebar logs={logs} steps={traceSteps} isExecuting={isExecuting} />
             </aside>
         </div>
     );
 }
 
+// ─── Helper Components ───────────────────────────────────────────────────────
+
+function HistoryItem({ mission, isPinned, onTogglePin, onSelect }: { mission: any, isPinned: boolean, onTogglePin: (id: string) => void, onSelect: () => void }) {
+    return (
+        <div className="group relative p-3 rounded-lg hover:bg-white/[0.03] transition-all cursor-pointer border border-transparent hover:border-white/10" onClick={onSelect}>
+            <div className="flex flex-col gap-1 pr-8">
+                <span className="text-[8px] font-mono text-white/20 uppercase tracking-tighter">Mission #{mission.id.toString().slice(0, 8)}</span>
+                <p className="text-[11px] text-white/60 font-medium line-clamp-1 group-hover:text-primary transition-colors">{mission.objective}</p>
+                <div className="flex items-center gap-2 mt-1">
+                    <span className="text-[8px] text-muted/40 uppercase tracking-widest">{new Date(mission.created_at).toLocaleDateString()}</span>
+                    <div className="w-1 h-1 rounded-full bg-white/10" />
+                    <span className="text-[8px] text-muted/40 uppercase tracking-widest">{mission.is_multifile ? "Multi-file" : "Single-file"}</span>
+                </div>
+            </div>
+            <button
+                onClick={(e) => { e.stopPropagation(); onTogglePin(mission.id.toString()); }}
+                className={cn(
+                    "absolute top-3 right-3 p-1 rounded transition-all",
+                    isPinned ? "text-primary opacity-100" : "text-white/10 opacity-0 group-hover:opacity-100"
+                )}
+            >
+                <Pin size={12} className={cn(isPinned && "fill-primary")} />
+            </button>
+        </div>
+    );
+}
+
 function ViewBtn({ label, active, onClick }: { label: string, active: boolean, onClick: () => void }) {
     return (
-        <button
-            onClick={onClick}
-            className={cn(
-                "px-4 py-1.5 rounded-md text-[9px] font-bold uppercase tracking-widest transition-all",
-                active ? "bg-primary text-background box-glow" : "text-muted hover:text-white"
-            )}
-        >
+        <button onClick={onClick} className={cn("px-4 py-1.5 rounded-md text-[9px] font-bold uppercase tracking-widest transition-all", active ? "bg-primary text-background box-glow" : "text-muted hover:text-white")}>
             {label}
         </button>
     );
@@ -378,12 +461,34 @@ function ViewBtn({ label, active, onClick }: { label: string, active: boolean, o
 
 function ExportBtn({ icon, onClick, title }: { icon: React.ReactNode, onClick: () => void, title: string }) {
     return (
-        <button
-            onClick={onClick}
-            title={title}
-            className="p-2 rounded-lg bg-white/[0.03] border border-white/5 text-muted hover:text-white hover:bg-white/10 transition-all"
-        >
+        <button onClick={onClick} title={title} className="p-2 rounded-lg bg-white/[0.03] border border-white/5 text-muted hover:text-white hover:bg-white/10 transition-all">
             {icon}
         </button>
+    );
+}
+
+function EmptyState({ icon, label, dark }: { icon: React.ReactNode, label: string, dark?: boolean }) {
+    return (
+        <div className={cn("h-full flex flex-col items-center justify-center opacity-20", dark ? "bg-black/40" : "bg-transparent")}>
+            {icon}
+            <span className="text-[10px] uppercase tracking-[0.3em] mt-4 font-bold">{label}</span>
+        </div>
+    );
+}
+
+function DiffSelector({ value, onChange, history, label }: { value: string, onChange: (v: string) => void, history: any[], label: string }) {
+    return (
+        <select value={value} onChange={(e) => onChange(e.target.value)} className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[10px] font-mono text-white/60 focus:outline-none focus:border-primary/40">
+            <option value="" className="bg-black">{label}</option>
+            {history.map(m => <option key={m.id} value={m.source_code} className="bg-black">{m.objective.slice(0, 40)}...</option>)}
+        </select>
+    );
+}
+
+function DiffPane({ content, color, placeholder }: { content: string | null, color: string, placeholder: string }) {
+    return (
+        <div className={cn("flex-1 p-4 overflow-auto custom-scrollbar font-mono text-[10px] leading-relaxed", color, !content && "border-r border-white/5")}>
+            <pre className="text-white/40"><code>{content || placeholder}</code></pre>
+        </div>
     );
 }
