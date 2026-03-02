@@ -21,7 +21,9 @@ class AscensionConfig(BaseSettings):
     DEFAULT_MODEL: str = "gpt-4o"
     EMBEDDING_MODEL: str = "text-embedding-3-small"
     USE_MOCK: bool = False  # Set to True for running without API Key
+    ENABLE_AUTO_MOCK_FALLBACK: bool = True  # Automatically switch to mock on 429 errors
     DISABLE_REFINEMENT: bool = False  # Set to True to save API quota by skipping cognitive passes
+    SECONDARY_MODEL: str = "gpt-4o-mini" # Fallback if primary is unavailable
 
     # Memory Settings
     VECTOR_DB_TYPE: str = "faiss"  # Or "chroma"
