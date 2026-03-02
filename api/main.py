@@ -13,6 +13,7 @@ from api.stripe_bridge import router as stripe_router
 from api.research_interface import router as research_router
 from api.institutional_interface import router as institutional_router
 from api.rest_interface import router as rest_router
+from api.admin import router as admin_router
 from utils.telemetry_config import setup_telemetry
 
 from core.token_ledger import TokenLedgerService
@@ -34,6 +35,7 @@ setup_telemetry(app)
 app.include_router(missions_router)
 app.include_router(economy_router)
 app.include_router(stripe_router)
+app.include_router(admin_router)
 app.include_router(research_router)
 app.include_router(institutional_router)
 app.include_router(rest_router)

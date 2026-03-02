@@ -2,4 +2,4 @@
 // Required because Clerk needs a real request context to validate auth
 export const dynamic = "force-dynamic";
 
-export { default } from "./_control";
+export { default } from "@/components/admin/GovernanceDashboard";

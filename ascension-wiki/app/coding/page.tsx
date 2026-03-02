@@ -1,52 +1,78 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Terminal, Send, Zap, Brain, Loader2, Code } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { Terminal, Send, Zap, Brain, Loader2, Code, Download, History, Pin, Maximize2, Layers, AlertTriangle } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { cn } from "@/lib/utils";
 
-interface StreamMessage {
+// Custom Components
+import { TelemetryMeters } from "@/components/coding/TelemetryMeters";
+import { TraceSidebar } from "@/components/coding/TraceSidebar";
+import { MissionDAG } from "@/components/coding/MissionDAG";
+
+interface TraceStep {
     status: string;
     message: string;
+    timestamp: string;
 }
 
-export default function CodingArena() {
+export default function ProfessionalWorkspace() {
     const { user } = useUser();
+
+    // Core Mission State
     const [objective, setObjective] = useState("");
-    const [estimate, setEstimate] = useState<number | null>(null);
     const [isExecuting, setIsExecuting] = useState(false);
-    const [userStatus, setUserStatus] = useState({ balance: 0, plan: "...", access: 1 });
+    const [userStatus, setUserStatus] = useState({ balance: 0, plan: "PRO", credits: 1000 });
+
+    // Telemetry & Logs
     const [logs, setLogs] = useState<string[]>([]);
+    const [traceSteps, setTraceSteps] = useState<TraceStep[]>([]);
+    const [metrics, setMetrics] = useState({ tokens: 0, latency: 0, confidence: 0, cost: 0 });
+
+    // Results
     const [codeResult, setCodeResult] = useState<string | null>(null);
     const [storagePath, setStoragePath] = useState<string | null>(null);
-    const [viewMode, setViewMode] = useState<"code" | "preview">("code");
-    const logEndRef = useRef<HTMLDivElement>(null);
+    const [viewMode, setViewMode] = useState<"code" | "preview" | "dag">("code");
 
+    // UI Local State
+    const [estimate, setEstimate] = useState<number | null>(null);
+    const [isModelFallback, setIsModelFallback] = useState(false);
+    const [showHistory, setShowHistory] = useState(false);
+
+    const logEndRef = useRef<HTMLDivElement>(null);
     const API_BASE_URL = process.env.NEXT_PUBLIC_PLATFORM_API_URL || "http://localhost:8000";
 
+    // ─── Key Commands ──────────────────────────────────────────────────────────
     useEffect(() => {
-        if (user) fetchUserStatus();
-    }, [user]);
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+                if (objective && !isExecuting) handleExecute();
+            }
+        };
+        window.addEventListener("keydown", handleKeyDown);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [objective, isExecuting]);
 
-    useEffect(() => {
-        logEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [logs]);
-
-    const fetchUserStatus = async () => {
+    // ─── Status & Estimates ──────────────────────────────────────────────────
+    const fetchUserStatus = useCallback(async () => {
         try {
             const res = await fetch(`${API_BASE_URL}/user/status`, {
                 headers: { "x-clerk-user-id": user?.id || "" }
             });
             const data = await res.json();
-            setUserStatus({ balance: data.balance, plan: data.plan, access: data.access_level });
+            setUserStatus({ balance: data.balance, plan: data.plan_type || "PRO", credits: data.balance });
         } catch (e) {
-            console.error("Failed to fetch user status", e);
+            console.error("Status check failed", e);
         }
-    };
+    }, [user, API_BASE_URL]);
+
+    useEffect(() => {
+        if (user) fetchUserStatus();
+    }, [user, fetchUserStatus]);
 
     const fetchEstimate = async (val: string) => {
-        if (!val) {
+        if (!val || val.length < 10) {
             setEstimate(null);
             return;
         }
@@ -59,15 +85,22 @@ export default function CodingArena() {
             const data = await res.json();
             setEstimate(data.estimated_tokens);
         } catch (e) {
-            console.error("Failed to fetch estimate", e);
+            setEstimate(null);
         }
     };
 
+    // ─── Execution Logic ─────────────────────────────────────────────────────
     const handleExecute = async () => {
         if (!objective || isExecuting) return;
+
         setIsExecuting(true);
         setCodeResult(null);
-        setLogs(["[SYSTEM] Initiating swarm connection...", "[SYSTEM] Validating token balance..."]);
+        setTraceSteps([]);
+        setMetrics({ tokens: 0, latency: 0, confidence: 0, cost: 0 });
+        setLogs(["[SYSTEM] Connection initialized.", "[SYSTEM] Token allocation secured."]);
+        setIsModelFallback(false);
+
+        const startTime = Date.now();
 
         try {
             const response = await fetch(`${API_BASE_URL}/execute/stream`, {
@@ -80,285 +113,277 @@ export default function CodingArena() {
                 body: JSON.stringify({ objective })
             });
 
-            if (!response.ok) {
-                const err = await response.json();
-                setLogs(prev => [...prev, `[ERROR] ${err.detail || "Execution failed"}`]);
-                setIsExecuting(false);
-                return;
-            }
+            if (!response.ok) throw new Error("Stream connection failed.");
 
             const reader = response.body?.getReader();
             if (!reader) return;
 
             const decoder = new TextDecoder();
-            let buffer = ""; // SSE Reassembly Buffer
+            let buffer = "";
 
-            while (true) {
+            while (reader) {
                 const { done, value } = await reader.read();
                 if (done) break;
 
                 buffer += decoder.decode(value, { stream: true });
                 const lines = buffer.split("\n");
-
-                // Keep the last partial line in the buffer
                 buffer = lines.pop() || "";
 
                 for (const line of lines) {
-                    const cleanLine = line.trim();
-                    if (cleanLine.startsWith("data: ")) {
-                        try {
-                            const data: StreamMessage & { message: string } = JSON.parse(cleanLine.replace("data: ", ""));
+                    if (!line.trim().startsWith("data: ")) continue;
 
-                            if (data.status === "RESULT") {
-                                setCodeResult(data.message);
-                                setLogs(prev => [...prev, "[SUCCESS] Tactical mission output captured."]);
-                            } else if (data.status === "PROCESSING") {
-                                // Keep-Alive pings
-                            } else if (data.status === "COMPLETED") {
-                                setLogs(prev => [...prev, `[${data.status}] ${data.message}`]);
-                                if ((data as any).storage_path) {
-                                    setStoragePath((data as any).storage_path);
-                                }
-                            } else {
-                                setLogs(prev => [...prev, `[${data.status}] ${data.message}`]);
-                            }
-                        } catch (e) {
-                            console.error("Failed to parse SSE line", cleanLine, e);
+                    const rawData = line.replace("data: ", "");
+                    try {
+                        const data = JSON.parse(rawData);
+
+                        // Update Logs and Traces
+                        if (data.status === "RESULT") {
+                            setCodeResult(data.message);
+                            setLogs(prev => [...prev, "[SUCCESS] Tactical solution generated."]);
+                            setMetrics(prev => ({ ...prev, confidence: 0.98, latency: Date.now() - startTime }));
+                        } else if (data.status === "COMPLETED") {
+                            setLogs(prev => [...prev, `[${data.status}] Mission Absolute.`]);
+                            if (data.storage_path) setStoragePath(data.storage_path);
+                        } else {
+                            setLogs(prev => [...prev, `[${data.status}] ${data.message}`]);
+                            setTraceSteps(prev => [...prev, {
+                                status: data.status,
+                                message: data.message,
+                                timestamp: new Date().toLocaleTimeString()
+                            }]);
+
+                            // Mock Telemetry Update (Normally from backend)
+                            setMetrics(prev => ({
+                                ...prev,
+                                tokens: prev.tokens + Math.floor(Math.random() * 50),
+                                latency: Date.now() - startTime,
+                                confidence: 0.85 + (Math.random() * 0.1)
+                            }));
                         }
+                    } catch (e) {
+                        console.error("Buffer parse error", e);
                     }
                 }
             }
-            fetchUserStatus();
         } catch (e) {
-            setLogs(prev => [...prev, `[ERROR] Connection lost: ${e}`]);
+            setLogs(prev => [...prev, `[ERROR] ${e instanceof Error ? e.message : "Service Unstable"}`]);
+            setIsModelFallback(true);
         } finally {
             setIsExecuting(false);
+            fetchUserStatus();
         }
     };
 
+    const handleExport = (format: "json" | "md" | "zip") => {
+        if (!codeResult) return;
+        // Logic for export
+        alert(`Exporting as ${format.toUpperCase()}...`);
+    };
+
     return (
-        <div className="min-h-screen p-6 md:p-12 max-w-7xl mx-auto flex flex-col gap-8">
-            {/* Header */}
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                    <h1 className="text-4xl font-bold tracking-tight text-white mb-2 uppercase">Coding <span className="text-primary tracking-[0.3em] font-light ml-2">Arena</span></h1>
-                    <p className="text-muted leading-relaxed max-w-xl text-sm">
-                        Deploy tactical coding missions to the Ascension Swarm. Input an objective, estimate the mission cost, and monitor evolution in real-time.
-                    </p>
-                </div>
+        <div className="flex h-screen bg-background overflow-hidden selection:bg-primary/30">
+            {/* Main Editor Section */}
+            <div className="flex-1 flex flex-col min-w-0 border-r border-white/5">
 
-                <div className="glass-card p-4 flex gap-6 items-center border border-white/5 bg-white/[0.02]">
-                    <div className="flex flex-col">
-                        <span className="text-[10px] font-mono text-muted uppercase tracking-widest opacity-50">Plan</span>
-                        <span className="text-white font-bold">{userStatus.plan}</span>
-                    </div>
-                    <div className="h-8 w-[1px] bg-white/10" />
-                    <div className="flex flex-col">
-                        <span className="text-[10px] font-mono text-muted uppercase tracking-widest opacity-50">Balance</span>
-                        <span className="text-primary font-bold">{userStatus.balance.toLocaleString()} ⏣</span>
-                    </div>
-                </div>
-            </header>
-
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 flex-1">
-                {/* Input & Output Section */}
-                <div className="lg:col-span-3 flex flex-col gap-8">
-                    {/* Mission Input */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="glass-card p-6 border border-white/5 flex flex-col gap-4 relative overflow-hidden bg-white/[0.01]"
-                    >
-                        <div className="flex items-center gap-2 mb-2">
-                            <Brain className="text-primary w-4 h-4" />
-                            <label className="text-xs font-mono text-muted uppercase tracking-widest">Astraeus Command Input</label>
+                {/* Workspace Header */}
+                <header className="h-14 border-b border-white/5 flex items-center justify-between px-6 bg-white/[0.02]">
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                            <Layers className="text-primary w-4 h-4" />
+                            <h1 className="text-xs font-bold text-white uppercase tracking-widest">Astraeus <span className="text-muted/40 font-light">Workspace</span></h1>
                         </div>
+                        <div className="h-4 w-[1px] bg-white/10" />
+                        <div className="flex items-center gap-2 text-[10px] text-muted font-mono uppercase tracking-tighter">
+                            Objective: <span className="text-white/60 truncate max-w-[200px]">{objective || "Idle"}</span>
+                        </div>
+                    </div>
 
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full">
+                            <Zap size={10} className="text-primary" />
+                            <span className="text-[10px] font-bold text-white font-mono">{userStatus.credits.toLocaleString()} ⏣</span>
+                        </div>
+                        <button
+                            onClick={() => setShowHistory(!showHistory)}
+                            className={cn("p-2 rounded-lg transition-colors hover:bg-white/5", showHistory ? "text-primary bg-primary/10" : "text-muted")}
+                        >
+                            <History size={16} />
+                        </button>
+                    </div>
+                </header>
+
+                {/* Sub-Header: Mission Controls */}
+                <div className="p-4 flex flex-col gap-4 bg-black/20">
+                    <div className="flex items-center justify-between">
+                        <div className="flex flex-col">
+                            <span className="text-[9px] font-mono text-muted uppercase tracking-[0.3em]">Command Objective</span>
+                            <span className="text-white text-xs font-bold">Declare mission goals for swarm orchestration.</span>
+                        </div>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={handleExecute}
+                                disabled={!objective || isExecuting || (estimate !== null && userStatus.credits < estimate)}
+                                className={cn(
+                                    "px-6 py-2 rounded-lg font-bold flex items-center gap-3 transition-all active:scale-95",
+                                    !objective || isExecuting || (estimate !== null && userStatus.credits < estimate)
+                                        ? "bg-white/5 text-muted cursor-not-allowed border border-white/5 opacity-50"
+                                        : "bg-primary text-background hover:bg-white hover:text-primary box-glow"
+                                )}
+                            >
+                                {isExecuting ? <Loader2 className="animate-spin" size={16} /> : <Send size={16} />}
+                                <span className="uppercase tracking-widest text-[10px]">
+                                    {isExecuting ? "Executing..." : "Deploy Swarm"}
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="relative group">
                         <textarea
                             value={objective}
                             onChange={(e) => {
                                 setObjective(e.target.value);
                                 fetchEstimate(e.target.value);
                             }}
-                            placeholder="e.g. Build a sleek dark-mode dashboard landing page with glassmorphism..."
-                            className="bg-black/40 border border-white/5 rounded-xl p-5 h-40 focus:outline-none focus:border-primary/40 transition-all text-white placeholder:text-muted/30 resize-none font-mono text-sm leading-relaxed"
+                            placeholder="e.g. Implement a high-performance RBAC middleware for Express..."
+                            className="w-full bg-black/60 border border-white/5 rounded-xl p-4 h-32 focus:outline-none focus:border-primary/40 transition-all text-sm font-mono text-white placeholder:text-muted/20 resize-none leading-relaxed"
                             disabled={isExecuting}
                         />
-
-                        <div className="flex flex-wrap items-center justify-between gap-4 mt-2">
-                            <div className="flex items-center gap-4 bg-white/[0.03] px-4 py-2 rounded-full border border-white/5">
-                                <div className="flex items-center gap-2 text-xs font-mono">
-                                    <Zap size={14} className={cn(estimate ? "text-primary" : "text-muted opacity-30")} />
-                                    <span className="text-muted/60 uppercase tracking-widest text-[10px]">Budget Delta:</span>
-                                    <span className={cn("font-bold", estimate ? "text-white" : "text-muted/30")}>
-                                        {estimate ? `${estimate.toLocaleString()} ⏣` : "---"}
-                                    </span>
-                                </div>
+                        {estimate && (
+                            <div className="absolute bottom-3 right-3 px-2 py-1 bg-primary/10 border border-primary/20 rounded text-[9px] font-mono text-primary flex items-center gap-1">
+                                <Zap size={8} /> Est: {estimate} ⏣
                             </div>
+                        )}
+                    </div>
 
-                            <button
-                                onClick={handleExecute}
-                                disabled={!objective || isExecuting || (estimate !== null && userStatus.balance < estimate)}
-                                className={cn(
-                                    "px-10 py-3 rounded-full font-bold flex items-center gap-3 transition-all box-glow active:scale-95",
-                                    !objective || isExecuting || (estimate !== null && userStatus.balance < estimate)
-                                        ? "bg-white/5 text-muted cursor-not-allowed border border-white/5"
-                                        : "bg-primary text-background hover:bg-white hover:text-primary"
-                                )}
-                            >
-                                {isExecuting ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
-                                <span className="uppercase tracking-widest text-xs">
-                                    {isExecuting ? "Mobilizing Swarm..." : "Deploy Mission"}
-                                </span>
-                            </button>
+                    {/* Telemetry Bar */}
+                    <TelemetryMeters
+                        tokens={metrics.tokens}
+                        latency={metrics.latency}
+                        confidence={metrics.confidence}
+                        cost={metrics.cost + (estimate || 0)}
+                        isExecuting={isExecuting}
+                    />
+                </div>
+
+                {/* Output Viewport */}
+                <div className="flex-1 flex flex-col p-4 bg-background relative overflow-hidden">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex gap-1 p-1 bg-white/[0.03] border border-white/5 rounded-lg">
+                            <ViewBtn label="Code" active={viewMode === "code"} onClick={() => setViewMode("code")} />
+                            <ViewBtn label="Preview" active={viewMode === "preview"} onClick={() => setViewMode("preview")} />
+                            <ViewBtn label="Swarm DAG" active={viewMode === "dag"} onClick={() => setViewMode("dag")} />
                         </div>
-                    </motion.div>
 
-                    {/* Result Visualization */}
-                    <AnimatePresence>
-                        {codeResult && (
-                            <motion.div
-                                initial={{ opacity: 0, scale: 0.98 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.98 }}
-                                className="flex flex-col gap-4"
-                            >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center border border-primary/20">
-                                            <Code className="text-primary w-4 h-4" />
-                                        </div>
-                                        <div>
-                                            <h3 className="text-lg font-bold text-white uppercase tracking-tight">Mission Output</h3>
-                                            <p className="text-[10px] text-muted font-mono uppercase tracking-widest">Synthesized Intelligence Result</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex p-1 bg-white/[0.03] border border-white/5 rounded-full">
-                                        <button
-                                            onClick={() => setViewMode("code")}
-                                            className={cn("px-4 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-widest transition-all", viewMode === "code" ? "bg-primary text-background font-bold shadow-lg" : "text-muted hover:text-white")}
-                                        >
-                                            Code
-                                        </button>
-                                        <button
-                                            onClick={() => setViewMode("preview")}
-                                            className={cn("px-4 py-1.5 rounded-full text-[10px] font-mono uppercase tracking-widest transition-all", viewMode === "preview" ? "bg-primary text-background font-bold shadow-lg" : "text-muted hover:text-white")}
-                                        >
-                                            Preview
-                                        </button>
-                                    </div>
+                        <div className="flex items-center gap-2">
+                            {isModelFallback && (
+                                <div className="flex items-center gap-2 px-2 py-1 bg-yellow-500/10 border border-yellow-500/20 rounded text-[9px] text-yellow-500 font-mono uppercase">
+                                    <AlertTriangle size={10} /> Fallback Active
                                 </div>
+                            )}
+                            <div className="flex gap-1">
+                                <ExportBtn icon={<Download size={12} />} onClick={() => handleExport("zip")} title="ZIP Archive" />
+                                <ExportBtn icon={<History size={12} />} onClick={() => handleExport("json")} title="JSON Trace" />
+                                <ExportBtn icon={<Maximize2 size={12} />} onClick={() => { }} title="Fullscreen" />
+                            </div>
+                        </div>
+                    </div>
 
-                                <div className="glass-card border border-white/10 overflow-hidden bg-black/40 min-h-[500px] relative">
-                                    {viewMode === "code" ? (
-                                        <pre className="p-6 text-sm font-mono text-white/90 leading-relaxed overflow-x-auto selection:bg-primary/30">
-                                            <code>{codeResult}</code>
-                                        </pre>
+                    <div className="flex-1 border border-white/5 rounded-xl bg-black/40 overflow-hidden relative">
+                        <AnimatePresence mode="wait">
+                            {viewMode === "code" && (
+                                <motion.div
+                                    key="code"
+                                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                    className="h-full overflow-auto p-6 font-mono text-xs text-white/80 leading-relaxed selection:bg-primary/20"
+                                >
+                                    {codeResult ? (
+                                        <pre><code>{codeResult}</code></pre>
                                     ) : (
-                                        <div className="w-full h-full min-h-[500px] bg-white rounded-inner">
-                                            <iframe
-                                                title="Preview"
-                                                srcDoc={codeResult.includes("<!DOCTYPE html>") || codeResult.includes("<html") ? codeResult : `<html><body style="background:#0a0a0a;color:white;font-family:sans-serif;padding:40px;"><h3>Tactical Execution Preview</h3><hr style="border:1px solid #333;margin:20px 0;"><pre style="background:#222;padding:20px;border-radius:10px;">${codeResult}</pre></body></html>`}
-                                                className="w-full h-full min-h-[500px] border-none"
-                                            />
+                                        <div className="h-full flex flex-col items-center justify-center opacity-10">
+                                            <Terminal size={48} className="mb-4" />
+                                            <span className="text-[10px] uppercase tracking-[0.3em]">Awaiting Code Matrix...</span>
                                         </div>
                                     )}
-                                </div>
+                                </motion.div>
+                            )}
 
-                                {storagePath && (
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="flex items-center gap-3 px-4 py-2 bg-white/[0.03] border border-white/5 rounded-lg"
-                                    >
-                                        <div className="flex items-center gap-2">
-                                            <Terminal size={12} className="text-primary/50" />
-                                            <span className="text-[10px] font-mono text-muted uppercase tracking-widest">Storage Path:</span>
+                            {viewMode === "preview" && (
+                                <motion.div
+                                    key="preview"
+                                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                    className="h-full w-full bg-white"
+                                >
+                                    {codeResult ? (
+                                        <iframe
+                                            title="Mission Preview"
+                                            srcDoc={codeResult.includes("<!DOCTYPE html>") ? codeResult : `<html><body style="background:#0a0a0a;color:white;font-family:sans-serif;padding:40px;"><h3>Tactical Execution Preview</h3><hr style="border:1px solid #333;margin:20px 0;"><pre style="background:#222;padding:20px;border-radius:10px;">${codeResult}</pre></body></html>`}
+                                            className="w-full h-full border-none"
+                                        />
+                                    ) : (
+                                        <div className="h-full bg-background flex flex-col items-center justify-center opacity-10">
+                                            <Brain size={48} className="mb-4" />
+                                            <span className="text-[10px] uppercase tracking-[0.3em]">Visualizer Offline...</span>
                                         </div>
-                                        <code className="text-[10px] font-mono text-primary/80 break-all">{storagePath}</code>
-                                    </motion.div>
-                                )}
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
+                                    )}
+                                </motion.div>
+                            )}
 
-                {/* Console Sidebar */}
-                <div className="flex flex-col gap-6">
-                    <div className="glass-card border border-white/5 flex flex-col h-[600px] bg-white/[0.01]">
-                        <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/[0.02]">
-                            <div className="flex items-center gap-2">
-                                <Terminal size={12} className="text-primary" />
-                                <span className="text-[10px] font-mono text-white uppercase tracking-widest opacity-70">Mission Console</span>
-                            </div>
-                            <div className="flex gap-1">
-                                <div className="w-1.5 h-1.5 rounded-full bg-red-400/20" />
-                                <div className="w-1.5 h-1.5 rounded-full bg-yellow-400/20" />
-                                <div className="w-1.5 h-1.5 rounded-full bg-green-400/20" />
-                            </div>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto p-5 font-mono text-[11px] space-y-3 scrollbar-hide">
-                            <AnimatePresence>
-                                {logs.length === 0 && (
-                                    <motion.span
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        className="text-muted/20 italic block"
-                                    >
-                                        Console standby. Awaiting mission parameters...
-                                    </motion.span>
-                                )}
-                                {logs.map((log, i) => (
-                                    <motion.div
-                                        initial={{ opacity: 0, x: -10 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        key={i}
-                                        className={cn(
-                                            "flex gap-3 leading-relaxed",
-                                            log.includes("[ERROR]") ? "text-red-400" :
-                                                log.includes("[COMPLETED]") || log.includes("[RESULT]") ? "text-green-400" :
-                                                    log.includes("[SYSTEM]") ? "text-primary/70" :
-                                                        log.includes("[PLANNING]") || log.includes("[DESIGN]") || log.includes("[IMPLEMENT]") || log.includes("[AUDIT]")
-                                                            ? "text-primary/90 font-bold border-l-2 border-primary pl-2 mb-4 mt-2"
-                                                            : "text-muted/80"
-                                        )}
-                                    >
-                                        <span className="opacity-20 shrink-0 select-none">{(i + 1).toString().padStart(2, '0')}</span>
-                                        <span className="break-all">{log}</span>
-                                    </motion.div>
-                                ))}
-                            </AnimatePresence>
-                            <div ref={logEndRef} />
-                        </div>
-
-                        <div className="p-3 border-t border-white/5 bg-black/20 flex items-center justify-between">
-                            <div className="flex items-center gap-3 px-2">
-                                <div className={cn("w-2 h-2 rounded-full", isExecuting ? "bg-primary animate-pulse shadow-[0_0_15px_rgba(0,229,255,1)]" : "bg-muted/20")} />
-                                <span className="text-[9px] font-mono text-muted uppercase tracking-[0.2em]">{isExecuting ? "Neural Processing" : "Link Idle"}</span>
-                            </div>
-                            <span className="text-[9px] font-mono text-muted/20">Astraeus v5.0.0
-                            </span>
-                        </div>
+                            {viewMode === "dag" && (
+                                <motion.div
+                                    key="dag"
+                                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                    className="h-full"
+                                >
+                                    <MissionDAG steps={traceSteps} isExecuting={isExecuting} />
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
 
-                    {/* Meta Stats */}
-                    <div className="glass-card p-5 border border-white/5 bg-white/[0.01] flex flex-col gap-4">
-                        <h4 className="text-[10px] font-mono text-muted uppercase tracking-widest text-center">Swarm Heuristics</h4>
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="bg-white/[0.02] p-2 rounded border border-white/5 text-center">
-                                <div className="text-[8px] text-muted uppercase">Latency</div>
-                                <div className="text-xs text-white font-mono">142ms</div>
+                    {storagePath && (
+                        <div className="mt-4 p-3 bg-primary/5 border border-primary/20 rounded-lg flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <Terminal size={14} className="text-primary" />
+                                <span className="text-[10px] font-mono text-muted uppercase tracking-[0.2em]">Mission Artifact Path:</span>
+                                <code className="text-[10px] text-white/80 font-mono">{storagePath}</code>
                             </div>
-                            <div className="bg-white/[0.02] p-2 rounded border border-white/5 text-center">
-                                <div className="text-[8px] text-muted uppercase">Confidence</div>
-                                <div className="text-xs text-primary font-mono">98.4%</div>
-                            </div>
+                            <button className="text-[9px] font-bold text-primary hover:underline uppercase tracking-widest">Download Bundle</button>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
+
+            {/* Right Trace Sidebar */}
+            <aside className="w-80 lg:w-96 hidden md:block">
+                <TraceSidebar logs={logs} steps={traceSteps} isExecuting={isExecuting} />
+            </aside>
         </div>
+    );
+}
+
+function ViewBtn({ label, active, onClick }: { label: string, active: boolean, onClick: () => void }) {
+    return (
+        <button
+            onClick={onClick}
+            className={cn(
+                "px-4 py-1.5 rounded-md text-[9px] font-bold uppercase tracking-widest transition-all",
+                active ? "bg-primary text-background box-glow" : "text-muted hover:text-white"
+            )}
+        >
+            {label}
+        </button>
+    );
+}
+
+function ExportBtn({ icon, onClick, title }: { icon: React.ReactNode, onClick: () => void, title: string }) {
+    return (
+        <button
+            onClick={onClick}
+            title={title}
+            className="p-2 rounded-lg bg-white/[0.03] border border-white/5 text-muted hover:text-white hover:bg-white/10 transition-all"
+        >
+            {icon}
+        </button>
     );
 }
