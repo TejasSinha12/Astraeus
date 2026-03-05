@@ -48,27 +48,36 @@ async def get_revenue_stats():
 
 @router.get("/audit/logs")
 async def get_audit_logs(limit: int = 50):
-    """Retrieves security audit logs."""
+    """Retrieves security audit logs with frontend-compatible fields."""
     with SessionLocal() as db:
-        logs = db.query(AuditLog).order_by(AuditLog.timestamp.desc()).limit(limit).all()
-        return logs
+        db_logs = db.query(AuditLog).order_by(AuditLog.timestamp.desc()).limit(limit).all()
+        return {
+            "logs": [
+                {
+                    "id": str(log.id),
+                    "timestamp": log.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
+                    "event": log.action,
+                    "user": log.user_id,
+                    "status": "SUCCESS", # Default to success for now
+                    "detail": log.metadata_json or "System operational event."
+                } for log in db_logs
+            ]
+        }
 
 @router.get("/keys")
 async def list_api_keys():
     """Returns the global API Key registry."""
     with SessionLocal() as db:
         keys = db.query(APIKey).all()
-        # Need to return in a format the frontend expects (keys: [])
-        # Also need to provide the raw key or at least a stub for display
         return {
             "keys": [
                 {
                     "id": k.id,
-                    "name": k.label,
+                    "name": k.label or "Default Key",
                     "owner_id": k.user_id,
                     "is_active": k.is_active,
                     "created_at": k.created_at.isoformat(),
-                    "key": f"sk_asc_{'•' * 32}{k.key_hash[:4]}" # Obfuscated display
+                    "key": f"sk_asc_{'•' * 32}{k.key_hash[:4]}"
                 } for k in keys
             ]
         }
@@ -91,13 +100,14 @@ async def revoke_api_key(key_id: str):
 
 @router.get("/users")
 async def list_users():
-    """Lists all subjects in the identity registry."""
+    """Lists all subjects in the identity registry with frontend-compatible names."""
     with SessionLocal() as db:
         users = db.query(UserAccount).all()
         return {
             "users": [
                 {
                     "id": u.id,
+                    "name": u.email.split("@")[0] if u.email else u.id,
                     "email": u.email,
                     "role": u.role,
                     "balance": u.token_balance,
