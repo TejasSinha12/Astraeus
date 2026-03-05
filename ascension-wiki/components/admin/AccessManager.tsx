@@ -230,12 +230,23 @@ function CreateKeyBtn({ onUpdate }: { onUpdate: () => void }) {
         if (!name) return;
         setIsCreating(true);
         try {
-            await fetch(`${API_BASE_URL}/admin/keys/create`, {
+            const res = await fetch(`${API_BASE_URL}/admin/keys/create`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "api-key": "SYSTEM_ADMIN_BYPASS" },
                 body: JSON.stringify({ name })
             });
+
+            if (!res.ok) {
+                const err = await res.json();
+                alert(`Creation Failed: ${err.detail || 'Access Denied'}`);
+                return;
+            }
+
+            const data = await res.json();
+            prompt("NEW API KEY GENERATED. Copy this key now. It will not be shown again:", data.key);
             onUpdate();
+        } catch (e) {
+            alert(`Network Error: ${e instanceof Error ? e.message : 'Connection failed'}`);
         } finally {
             setIsCreating(false);
         }

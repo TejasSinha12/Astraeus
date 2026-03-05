@@ -67,7 +67,7 @@ class ProductionAPIKeyManager:
                 "label": key_record.label
             }
 
-    def revoke_key(self, key_id: int) -> bool:
+    def revoke_key(self, key_id: str) -> bool:
         """
         Deactivates a key immediately.
         """

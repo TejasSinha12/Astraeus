@@ -5,7 +5,7 @@ from core.api_key_manager import ProductionAPIKeyManager
 import datetime
 from pydantic import BaseModel
 
-router = APIRouter(prefix="/admin", tags=["Governance"])
+router = APIRouter(prefix="/admin", tags=["Governance"], dependencies=[Depends(get_admin_access)])
 key_manager = ProductionAPIKeyManager()
 
 class KeyCreateRequest(BaseModel):
