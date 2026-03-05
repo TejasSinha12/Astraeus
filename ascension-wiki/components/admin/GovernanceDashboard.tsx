@@ -11,9 +11,10 @@ import { RevenueAnalytics } from "./RevenueAnalytics";
 import { AuditExplorer } from "./AuditExplorer";
 import { SystemControls } from "./SystemControls";
 import { AccessManager } from "./AccessManager";
+import { TeamBilling } from "./TeamBilling";
 
 export default function GovernanceDashboard() {
-    const [activeTab, setActiveTab] = useState<"overview" | "finance" | "security" | "controls" | "access">("overview");
+    const [activeTab, setActiveTab] = useState<"overview" | "finance" | "security" | "controls" | "access" | "teams">("overview");
     const [systemStatus, setSystemStatus] = useState("OPERATIONAL");
 
     return (
@@ -33,6 +34,7 @@ export default function GovernanceDashboard() {
                 <div className="flex p-1 bg-white/[0.03] border border-white/5 rounded-xl overflow-x-auto custom-scrollbar">
                     <TabBtn active={activeTab === "overview"} onClick={() => setActiveTab("overview")} icon={<Activity size={14} />} label="System Health" />
                     <TabBtn active={activeTab === "finance"} onClick={() => setActiveTab("finance")} icon={<BarChart3 size={14} />} label="Revenue" />
+                    <TabBtn active={activeTab === "teams"} onClick={() => setActiveTab("teams")} icon={<Zap size={14} />} label="Team Billing" />
                     <TabBtn active={activeTab === "security"} onClick={() => setActiveTab("security")} icon={<Lock size={14} />} label="Audit Logs" />
                     <TabBtn active={activeTab === "access"} onClick={() => setActiveTab("access")} icon={<Shield size={14} />} label="Access Control" />
                     <TabBtn active={activeTab === "controls"} onClick={() => setActiveTab("controls")} icon={<Zap size={14} />} label="Controls" />
@@ -46,6 +48,7 @@ export default function GovernanceDashboard() {
                 {activeTab === "security" && <AuditExplorer />}
                 {activeTab === "access" && <AccessManager />}
                 {activeTab === "controls" && <SystemControls />}
+                {activeTab === "teams" && <TeamBilling />}
             </main>
 
             {/* Global Status Bar */}

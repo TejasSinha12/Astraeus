@@ -5,7 +5,7 @@ Provides atomic balance management, subscription plan enforcement, and transacti
 from typing import Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from api.usage_db import UserAccount, TokenTransaction, SubscriptionPlan, SessionLocal
+from api.usage_db import UserAccount, TokenTransaction, SubscriptionPlan, Organization, SessionLocal
 from utils.logger import logger
 
 class TokenAccountingSystem:
@@ -17,37 +17,62 @@ class TokenAccountingSystem:
     def get_user_status(user_id: str) -> Tuple[int, Optional[str], int]:
         """
         Returns (balance, plan_name, access_level)
+        Resolves to Organization balance if user is in an org.
         """
         with SessionLocal() as db:
-            result = db.query(UserAccount.token_balance, SubscriptionPlan.name, SubscriptionPlan.access_level)\
-                .outerjoin(SubscriptionPlan, UserAccount.plan_id == SubscriptionPlan.id)\
-                .filter(UserAccount.id == user_id).first()
-            return result if result else (0, None, 1)
+            user = db.query(UserAccount).filter(UserAccount.id == user_id).first()
+            if not user:
+                return (0, None, 1)
+            
+            # 1. Resolve to Organization if member
+            if user.org_id:
+                org = db.query(Organization).filter(Organization.id == user.org_id).first()
+                if org:
+                    plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.id == org.plan_id).first()
+                    return (org.token_balance, plan.name if plan else "INSTITUTIONAL", plan.access_level if plan else 2)
+            
+            # 2. Fallback to individual balance
+            plan = db.query(SubscriptionPlan).filter(SubscriptionPlan.id == user.plan_id).first()
+            return (user.token_balance, plan.name if plan else "PUBLIC", plan.access_level if plan else 1)
 
     @staticmethod
     def deduct_tokens(user_id: str, amount: int, reference_id: str) -> bool:
         """
-        ATOMIC deduction of tokens. Updates balance and creates a transaction record.
+        ATOMIC deduction of tokens. Updates balance (user or org) and creates a transaction record.
         """
         with SessionLocal() as db:
             try:
-                # Select user with for_update to prevent race conditions during balance checks
+                # 1. Resolve User
                 user = db.query(UserAccount).filter(UserAccount.id == user_id).with_for_update().first()
-                if not user or user.token_balance < amount:
+                if not user:
                     return False
                 
-                user.token_balance -= amount
+                # 2. Determine target for deduction
+                target_org = None
+                if user.org_id:
+                    target_org = db.query(Organization).filter(Organization.id == user.org_id).with_for_update().first()
                 
-                # Record transaction
+                if target_org:
+                    if target_org.token_balance < amount:
+                        return False
+                    target_org.token_balance -= amount
+                    logger.info(f"INSTITUTIONAL DEBIT: {amount} tokens from Org {user.org_id} via User {user_id}")
+                else:
+                    if user.token_balance < amount:
+                        return False
+                    user.token_balance -= amount
+                    logger.info(f"INDIVIDUAL DEBIT: {amount} tokens from {user_id}")
+
+                # 3. Record transaction
                 tx = TokenTransaction(
                     user_id=user_id,
+                    org_id=user.org_id,
                     amount=-amount,
                     transaction_type='DEBIT',
                     reference_id=reference_id
                 )
                 db.add(tx)
                 db.commit()
-                logger.info(f"ATOMIC DEBIT: {amount} tokens from {user_id} (Ref: {reference_id})")
                 return True
             except Exception as e:
                 db.rollback()

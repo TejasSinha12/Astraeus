@@ -110,12 +110,30 @@ async def execute_swarm_stream(
 
 @app.get("/user/status")
 async def get_user_status(x_clerk_user_id: str = Header(...)):
-    # Fetch from the new UserBalance table
-    from api.usage_db import SessionLocal, UserBalance
+    """
+    Returns the current economy status (balance, reputation, tier).
+    Resolves to Organization shared pool if user is institutionalized.
+    """
+    from api.usage_db import SessionLocal, UserBalance, UserAccount, Organization
     with SessionLocal() as db:
-        balance = db.get(UserBalance, x_clerk_user_id)
+        # 1. Resolve Org Affinity
+        user_info = db.query(UserAccount).filter(UserAccount.id == x_clerk_user_id).first()
+        org_id = user_info.org_id if user_info else None
+        
+        if org_id:
+            org = db.query(Organization).filter(Organization.id == org_id).first()
+            if org:
+                return {
+                    "user_id": x_clerk_user_id,
+                    "org_id": org_id,
+                    "balance": org.token_balance,
+                    "reputation": 10.0, # Orgs start with high baseline reputation
+                    "tier": "INSTITUTIONAL"
+                }
+
+        # 2. Fallback to Individual
+        balance = db.query(UserBalance).filter(UserBalance.user_id == x_clerk_user_id).first()
         if not balance:
-            # Auto-provision if accessed
             balance = UserBalance(user_id=x_clerk_user_id, credit_balance=100.0)
             db.add(balance)
             db.commit()

@@ -30,8 +30,17 @@ async def rbac_middleware(request: Request, call_next):
         if role.upper() not in ["RESEARCH", "ADMIN"]:
             raise HTTPException(status_code=403, detail="Advanced evolution requires Research access.")
 
-    # [REMOVED] Global body consumption (Moved to execution routes)
-    
+    # 4. Institutional Pre-Check (Balance/Quota)
+    # This acts as a protective layer before the more expensive swarm execution starts
+    from api.usage_db import SessionLocal, UserAccount, Organization
+    with SessionLocal() as db:
+        user = db.query(UserAccount).filter(UserAccount.id == user_id).first()
+        if user and user.org_id:
+            org = db.query(Organization).filter(Organization.id == user.org_id).first()
+            if org and org.token_balance <= 0:
+                logger.warning(f"INSTITUTIONAL GATE: Org {user.org_id} balance exhausted.")
+                raise HTTPException(status_code=402, detail="Institutional credit pool exhausted. Please contact your administrator.")
+
     response = await call_next(request)
     return response
 

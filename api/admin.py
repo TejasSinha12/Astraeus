@@ -138,6 +138,51 @@ async def terminate_session(session_id: str):
     """Emergency system kill switch for a specific swarm session."""
     return {"status": "TERMINATED", "session_id": session_id}
 
+@router.get("/organizations")
+async def list_organizations():
+    """Lists all research institutions in the registry."""
+    from api.usage_db import Organization
+    with SessionLocal() as db:
+        orgs = db.query(Organization).all()
+        return {
+            "organizations": [
+                {
+                    "id": o.id,
+                    "name": o.name,
+                    "domain": o.domain,
+                    "plan_id": o.plan_id,
+                    "token_balance": o.token_balance,
+                    "created_at": o.created_at.isoformat()
+                } for o in orgs
+            ]
+        }
+
+class TopupRequest(BaseModel):
+    amount: int
+
+@router.post("/organizations/{org_id}/topup")
+async def topup_organization(org_id: str, req: TopupRequest):
+    """Allocates institutional credits to a shared organizational pool."""
+    from api.usage_db import Organization, TokenTransaction
+    with SessionLocal() as db:
+        org = db.query(Organization).filter(Organization.id == org_id).with_for_update().first()
+        if not org:
+            raise HTTPException(status_code=404, detail="Organization not found.")
+        
+        org.token_balance += req.amount
+        
+        # Record transaction for institutional audit
+        tx = TokenTransaction(
+            user_id="SYSTEM_ADMIN",
+            org_id=org_id,
+            amount=req.amount,
+            transaction_type='CREDIT',
+            reference_id=f"ADMIN_TOPUP_{int(time.time())}"
+        )
+        db.add(tx)
+        db.commit()
+        return {"status": "SUCCESS", "new_balance": org.token_balance}
+
 @router.get("/metrics/research")
 async def get_research_metrics():
     """

@@ -43,6 +43,7 @@ class TokenTransaction(Base):
     
     id = Column(Integer, primary_key=True)
     user_id = Column(String, index=True)
+    org_id = Column(String, index=True, nullable=True) # Institutional link
     amount = Column(Integer) # Negative for debit
     transaction_type = Column(String) # 'DEBIT', 'CREDIT', 'REFUND'
     reference_id = Column(String) # API Request ID
@@ -108,6 +109,7 @@ class TokenLedger(Base):
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(String, index=True)
+    org_id = Column(String, index=True, nullable=True) # Institutional link
     transaction_type = Column(String) # 'DEBIT', 'CREDIT', 'REFUND', 'REPUTATION_GAIN'
     amount = Column(Float)
     reason = Column(String)
@@ -178,6 +180,8 @@ class Organization(Base):
     id = Column(String, primary_key=True)
     name = Column(String, unique=True)
     domain = Column(String) # Allowed email domains
+    plan_id = Column(String, index=True, default="institutional_free")
+    token_balance = Column(Integer, default=50000) # Shared pool
     api_quota = Column(Float, default=10000.0)
     governance_policy = Column(String) # JSON configuration
     sso_config = Column(String) # Metadata for OAuth/OIDC

@@ -8,7 +8,7 @@ import json
 import time
 from typing import Optional
 from sqlalchemy.orm import Session
-from api.usage_db import UserBalance, TokenLedger, SessionLocal
+from api.usage_db import UserBalance, TokenLedger, Organization, UserAccount, SessionLocal
 from utils.logger import logger
 
 class TokenLedgerService:
@@ -31,39 +31,62 @@ class TokenLedgerService:
             hashlib.sha256
         ).hexdigest()
 
-    def _get_previous_hash(self, db: Session, user_id: str) -> str:
+    def _get_previous_hash(self, db: Session, user_id: str, org_id: Optional[str] = None) -> str:
         """
-        Retrieves the signature of the last transaction for a user to maintain the chain.
+        Retrieves the signature of the last transaction (user or org) to maintain the chain.
         """
-        last_tx = db.query(TokenLedger).filter(TokenLedger.user_id == user_id).order_by(TokenLedger.id.desc()).first()
+        query = db.query(TokenLedger)
+        if org_id:
+            query = query.filter(TokenLedger.org_id == org_id)
+        else:
+            query = query.filter(TokenLedger.user_id == user_id)
+            
+        last_tx = query.order_by(TokenLedger.id.desc()).first()
         return last_tx.signature if last_tx else "GENESIS"
 
     async def process_transaction(self, user_id: str, amount: float, tx_type: str, reason: str) -> bool:
         """
-        Atomic transaction: Updates balance and records signed ledger entry.
+        Atomic transaction: Updates balance (Org or User) and records signed ledger entry.
         """
         try:
             with SessionLocal() as db:
-                # 1. Update User Balance
-                user_balance = db.query(UserBalance).filter(UserBalance.user_id == user_id).first()
-                if not user_balance:
-                    user_balance = UserBalance(user_id=user_id, credit_balance=100.0) # Default signup bonus
-                    db.add(user_balance)
+                # 1. Resolve Org Affinity
+                user_info = db.query(UserAccount).filter(UserAccount.id == user_id).first()
+                org_id = user_info.org_id if user_info else None
                 
-                # Check for sufficient funds if debit
-                if tx_type == "DEBIT" and user_balance.credit_balance < abs(amount):
-                    logger.warning(f"ECONOMY: Insufficient funds for User {user_id}.")
-                    return False
-
-                user_balance.credit_balance += amount
+                # 2. Determine target for balance update
+                target_entity = None
+                if org_id:
+                    target_entity = db.query(Organization).filter(Organization.id == org_id).with_for_update().first()
                 
-                # 2. Record in Ledger
-                prev_hash = self._get_previous_hash(db, user_id)
+                if target_entity:
+                    # Institutional Path
+                    if tx_type == "DEBIT" and target_entity.token_balance < abs(amount):
+                        logger.warning(f"ECONOMY: Insufficient institutional funds for Org {org_id} (via {user_id}).")
+                        return False
+                    target_entity.token_balance += amount
+                else:
+                    # Individual Path
+                    user_balance = db.query(UserBalance).filter(UserBalance.user_id == user_id).with_for_update().first()
+                    if not user_balance:
+                        user_balance = UserBalance(user_id=user_id, credit_balance=100.0)
+                        db.add(user_balance)
+                    
+                    if tx_type == "DEBIT" and user_balance.credit_balance < abs(amount):
+                        logger.warning(f"ECONOMY: Insufficient individual funds for User {user_id}.")
+                        return False
+                    user_balance.credit_balance += amount
+                
+                # 3. Record in Ledger
+                prev_hash = self._get_previous_hash(db, user_id, org_id)
                 ts = time.time()
-                signature = self._generate_signature(user_id, amount, ts, prev_hash)
+                # Sign based on the primary entity (Org or User)
+                signer_id = org_id if org_id else user_id
+                signature = self._generate_signature(signer_id, amount, ts, prev_hash)
                 
                 ledger_entry = TokenLedger(
                     user_id=user_id,
+                    org_id=org_id,
                     transaction_type=tx_type,
                     amount=amount,
                     reason=reason,
