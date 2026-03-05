@@ -9,26 +9,30 @@ from utils.logger import logger
 
 router = APIRouter(prefix="/missions", tags=["Missions"])
 
-@router.get("")
-async def list_missions() -> List[Dict[str, Any]]:
+@router.get("/list")
+async def list_missions() -> Dict[str, Any]:
     """
-    Returns a list of persisted missions from the database.
+    Returns a list of persisted missions from the database in a structured object.
     """
     try:
         with SessionLocal() as db:
             missions = db.query(SwarmMission).order_by(SwarmMission.timestamp.desc()).all()
-            return [
-                {
-                    "id": m.id,
-                    "timestamp": m.timestamp.timestamp(),
-                    "has_result": bool(m.source_code or m.file_map),
-                    "objective": m.objective,
-                    "is_multifile": m.is_multifile
-                } for m in missions
-            ]
+            return {
+                "missions": [
+                    {
+                        "id": m.id,
+                        "timestamp": m.timestamp.isoformat(),
+                        "created_at": m.timestamp.isoformat(), # Compatibility
+                        "has_result": bool(m.source_code or m.file_map),
+                        "objective": m.objective,
+                        "source_code": m.source_code, # Needed for selection in workspace
+                        "is_multifile": m.is_multifile
+                    } for m in missions
+                ]
+            }
     except Exception as e:
         logger.error(f"API: Failed to list missions: {e}")
-        return []
+        return {"missions": []}
 
 @router.get("/{mission_id}/source")
 async def get_mission_source(mission_id: str):
