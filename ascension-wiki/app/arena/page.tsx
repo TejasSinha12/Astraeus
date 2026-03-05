@@ -11,6 +11,7 @@ import "@xyflow/react/dist/style.css";
 import { RoleGate } from "@/components/auth/RoleGate";
 import { useAgentSimStore } from "@/lib/store";
 import { SIM_TRACE_SEQUENCES } from "@/lib/mock-data";
+import { ResearcherProfile } from "@/components/admin/ResearcherProfile";
 
 const API_URL = process.env.NEXT_PUBLIC_PLATFORM_API_URL || "http://localhost:8000";
 
@@ -130,7 +131,7 @@ export default function ArenaPage() {
     const { selectedAgent, task, isRunning, traceSteps, confidence, compareMode, setAgent, setTask, startSim, stopSim, pushStep, pushConfidence, reset, toggleCompareMode } = useAgentSimStore();
     const [lineage, setLineage] = useState<any[]>([]);
     const [clusters, setClusters] = useState<any[]>([]);
-    const [viewMode, setViewMode] = useState<"reasoning" | "genealogy" | "federation">("reasoning");
+    const [viewMode, setViewMode] = useState<"reasoning" | "genealogy" | "federation" | "profile">("reasoning");
 
     useEffect(() => {
         fetch(`${API_URL}/missions/lineage`)
@@ -260,11 +261,13 @@ export default function ArenaPage() {
                         </div>
                     </div>
 
-                    {/* React Flow DAG */}
-                    <div className="glass-card rounded-2xl border border-white/5 overflow-hidden" style={{ height: 420 }}>
-                        <div className="p-4 border-b border-white/5 flex justify-between items-center">
+                    {/* React Flow DAG / Profile View */}
+                    <div className="glass-card rounded-2xl border border-white/5 overflow-hidden flex flex-col" style={{ height: 420 }}>
+                        <div className="p-4 border-b border-white/5 flex justify-between items-center bg-black/20">
                             <h2 className="text-xs font-mono text-muted uppercase tracking-widest">
-                                {viewMode === "reasoning" ? "Reasoning DAG" : viewMode === "genealogy" ? "Evolution Genealogy" : "Federation Topology"}
+                                {viewMode === "reasoning" ? "Reasoning DAG" :
+                                    viewMode === "genealogy" ? "Evolution Genealogy" :
+                                        viewMode === "federation" ? "Federation Topology" : "Intelligence Profile"}
                             </h2>
                             <div className="flex gap-2">
                                 <button onClick={() => setViewMode("reasoning")} className={`px-2 py-1 rounded text-[10px] font-mono uppercase transition-colors ${viewMode === "reasoning" ? "bg-primary/20 text-primary border border-primary/50" : "bg-white/5 text-muted hover:text-white"}`}>
@@ -274,15 +277,26 @@ export default function ArenaPage() {
                                     Genealogy
                                 </button>
                                 <button onClick={() => setViewMode("federation")} className={`px-2 py-1 rounded text-[10px] font-mono uppercase transition-colors ${viewMode === "federation" ? "bg-primary/20 text-primary border border-primary/50" : "bg-white/5 text-muted hover:text-white"}`}>
-                                    Federation
+                                    Fed
+                                </button>
+                                <button onClick={() => setViewMode("profile")} className={`px-2 py-1 rounded text-[10px] font-mono uppercase transition-colors ${viewMode === "profile" ? "bg-primary/20 text-primary border border-primary/50" : "bg-white/5 text-muted hover:text-white"}`}>
+                                    Profile
                                 </button>
                             </div>
                         </div>
-                        <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} fitView proOptions={{ hideAttribution: true }}
-                            style={{ background: "transparent" }}>
-                            <Background color="rgba(255,255,255,0.03)" gap={16} />
-                            <Controls style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }} />
-                        </ReactFlow>
+                        <div className="flex-1 relative">
+                            {viewMode === "profile" ? (
+                                <div className="absolute inset-0 p-6 overflow-auto custom-scrollbar">
+                                    <ResearcherProfile />
+                                </div>
+                            ) : (
+                                <ReactFlow nodes={nodes} edges={edges} nodeTypes={nodeTypes} fitView proOptions={{ hideAttribution: true }}
+                                    style={{ background: "transparent" }}>
+                                    <Background color="rgba(255,255,255,0.03)" gap={16} />
+                                    <Controls style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }} />
+                                </ReactFlow>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
