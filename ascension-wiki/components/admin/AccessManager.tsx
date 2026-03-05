@@ -6,14 +6,15 @@ import { useState } from "react";
 import useSWR from "swr";
 import { cn } from "@/lib/utils";
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_PLATFORM_API_URL || "http://localhost:8000";
 const fetcher = (url: string) => fetch(url, { headers: { "api-key": "SYSTEM_ADMIN_BYPASS" } }).then(res => res.json());
 
 export function AccessManager() {
     const [subTab, setSubTab] = useState<"keys" | "rbac">("keys");
     const [searchQuery, setSearchQuery] = useState("");
 
-    const { data: keys, mutate: mutateKeys } = useSWR("/api/admin/keys", fetcher);
-    const { data: users, mutate: mutateUsers } = useSWR("/api/admin/users", fetcher);
+    const { data: keys, mutate: mutateKeys } = useSWR(`${API_BASE_URL}/admin/keys`, fetcher);
+    const { data: users, mutate: mutateUsers } = useSWR(`${API_BASE_URL}/admin/users`, fetcher);
 
     return (
         <motion.div
@@ -45,7 +46,7 @@ export function AccessManager() {
             <AnimatePresence mode="wait">
                 {subTab === "keys" ? (
                     <motion.div key="keys" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
-                        <SectionHeader title="API Key Registry" description="Manage institutional credentials and system bypass tokens." action={<CreateKeyBtn onCreated={mutateKeys} />} />
+                        <SectionHeader title="API Key Registry" description="Manage institutional credentials and system bypass tokens." action={<CreateKeyBtn onUpdate={mutateKeys} />} />
                         <div className="grid grid-cols-1 gap-4">
                             {keys?.keys?.map((key: any) => (
                                 <KeyCard key={key.id} apiKey={key} onUpdate={mutateKeys} />
@@ -95,7 +96,7 @@ function KeyCard({ apiKey, onUpdate }: { apiKey: any, onUpdate: () => void }) {
         if (!confirm("Are you sure you want to revoke this key? This action is irreversible.")) return;
         setIsRevoking(true);
         try {
-            await fetch(`/api/admin/keys/${apiKey.id}/revoke`, { method: "POST", headers: { "api-key": "SYSTEM_ADMIN_BYPASS" } });
+            await fetch(`${API_BASE_URL}/admin/keys/${apiKey.id}/revoke`, { method: "POST", headers: { "api-key": "SYSTEM_ADMIN_BYPASS" } });
             onUpdate();
         } finally {
             setIsRevoking(false);
@@ -149,7 +150,7 @@ function UserRow({ user, onUpdate }: { user: any, onUpdate: () => void }) {
 
     const handleRoleChange = async (newRole: string) => {
         try {
-            await fetch(`/api/admin/users/${user.id}/role`, {
+            await fetch(`${API_BASE_URL}/admin/users/${user.id}/role`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "api-key": "SYSTEM_ADMIN_BYPASS" },
                 body: JSON.stringify({ role: newRole })
@@ -221,7 +222,7 @@ function SectionHeader({ title, description, action }: { title: string, descript
     );
 }
 
-function CreateKeyBtn({ onCreated }: { onCreated: () => void }) {
+function CreateKeyBtn({ onUpdate }: { onUpdate: () => void }) {
     const [isCreating, setIsCreating] = useState(false);
 
     const handleClick = async () => {
@@ -229,12 +230,12 @@ function CreateKeyBtn({ onCreated }: { onCreated: () => void }) {
         if (!name) return;
         setIsCreating(true);
         try {
-            await fetch("/api/admin/keys/create", {
+            await fetch(`${API_BASE_URL}/admin/keys/create`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "api-key": "SYSTEM_ADMIN_BYPASS" },
                 body: JSON.stringify({ name })
             });
-            onCreated();
+            onUpdate();
         } finally {
             setIsCreating(false);
         }
