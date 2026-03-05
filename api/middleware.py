@@ -44,9 +44,6 @@ async def rbac_middleware(request: Request, call_next):
     response = await call_next(request)
     return response
 
-    response = await call_next(request)
-    return response
-
 def log_audit_trail(user_id: str, action: str, metadata: dict):
     """
     Persists high-risk actions to the AuditLog table.

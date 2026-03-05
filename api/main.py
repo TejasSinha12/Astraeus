@@ -50,11 +50,19 @@ app.add_middleware(
 )
 
 # Initialize Economy Services
-reasoning = ReasoningEngine()
-coordinator = GlobalCoordinator(reasoning)
-ledger_service = TokenLedgerService()
-pricing_engine = AdaptivePricingEngine(coordinator)
-abuse_detector = AbuseDetector()
+try:
+    reasoning = ReasoningEngine()
+    coordinator = GlobalCoordinator(reasoning)
+    ledger_service = TokenLedgerService()
+    pricing_engine = AdaptivePricingEngine(coordinator)
+    abuse_detector = AbuseDetector()
+except Exception as e:
+    logger.error(f"INIT ERROR: Service initialization failed: {e}")
+    reasoning = None
+    coordinator = None
+    ledger_service = TokenLedgerService()
+    pricing_engine = None
+    abuse_detector = None
 
 # Initialize decoupled service adapter
 adapter = CoreAdapter()
@@ -148,19 +156,24 @@ async def get_user_status(x_clerk_user_id: str = Header(...)):
 
 @app.on_event("startup")
 def startup_db():
-    from api.usage_db import init_platform_db, SessionLocal, SubscriptionPlan
-    init_platform_db()
-    
-    # Seed Plans if missing
-    with SessionLocal() as db:
-        if not db.query(SubscriptionPlan).first():
-            plans = [
-                SubscriptionPlan(id="free_tier", name="Free", monthly_token_limit=5000, access_level=1),
-                SubscriptionPlan(id="research_tier", name="Researcher", monthly_token_limit=50000, access_level=2),
-                SubscriptionPlan(id="admin_tier", name="Admin", monthly_token_limit=1000000, access_level=3)
-            ]
-            db.add_all(plans)
-            db.commit()
-            logger.info("API: Subscription plans seeded.")
-    
-    logger.info("Ascension Intelligence Economy Online.")
+    try:
+        from api.usage_db import init_platform_db, SessionLocal, SubscriptionPlan
+        init_platform_db()
+        
+        # Seed Plans if missing
+        with SessionLocal() as db:
+            if not db.query(SubscriptionPlan).first():
+                plans = [
+                    SubscriptionPlan(id="free_tier", name="Free", monthly_token_limit=5000, access_level=1),
+                    SubscriptionPlan(id="research_tier", name="Researcher", monthly_token_limit=50000, access_level=2),
+                    SubscriptionPlan(id="admin_tier", name="Admin", monthly_token_limit=1000000, access_level=3)
+                ]
+                db.add_all(plans)
+                db.commit()
+                logger.info("API: Subscription plans seeded.")
+        
+        logger.info("Ascension Intelligence Economy Online.")
+    except Exception as e:
+        logger.error(f"STARTUP ERROR: Database initialization failed: {e}")
+        logger.warning("API will start in DEGRADED mode. Some features may be unavailable.")
+
