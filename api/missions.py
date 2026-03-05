@@ -9,6 +9,7 @@ from utils.logger import logger
 
 router = APIRouter(prefix="/missions", tags=["Missions"])
 
+@router.get("/")
 @router.get("/list")
 async def list_missions() -> Dict[str, Any]:
     """

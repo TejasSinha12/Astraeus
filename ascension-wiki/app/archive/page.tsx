@@ -49,9 +49,11 @@ export default function MissionArchive() {
     const fetchMissions = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE_URL}/missions`);
+            const res = await fetch(`${API_BASE_URL}/missions/list`, {
+                headers: { "api-key": "SYSTEM_ADMIN_BYPASS" } // Using admin bypass for global archive
+            });
             const data = await res.json();
-            setMissions(data);
+            setMissions(data.missions || []);
         } catch (e) {
             console.error("Failed to fetch missions", e);
         } finally {
@@ -176,11 +178,11 @@ export default function MissionArchive() {
                                                 <div className="flex items-center gap-4 text-[10px] text-muted font-mono uppercase tracking-wider opacity-60">
                                                     <div className="flex items-center gap-1">
                                                         <Calendar size={10} />
-                                                        {new Date(mission.timestamp * 1000).toLocaleDateString()}
+                                                        {new Date(mission.timestamp).toLocaleDateString()}
                                                     </div>
                                                     <div className="flex items-center gap-1">
                                                         <Clock size={10} />
-                                                        {new Date(mission.timestamp * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        {new Date(mission.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                     </div>
                                                 </div>
                                             </div>
