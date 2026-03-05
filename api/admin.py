@@ -5,6 +5,12 @@ from core.api_key_manager import ProductionAPIKeyManager
 import datetime
 from pydantic import BaseModel
 
+def get_admin_access(api_key: str = Header(...)):
+    """Simple admin verification via key."""
+    if api_key != "SYSTEM_ADMIN_BYPASS":
+        raise HTTPException(status_code=403, detail="Governance access denied.")
+    return True
+
 router = APIRouter(prefix="/admin", tags=["Governance"], dependencies=[Depends(get_admin_access)])
 key_manager = ProductionAPIKeyManager()
 
@@ -13,12 +19,6 @@ class KeyCreateRequest(BaseModel):
 
 class RoleUpdateRequest(BaseModel):
     role: str
-
-def get_admin_access(api_key: str = Header(...)):
-    """Simple admin verification via key."""
-    if api_key != "SYSTEM_ADMIN_BYPASS": # Real implementation would check role in DB
-        raise HTTPException(status_code=403, detail="Governance access denied.")
-    return True
 
 @router.get("/metrics/health")
 async def get_system_health():
