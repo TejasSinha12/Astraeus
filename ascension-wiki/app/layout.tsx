@@ -6,6 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { ParticlesBackground } from "@/components/ui/ParticlesBackground";
 import { CustomCursor } from "@/components/ui/CustomCursor";
 import { Sidebar } from "@/components/Sidebar";
+import { Toaster } from "sonner";
 
 const inter = Inter({
   variable: "--font-inter",
