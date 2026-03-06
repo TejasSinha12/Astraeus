@@ -3,7 +3,8 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Terminal, Send, Zap, Brain, Loader2, Code, Download, History, Pin, Maximize2, Layers, AlertTriangle, X, Search, Clock } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 // Custom Components
@@ -92,6 +93,8 @@ export default function ProfessionalWorkspace() {
     }, [objective, isExecuting]);
 
     // ─── Swarm Execution Logic ───────────────────────────────────────────────
+    const { getToken } = useAuth();
+
     const handleExecute = async () => {
         if (!objective || isExecuting) return;
 
@@ -103,11 +106,26 @@ export default function ProfessionalWorkspace() {
         const startTime = Date.now();
 
         try {
+            const token = await getToken();
             const response = await fetch(`${API_BASE_URL}/execute/stream`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
                 body: JSON.stringify({ objective, user_id: user?.id, mode: "professional" })
             });
+
+            if (!response.ok) {
+                if (response.status === 402) {
+                    toast.error("Insufficient tokens. Please top up your account.");
+                } else if (response.status === 429) {
+                    toast.error("Rate limit exceeded. Too many concurrent executions.");
+                } else {
+                    toast.error(`Execution failed: ${response.statusText}`);
+                }
+                throw new Error("HTTP " + response.status);
+            }
 
             const reader = response.body?.getReader();
             const decoder = new TextDecoder();
@@ -122,31 +140,44 @@ export default function ProfessionalWorkspace() {
                 const lines = chunk.split("\n").filter(Boolean);
 
                 for (const line of lines) {
-                    const data = JSON.parse(line);
+                    try {
+                        const data = JSON.parse(line);
 
-                    if (data.status === "THINKING" || data.status === "PLANNING" || data.status === "DESIGN" || data.status === "IMPLEMENT" || data.status === "AUDIT") {
-                        setLogs(prev => [...prev, `[${data.status}] ${data.message}`]);
-                        setTraceSteps(prev => [...prev, { status: data.status, message: data.message, timestamp: new Date().toLocaleTimeString() }]);
-                    } else if (data.status === "PROCESSING") {
-                        setLogs(prev => [...prev, "[PROCESSING] Swarm thinking..."]);
-                    } else if (data.status === "RESULT") {
-                        setCodeResult(data.message);
-                        setLogs(prev => [...prev, "[SUCCESS] Tactical solution generated."]);
-                        setMetrics(prev => ({ ...prev, confidence: 0.98, latency: Date.now() - startTime }));
-                    } else if (data.status === "COMPLETED") {
-                        setLogs(prev => [...prev, `[${data.status}] Mission Absolute.`]);
-                        if (data.storage_path) setStoragePath(data.storage_path);
-                        fetchHistory();
-                    } else if (data.status === "ERROR") {
-                        setLogs(prev => [...prev, `[ERROR] ${data.message}`]);
-                        if (data.message.includes("429") || data.message.includes("quota")) {
-                            setIsModelFallback(true);
-                            // Auto-mock simulation if quota hits
-                            setTimeout(() => {
-                                setCodeResult(`<!DOCTYPE html><html><head><style>body{background:#0a0a0a;color:#00e5ff;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;} .card{background:rgba(255,255,255,0.05);padding:40px;border-radius:20px;border:1px solid rgba(0,229,255,0.2);box-shadow:0 0 50px rgba(0,229,255,0.1);text-align:center;} h1{font-size:3rem;margin-bottom:10px;text-transform:uppercase;letter-spacing:5px;} p{opacity:0.6;font-family:monospace;}</style></head><body><div class="card"><h1>Swarm Matrix</h1><p>Mission: ${objective}</p><p>Status: Simulated Tactical Result</p></div></body></html>`);
-                                setLogs(prev => [...prev, "[SYSTEM] Quota fail-safe active. Swarm simulating objective in local memory."]);
-                            }, 1000);
+                        if (data.status === "THINKING" || data.status === "PLANNING" || data.status === "DESIGN" || data.status === "IMPLEMENT" || data.status === "AUDIT") {
+                            setLogs(prev => [...prev, `[${data.status}] ${data.message}`]);
+                            setTraceSteps(prev => [...prev, { status: data.status, message: data.message, timestamp: new Date().toLocaleTimeString() }]);
+                        } else if (data.status === "PROCESSING") {
+                            setLogs(prev => [...prev, "[PROCESSING] Swarm thinking..."]);
+                        } else if (data.status === "RESULT") {
+                            setCodeResult(data.message);
+                            setLogs(prev => [...prev, "[SUCCESS] Tactical solution generated."]);
+                            setMetrics(prev => ({ ...prev, confidence: 0.98, latency: Date.now() - startTime }));
+                        } else if (data.status === "COMPLETED") {
+                            setLogs(prev => [...prev, `[${data.status}] Mission Absolute.`]);
+                            toast.success("Swarm Mission Executed Successfully");
+                            if (data.storage_path) setStoragePath(data.storage_path);
+
+                            // Visual Deduction
+                            const cost = 150; // Approximated metric
+                            setUserStatus(prev => ({ ...prev, balance: Math.max(0, prev.balance - cost) }));
+                            setMetrics(prev => ({ ...prev, cost: prev.cost + cost, tokens: prev.tokens + 1500 }));
+                            fetchHistory();
+                        } else if (data.status === "ERROR") {
+                            setLogs(prev => [...prev, `[ERROR] ${data.message}`]);
+                            toast.error(data.message.includes("quota") ? "Execution halted due to quota limit." : `Swarm Error: ${data.message}`);
+
+                            if (data.message.includes("429") || data.message.includes("quota")) {
+                                setIsModelFallback(true);
+                                // Auto-mock simulation if quota hits
+                                setTimeout(() => {
+                                    setCodeResult(`<!DOCTYPE html><html><head><style>body{background:#0a0a0a;color:#00e5ff;font-family:sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;} .card{background:rgba(255,255,255,0.05);padding:40px;border-radius:20px;border:1px solid rgba(0,229,255,0.2);box-shadow:0 0 50px rgba(0,229,255,0.1);text-align:center;} h1{font-size:3rem;margin-bottom:10px;text-transform:uppercase;letter-spacing:5px;} p{opacity:0.6;font-family:monospace;}</style></head><body><div class="card"><h1>Swarm Matrix</h1><p>Mission: ${objective}</p><p>Status: Simulated Tactical Result</p></div></body></html>`);
+                                    setLogs(prev => [...prev, "[SYSTEM] Quota fail-safe active. Swarm simulating objective in local memory."]);
+                                    toast.info("Simulated fallback execution deployed.");
+                                }, 1000);
+                            }
                         }
+                    } catch (err) {
+                        // ignore unparseable chunks
                     }
                 }
             }
