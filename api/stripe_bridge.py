@@ -41,15 +41,13 @@ async def stripe_webhook(request: Request, stripe_signature: str = Header(None))
         # 3. Credit the User Account
         logger.info(f"BILLING: Processing credit for {user_id} -> {token_gain} tokens.")
         
-        # In a real scenario, we'd use billing.record_execution_cost for DEBITS
-        # and a separate balance credit method. For now, we update UserBalance.
-        from api.usage_db import UserBalance
-        with SessionLocal() as db:
-            balance = db.query(UserBalance).filter(UserBalance.user_id == user_id).first()
-            if balance:
-                balance.credit_balance += token_gain
-                db.commit()
-                logger.info(f"BILLING: Credited {token_gain} tokens to {user_id}")
-                return {"status": "success"}
+        from api.token_accounting import TokenAccountingSystem
+        success = TokenAccountingSystem.top_up_tokens(user_id, int(token_gain), session_id)
+        if success:
+            logger.info(f"BILLING: Successfully credited {token_gain} tokens to {user_id}")
+            return {"status": "success"}
+        else:
+            logger.error(f"BILLING: Failed to credit {token_gain} tokens to {user_id}")
+            return {"status": "failed", "reason": "top_up_failed"}
 
     return {"status": "ignored"}
