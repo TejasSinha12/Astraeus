@@ -1,56 +1,67 @@
-# Ascension Platform Gateway 🌐 (v5.0.0)
+# Astraeus Frontend — Swarm Management Console 🌐
 
-> **The Swarm Management Console**: A production-grade interface for managing API execution, real-time telemetry, and enterprise-grade governance.
-
-This is the primary developer and administrator interface for the **Project Ascension Ecosystem**. It provides high-fidelity visualization and control over the Swarm Execution API and its underlying infrastructure.
+> The administrative and developer interface for the [Astraeus Intelligence Platform](https://astraeus-livid.vercel.app).
 
 ---
 
-## � Platform Pillars
+## Pages
 
-### 1. Swarm Execution API
-- **Execution Arena**: Real-time visualization of multi-agent reasoning flows and agent orchestration.
-- **Mission Archive**: Full persistence layer for every swarm execution, with ZIP artifact bundling and code visualization.
-- **Benchmarks Dashboard**: High-fidelity tracking of model performance, token efficiency, and fitness deltas.
-
-### 2. Developer Infrastructure
-- **API Key Console**: Secure management of programmatic access keys with granular, scoped permissions.
-- **Billing Portal**: Integrated Stripe bridge for real-time credit top-ups, transaction history, and metering analytics.
-- **Usage Telemetry**: Integrated OpenTelemetry dashboard showcasing live request spans and execution traces.
-
-### 3. Enterprise Governance
-- **Audit Logs**: Cryptographically signed records of all administrative and execution actions.
-- **RBAC Management**: Multi-tenant organization control with role-based visibility (Admin / Enterprise / Developer).
-- **Compliance Export**: Standardized telemetry exports for external auditing and institutional reporting.
+| Route | Page | Description |
+|-------|------|-------------|
+| `/coding` | **Workspace** | Professional IDE with split-pane editor, live HTML preview, SSE telemetry meters, mission DAG, and diff comparison |
+| `/arena` | **Agent Arena** | Real-time agent simulation with reasoning traces, confidence graphs, evolution genealogy, federation topology, and researcher profile |
+| `/archive` | **Mission Archive** | Browse, inspect, and export all swarm-generated code artifacts with multi-file support |
+| `/control/governance` | **Governance Console** | Admin dashboard: system health, revenue analytics, audit logs, access control, and team billing |
 
 ---
 
-## 🏗️ Technical Stack
-
-The gateway is built as a highly optimized consumer for the **Project Ascension REST API**:
+## Tech Stack
 
 - **Framework**: Next.js 15+ (App Router)
-- **Authentication**: Clerk JWT-based RBAC
-- **Visualization**: Framer Motion, Recharts, React Flow
-- **Observability**: OpenTelemetry / Structured Logging
+- **Authentication**: Clerk (JWT-based RBAC)
+- **Visualization**: Framer Motion, Recharts, React Flow, Lucide Icons
+- **State Management**: Zustand + SWR
+- **Styling**: Custom CSS with glassmorphism design system
 
 ---
 
-## 🛠️ Configuration
+## Setup
 
-### Environment Setup
-Create a `.env.local` file:
-```env
+```bash
+npm install
+
+# Create .env.local
+cat > .env.local << EOF
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
-
-# API Connection
 NEXT_PUBLIC_PLATFORM_API_URL=https://astraeus-r4pf.onrender.com
+EOF
+
+npm run dev
 ```
 
 ---
 
-## 🛡️ Operational Security
-- **JWT-Gated Security**: All API interactions are gated by Clerk-authenticated session tokens.
-- **Immutable Ledgers**: Economic and execution data is synced from the cryptographically signed PostgreSQL backend.
-- **Sanitized Streams**: Live logs and telemetry are filtered to protect system prompts and environment keys.
+## Key Components
+
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `GovernanceDashboard` | `components/admin/` | Tab-based admin console (Health, Revenue, Audit, Access, Team Billing) |
+| `TeamBilling` | `components/admin/` | Institutional credit pool management |
+| `AccessManager` | `components/admin/` | API key and user role management |
+| `ResearcherProfile` | `components/admin/` | GitHub-style radar chart and contribution map |
+| `TelemetryMeters` | `components/coding/` | Real-time token, latency, confidence, and cost gauges |
+| `TraceSidebar` | `components/coding/` | Live execution logs and reasoning step inspector |
+| `MissionDAG` | `components/coding/` | React Flow visualization of swarm reasoning steps |
+| `RoleGate` | `components/auth/` | Clerk-based RBAC wrapper for protected routes |
+
+---
+
+## Deployment
+
+Deploy to [Vercel](https://vercel.com):
+1. Connect the `ascension-wiki` directory as the root
+2. Set environment variables in Vercel dashboard
+3. Deploy — auto-builds on every push to `main`
+
+**Live**: [astraeus-livid.vercel.app](https://astraeus-livid.vercel.app)
