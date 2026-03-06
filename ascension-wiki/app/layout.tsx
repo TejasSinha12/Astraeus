@@ -38,6 +38,14 @@ export default function RootLayout({
           <main className="md:pl-64 flex-1 min-h-screen relative z-10 pt-16">
             {children}
           </main>
+          <Toaster
+            theme="dark"
+            position="bottom-right"
+            toastOptions={{
+              className: "border border-white/10 bg-surface text-white font-sans",
+              descriptionClassName: "text-muted font-mono text-xs mt-1"
+            }}
+          />
         </body>
       </html>
     </ClerkProvider>

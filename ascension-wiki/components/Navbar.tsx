@@ -15,6 +15,7 @@ export function Navbar() {
     const isAdmin = isLoaded && userRole.toUpperCase() === "ADMIN";
 
     const navLinks = [
+        { href: "/pricing", label: "Pricing" },
         { href: "/docs/core", label: "Docs" },
         ...(isAdmin
             ? [{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard }]

@@ -22,7 +22,11 @@ class TokenAccountingSystem:
         with SessionLocal() as db:
             user = db.query(UserAccount).filter(UserAccount.id == user_id).first()
             if not user:
-                return (0, None, 1)
+                # UX: Auto-provision 100 starter credits for brand new signups
+                user = UserAccount(id=user_id, email=f"auth_user_{user_id[:8]}@ascension.ai", role="PUBLIC", plan_id="free_tier", token_balance=100)
+                db.add(user)
+                db.commit()
+                return (100, "PUBLIC", 1)
             
             # 1. Resolve to Organization if member
             if user.org_id:

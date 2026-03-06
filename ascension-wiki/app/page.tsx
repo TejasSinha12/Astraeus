@@ -1,57 +1,160 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
-import { motion } from "framer-motion";
-import { ArrowRight, Terminal, Zap, Shield, BarChart3, Lock, Cpu, Database } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Terminal, Zap, Shield, Cpu, Play, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 export default function Home() {
+  const [demoState, setDemoState] = useState<"idle" | "running" | "completed">("idle");
+  const [demoLogs, setDemoLogs] = useState<string[]>([]);
+
+  // Simulate a live swarm execution for the demo
+  useEffect(() => {
+    if (demoState !== "running") return;
+
+    setDemoLogs([]);
+    const executionLogs = [
+      { text: "> SYSTEM: Initializing Swarm Cluster...", delay: 200 },
+      { text: "> COORD: Dispatched [Architect, Implementer, Auditor]", delay: 800 },
+      { text: "> ARCHITECT: Analyzing objective structure...", delay: 1500 },
+      { text: "> IMPLEMENTER: Generating secure authentication payload.", delay: 2200 },
+      { text: "> AUDITOR: Validating generated payload. Status: PASS.", delay: 3100 },
+      { text: "> LEDGER: Verifying Cryptographic Signature. OK.", delay: 3500 },
+      { text: "> SYSTEM: Mission Completed successfully.", delay: 4200 },
+    ];
+
+    let timeouts: NodeJS.Timeout[] = [];
+    executionLogs.forEach((log) => {
+      const timeout = setTimeout(() => {
+        setDemoLogs((prev) => [...prev, log.text]);
+        if (log.text.includes("Mission Completed")) {
+          setTimeout(() => setDemoState("completed"), 800);
+        }
+      }, log.delay);
+      timeouts.push(timeout);
+    });
+
+    return () => timeouts.forEach((t) => clearTimeout(t));
+  }, [demoState]);
+
   return (
     <div className="min-h-screen pt-20 pb-16 px-4 sm:px-8 md:px-12 lg:px-20 max-w-7xl mx-auto flex flex-col items-center relative overflow-hidden font-inter">
+
+      {/* Dynamic Background Glow */}
+      <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/20 blur-[120px] rounded-full pointer-events-none -z-10 animate-pulse-slow" />
+
       {/* Hero Section */}
       <motion.section
-        className="w-full flex flex-col items-center text-center mt-10 md:mt-20 mb-24"
-        initial={{ opacity: 0, y: 20 }}
+        className="w-full flex flex-col items-center text-center mt-6 md:mt-16 mb-24"
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
       >
         <motion.div
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/10 bg-white/5 text-muted text-[10px] font-mono uppercase tracking-widest mb-8"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-primary/30 bg-primary/5 text-primary text-[11px] font-mono uppercase tracking-widest mb-8 backdrop-blur-md box-glow"
+          whileHover={{ scale: 1.05 }}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-          Production API • v5.0.0
+          <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+          Astraeus v5.0 is Live
         </motion.div>
 
-        <h1 className="text-5xl sm:text-6xl md:text-8xl font-bold tracking-tight text-white mb-6">
-          Swarm-as-a-<span className="text-primary">Service</span>
+        <h1 className="text-5xl sm:text-7xl md:text-[5.5rem] font-extrabold tracking-tight text-white mb-6 leading-tight">
+          Next-Gen <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Swarm AGI</span>
         </h1>
 
-        <p className="text-base md:text-lg text-muted max-w-2xl mx-auto mb-10 leading-relaxed font-fira-code">
-          Deploy production-grade multi-agent reasoning. Reliable swarm execution with deterministic logs, structured telemetry, and enterprise-grade observability.
+        <p className="text-lg md:text-xl text-muted max-w-3xl mx-auto mb-12 leading-relaxed font-sans">
+          Deploy production-grade multi-agent reasoning. Replace brittle LLM calls with a high-performance Swarm Execution API featuring deterministic logs, structured telemetry, and enterprise billing.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col sm:flex-row gap-5 items-center">
           <Link href="/sign-up">
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-8 py-4 rounded-lg bg-primary text-background font-bold flex items-center gap-2 transition-all hover:bg-primary/90 box-glow"
+              whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(0,229,255,0.4)" }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-4 rounded-xl bg-primary text-background font-bold flex items-center gap-2 transition-all box-glow text-lg"
             >
-              Get API Key
-              <ArrowRight size={18} />
+              Start Building Free
+              <ArrowRight size={20} />
             </motion.button>
           </Link>
-          <Link href="/docs/core">
+          <Link href="/docs/api">
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="px-8 py-4 rounded-lg bg-surface border border-white/5 text-white font-medium flex items-center gap-2 hover:bg-surface-hover transition-all"
+              whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.05)" }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-4 rounded-xl glass border border-white/10 text-white font-medium flex items-center gap-2 transition-all text-lg"
             >
-              <Terminal size={18} />
-              View Docs
+              <Terminal size={20} />
+              Read the Docs
             </motion.button>
           </Link>
+        </div>
+      </motion.section>
+
+      {/* Live Interactive Demo Section */}
+      <motion.section
+        className="w-full max-w-4xl mx-auto mb-32"
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ duration: 0.7 }}
+      >
+        <div className="glass-card rounded-2xl overflow-hidden border border-white/10 shadow-2xl relative">
+
+          {/* Terminal Header */}
+          <div className="bg-black/50 border-b border-white/5 px-4 py-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-red-500/80" />
+              <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
+              <div className="w-3 h-3 rounded-full bg-green-500/80" />
+              <span className="ml-4 text-xs font-mono text-muted">astraeus-terminal — zsh</span>
+            </div>
+            <button
+              onClick={() => demoState === "idle" || demoState === "completed" ? setDemoState("running") : null}
+              disabled={demoState === "running"}
+              className="flex items-center gap-1.5 px-3 py-1 bg-white/5 hover:bg-white/10 rounded font-mono text-xs text-primary border border-white/10 transition-colors disabled:opacity-50"
+            >
+              {demoState === "running" ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
+              {demoState === "running" ? "EXECUTING..." : "RUN DEMO"}
+            </button>
+          </div>
+
+          {/* Terminal Body */}
+          <div className="p-6 bg-[#0a0f1a] min-h-[280px] font-mono text-sm">
+            <div className="text-white/70 mb-4 flex items-center gap-2">
+              <span className="text-green-400">user@ascension</span>
+              <span className="text-white/40">~ %</span>
+              <span className="text-blue-300">curl -X POST /v1/execute/swarm -d '{"{"} "objective": "build_auth" {"}"}'</span>
+            </div>
+
+            <div className="space-y-2">
+              <AnimatePresence>
+                {demoLogs.map((log, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className={`flex items-start gap-2 ${log.includes("PASS") || log.includes("OK") || log.includes("successfully") ? "text-green-400" : log.includes("SYSTEM") ? "text-primary" : "text-muted"}`}
+                  >
+                    <span>{log}</span>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+
+              {demoState === "completed" && (
+                <motion.div
+                  initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
+                  className="mt-6 p-4 rounded bg-green-500/10 border border-green-500/20 text-green-400 flex items-center justify-between"
+                >
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 size={18} />
+                    <span>Response Generated: 4 files created. (Cost: 0.05 credits)</span>
+                  </div>
+                  <Link href="/sign-up" className="text-xs underline hover:text-green-300">View in Workspace &rarr;</Link>
+                </motion.div>
+              )}
+            </div>
+          </div>
         </div>
       </motion.section>
 
@@ -60,53 +163,23 @@ export default function Home() {
         <PillarCard
           icon={<Cpu className="text-primary" />}
           title="Swarm Execution API"
-          description="High-performance multi-agent reasoning endpoints. Move beyond direct LLM calls with deterministic, validated agent orchestration."
-          features={["Reasoning Swarm Clusters", "Atomic Execution Flow", "Fitness-Gated Promotion"]}
+          description="Move beyond brittle single-shot LLM calls. Astraeus orchestrates Planners, Architects, and Auditors concurrently to solve complex logic."
+          features={["Multi-Agent Consensus", "Atomic Execution Flow", "Fitness-Gated Validation"]}
         />
         <PillarCard
           icon={<Zap className="text-primary" />}
           title="Developer Infrastructure"
           description="Build it right from day one. Managed API keys, real-time usage telemetry, automated Stripe billing, and mission persistence."
-          features={["Scoped Key Management", "Cost-Aware Metering", "Stripe Billing Bridge"]}
+          features={["Scoped Key Management", "Token Rate Limiting", "Stripe Billing Bridge"]}
         />
         <PillarCard
           icon={<Shield className="text-primary" />}
-          title="Enterprise Governance"
-          description="Auditability by default. Immutable ledgers, cryptographically signed logs, RBAC, and OTel-compatible telemetry exports."
-          features={["Signed Billing Ledger", "RBAC / Multi-tenancy", "Security Audit Logs"]}
+          title="Institutional Governance"
+          description="Auditability by design. Immutable ledgers, cryptographically signed logs, Team Billing, and OTel-compatible telemetry exports."
+          features={["Signed Billing Ledger", "Organization Credit Pools", "Security Audit Logs"]}
         />
       </section>
 
-      {/* Technical Detail / CTA Section */}
-      <motion.section
-        className="w-full py-16 px-8 rounded-2xl bg-white/5 border border-white/10 flex flex-col md:flex-row items-center justify-between gap-12"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-      >
-        <div className="max-w-xl">
-          <h2 className="text-3xl font-bold text-white mb-4">Scalable Auditability</h2>
-          <p className="text-muted mb-8 leading-relaxed">
-            Ascension instrumented the entire request lifecycle with OpenTelemetry. Signal to your enterprise partners that every token used and every decision made is traceable and auditable.
-          </p>
-          <Link href="/whitepaper">
-            <button className="text-primary font-mono text-xs flex items-center gap-2 hover:underline">
-              REQUEST ENTERPRISE ACCESS <ArrowRight size={14} />
-            </button>
-          </Link>
-        </div>
-        <div className="w-full md:w-auto p-6 bg-black/40 rounded-xl border border-white/5 font-mono text-[11px] text-primary/70">
-          <pre>
-            {`$ curl -H "x-api-key: \${KEY}" \\
-   -X POST /v1/execute/swarm \\
-   -d '{"objective": "refactor_auth"}'
-
-> STATUS: EXECUTING [DEPTH: 5]
-> TRACE_ID: b4f1a...
-> LEDGER: SIGNED_AND_COMMITTED`}
-          </pre>
-        </div>
-      </motion.section>
     </div>
   );
 }
@@ -115,18 +188,18 @@ function PillarCard({ icon, title, description, features }: any) {
   return (
     <motion.div
       className="p-8 rounded-2xl bg-surface border border-white/5 hover:border-primary/20 transition-all flex flex-col gap-6"
-      whileHover={{ y: -5 }}
+      whileHover={{ y: -5, boxShadow: "0 10px 30px -10px rgba(0,229,255,0.1)" }}
     >
-      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+      <div className="w-14 h-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center box-glow">
         {icon}
       </div>
       <div>
         <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
         <p className="text-sm text-muted leading-relaxed mb-6">{description}</p>
-        <ul className="flex flex-col gap-2">
+        <ul className="flex flex-col gap-3">
           {features.map((f: string) => (
-            <li key={f} className="text-[11px] font-mono text-muted/60 flex items-center gap-2">
-              <div className="w-1 h-1 rounded-full bg-primary/40" />
+            <li key={f} className="text-[12px] font-mono text-muted/70 flex items-center gap-3">
+              <div className="w-1.5 h-1.5 rounded-full bg-primary/40 box-glow" />
               {f.toUpperCase()}
             </li>
           ))}
