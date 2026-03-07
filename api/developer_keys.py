@@ -18,7 +18,7 @@ class KeyResponse(BaseModel):
     label: str
     scopes: List[str]
     created_at: datetime.datetime
-    is_active: boolean
+    is_active: bool
     prefix: str = "ast_"
 
 @router.post("/generate")

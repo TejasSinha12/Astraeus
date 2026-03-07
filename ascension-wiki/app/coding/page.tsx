@@ -223,8 +223,9 @@ export default function ProfessionalWorkspace() {
     };
 
     const handleDeployToGithub = async () => {
-        if (!codeResult || !repoName || !ghToken) {
-            toast.error("Repository name and GitHub Token are required for deployment.");
+        const needsToken = !isGitHubConnected;
+        if (!codeResult || !repoName || (needsToken && !ghToken)) {
+            toast.error(needsToken ? "Repository name and GitHub Token are required." : "Repository name is required.");
             return;
         }
 
@@ -241,7 +242,7 @@ export default function ProfessionalWorkspace() {
                 body: JSON.stringify({
                     mission_id: storagePath ? storagePath.split('/').pop() : "latest",
                     repo_name: repoName,
-                    github_token: ghToken,
+                    github_token: needsToken ? ghToken : undefined,
                     title: `Swarm Mission: ${objective.slice(0, 50)}`,
                 })
             });
