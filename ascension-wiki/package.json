@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^6.38.1",
+    "@monaco-editor/react": "^4.7.0",
     "@stripe/stripe-js": "^8.9.0",
     "@xyflow/react": "^12.10.1",
     "clsx": "^2.1.1",
