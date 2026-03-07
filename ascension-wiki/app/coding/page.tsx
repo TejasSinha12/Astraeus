@@ -54,6 +54,9 @@ export default function ProfessionalWorkspace() {
     const [ghToken, setGhToken] = useState("");
     const [repoName, setRepoName] = useState("");
 
+    const githubAccount = user?.externalAccounts.find(a => a.provider === "github");
+    const isGitHubConnected = !!githubAccount;
+
     // History & DevEx
     const [history, setHistory] = useState<any[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
@@ -458,15 +461,23 @@ export default function ProfessionalWorkspace() {
                                 <ExportBtn
                                     icon={isDeploying ? <Loader2 size={12} className="animate-spin" /> : <Github size={12} />}
                                     onClick={() => {
-                                        const repo = prompt("Enter GitHub Repo (username/repo):", repoName);
-                                        const pat = prompt("Enter GitHub Personal Access Token (for PR creation):", ghToken);
-                                        if (repo && pat) {
-                                            setRepoName(repo);
-                                            setGhToken(pat);
-                                            handleDeployToGithub();
+                                        if (isGitHubConnected) {
+                                            const repo = prompt("Enter GitHub Repo (username/repo):", repoName);
+                                            if (repo) {
+                                                setRepoName(repo);
+                                                handleDeployToGithub();
+                                            }
+                                        } else {
+                                            const repo = prompt("Enter GitHub Repo (username/repo):", repoName);
+                                            const pat = prompt("Enter GitHub Personal Access Token:", ghToken);
+                                            if (repo && pat) {
+                                                setRepoName(repo);
+                                                setGhToken(pat);
+                                                handleDeployToGithub();
+                                            }
                                         }
                                     }}
-                                    title="Deploy to GitHub"
+                                    title={isGitHubConnected ? "Deploy (Clerk Linked)" : "Deploy to GitHub"}
                                 />
                                 <ExportBtn icon={<Download size={12} />} onClick={() => handleExport("zip")} title="ZIP Archive" />
                                 <ExportBtn icon={<History size={12} />} onClick={() => handleExport("json")} title="JSON Trace" />

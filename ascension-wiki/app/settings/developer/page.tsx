@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useAuth } from "@clerk/nextjs";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { motion, AnimatePresence } from "framer-motion";
 import { Key, Plus, Trash2, Copy, Check, ShieldAlert, Cpu, Database, Network, Github, Link as LinkIcon, ExternalLink, Globe, Bell, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -11,15 +11,18 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_PLATFORM_API_URL || "http://localho
 
 export default function DeveloperSettings() {
     const { getToken, userId } = useAuth();
+    const { user } = useUser();
     const [keys, setKeys] = useState<any[]>([]);
     const [isGenerating, setIsGenerating] = useState(false);
     const [newKeyLabel, setNewKeyLabel] = useState("");
     const [freshKey, setFreshKey] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [isGitHubConnected, setIsGitHubConnected] = useState(false);
-    const [githubUser, setGithubUser] = useState<string | null>(null);
     const [webhookUrl, setWebhookUrl] = useState("");
     const [isSavingWebhook, setIsSavingWebhook] = useState(false);
+
+    const githubAccount = user?.externalAccounts.find(a => a.provider === "github");
+    const isGitHubConnected = !!githubAccount;
+    const githubUser = (githubAccount as any)?.username || (githubAccount as any)?.id;
 
     const fetchKeys = async () => {
         try {
@@ -212,20 +215,22 @@ export default function DeveloperSettings() {
                                 </div>
                                 <button
                                     onClick={() => {
-                                        // Simplified simulation for demo, in production this triggers Clerk GitHub OAuth
-                                        setIsGitHubConnected(true);
-                                        setGithubUser("tejas-sinha");
-                                        toast.success("GitHub Account Linked");
+                                        if (isGitHubConnected) {
+                                            window.open("https://accounts.astraeus.ai/user/profile", "_blank");
+                                        } else {
+                                            // Trigger Clerk OAuth flow for GitHub
+                                            user?.createExternalAccount({ strategy: "oauth_github", redirectUrl: window.location.href });
+                                        }
                                     }}
                                     className={cn(
                                         "px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all",
                                         isGitHubConnected
-                                            ? "bg-white/5 text-muted border border-white/5 hover:bg-red-500/10 hover:text-red-500 hover:border-red-500/20"
+                                            ? "bg-white/5 text-muted border border-white/5 hover:bg-white/10"
                                             : "bg-white text-black hover:bg-white/90"
                                     )}
                                 >
                                     {isGitHubConnected ? (
-                                        <>Disconnect Account</>
+                                        <>Manage Account</>
                                     ) : (
                                         <>
                                             <LinkIcon size={14} />
