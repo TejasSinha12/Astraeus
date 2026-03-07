@@ -6,6 +6,7 @@ from typing import Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from api.usage_db import UserAccount, TokenTransaction, SubscriptionPlan, Organization, SessionLocal
+from api.notifications import NotificationService
 from utils.logger import logger
 
 class TokenAccountingSystem:
@@ -61,11 +62,23 @@ class TokenAccountingSystem:
                         return False
                     target_org.token_balance -= amount
                     logger.info(f"INSTITUTIONAL DEBIT: {amount} tokens from Org {user.org_id} via User {user_id}")
+                    
+                    # Low Balance Trigger (Org)
+                    if target_org.token_balance < 1000:
+                        import asyncio
+                        ns = NotificationService()
+                        asyncio.create_task(ns.send_low_balance_alert(user.email, target_org.token_balance))
                 else:
                     if user.token_balance < amount:
                         return False
                     user.token_balance -= amount
                     logger.info(f"INDIVIDUAL DEBIT: {amount} tokens from {user_id}")
+
+                    # Low Balance Trigger (Individual)
+                    if user.token_balance < 1000:
+                        import asyncio
+                        ns = NotificationService()
+                        asyncio.create_task(ns.send_low_balance_alert(user.email, user.token_balance))
 
                 # 3. Record transaction
                 tx = TokenTransaction(

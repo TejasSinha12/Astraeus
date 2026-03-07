@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Terminal, Send, Zap, Brain, Loader2, Code, Download, History, Pin, Maximize2, Layers, AlertTriangle, X, Search, Clock } from "lucide-react";
+import { Terminal, Send, Zap, Brain, Loader2, Code, Download, History, Pin, Maximize2, Layers, AlertTriangle, X, Search, Clock, Settings2, Github, GitPullRequest } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
@@ -11,6 +11,9 @@ import { cn } from "@/lib/utils";
 import { TelemetryMeters } from "@/components/coding/TelemetryMeters";
 import { TraceSidebar } from "@/components/coding/TraceSidebar";
 import { MissionDAG } from "@/components/coding/MissionDAG";
+import { FileExplorer } from "@/components/coding/FileExplorer";
+import { WebIDE } from "@/components/coding/WebIDE";
+import { SwarmConfigurator } from "@/components/coding/SwarmConfigurator";
 
 interface TraceStep {
     status: string;
@@ -33,8 +36,23 @@ export default function ProfessionalWorkspace() {
 
     // Results
     const [codeResult, setCodeResult] = useState<string | null>(null);
+    const [fileMap, setFileMap] = useState<Record<string, string>>({});
+    const [selectedFile, setSelectedFile] = useState<string | null>(null);
     const [storagePath, setStoragePath] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<"ide" | "dag" | "diff">("ide");
+
+    // Swarm Configuration
+    // Swarm Configuration
+    const [isConfigOpen, setIsConfigOpen] = useState(false);
+    const [swarmConfig, setSwarmConfig] = useState({
+        agents: { auditor: true, optimizer: true, critic: true },
+        creativity: 0.5,
+        strictness: 0.8
+    });
+
+    const [isDeploying, setIsDeploying] = useState(false);
+    const [ghToken, setGhToken] = useState("");
+    const [repoName, setRepoName] = useState("");
 
     // History & DevEx
     const [history, setHistory] = useState<any[]>([]);
@@ -102,6 +120,8 @@ export default function ProfessionalWorkspace() {
         setLogs(["[SYSTEM] Connection initialized.", "[SYSTEM] Token allocation secured."]);
         setTraceSteps([]);
         setCodeResult(null);
+        setFileMap({});
+        setSelectedFile(null);
         setMetrics({ tokens: 0, latency: 0, confidence: 0, cost: 0 });
         const startTime = Date.now();
 
@@ -113,7 +133,12 @@ export default function ProfessionalWorkspace() {
                     "Content-Type": "application/json",
                     "Authorization": `Bearer ${token}`
                 },
-                body: JSON.stringify({ objective, user_id: user?.id, mode: "professional" })
+                body: JSON.stringify({
+                    objective,
+                    user_id: user?.id,
+                    mode: "professional",
+                    config: swarmConfig
+                })
             });
 
             if (!response.ok) {
@@ -150,6 +175,11 @@ export default function ProfessionalWorkspace() {
                             setLogs(prev => [...prev, "[PROCESSING] Swarm thinking..."]);
                         } else if (data.status === "RESULT") {
                             setCodeResult(data.message);
+                            if (data.file_map) {
+                                setFileMap(data.file_map);
+                                const files = Object.keys(data.file_map);
+                                if (files.length > 0) setSelectedFile(files[0]);
+                            }
                             setLogs(prev => [...prev, "[SUCCESS] Tactical solution generated."]);
                             setMetrics(prev => ({ ...prev, confidence: 0.98, latency: Date.now() - startTime }));
                         } else if (data.status === "COMPLETED") {
@@ -186,6 +216,44 @@ export default function ProfessionalWorkspace() {
         } finally {
             setIsExecuting(false);
             fetchUserStatus();
+        }
+    };
+
+    const handleDeployToGithub = async () => {
+        if (!codeResult || !repoName || !ghToken) {
+            toast.error("Repository name and GitHub Token are required for deployment.");
+            return;
+        }
+
+        setIsDeploying(true);
+        try {
+            const token = await getToken();
+            const response = await fetch(`${API_BASE_URL}/v1/integrations/github/deploy`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                    "x-clerk-user-id": user?.id || ""
+                },
+                body: JSON.stringify({
+                    mission_id: storagePath ? storagePath.split('/').pop() : "latest",
+                    repo_name: repoName,
+                    github_token: ghToken,
+                    title: `Swarm Mission: ${objective.slice(0, 50)}`,
+                })
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                toast.success("Pull Request Created Successfully!");
+                window.open(data.pr_url, "_blank");
+            } else {
+                toast.error(data.detail || "Deployment failed.");
+            }
+        } catch (error) {
+            toast.error("Critical deployment failure.");
+        } finally {
+            setIsDeploying(false);
         }
     };
 
@@ -262,7 +330,28 @@ export default function ProfessionalWorkspace() {
                                 </h4>
                                 <div className="space-y-4">
                                     {filteredHistory.map(m => (
-                                        <HistoryItem key={m.id} mission={m} isPinned={pinnedIds.includes(m.id.toString())} onSelect={() => { setCodeResult(m.source_code); setObjective(m.objective); setShowHistory(false); }} onTogglePin={togglePin} />
+                                        <HistoryItem
+                                            key={m.id}
+                                            mission={m}
+                                            isPinned={pinnedIds.includes(m.id.toString())}
+                                            onSelect={() => {
+                                                setCodeResult(m.source_code);
+                                                if (m.is_multifile && m.file_map) {
+                                                    try {
+                                                        const fm = typeof m.file_map === 'string' ? JSON.parse(m.file_map) : m.file_map;
+                                                        setFileMap(fm);
+                                                        const first = Object.keys(fm)[0];
+                                                        if (first) setSelectedFile(first);
+                                                    } catch (e) { console.error("FM Parse error", e); }
+                                                } else {
+                                                    setFileMap({});
+                                                    setSelectedFile(null);
+                                                }
+                                                setObjective(m.objective);
+                                                setShowHistory(false);
+                                            }}
+                                            onTogglePin={togglePin}
+                                        />
                                     ))}
                                 </div>
                             </section>
@@ -317,16 +406,25 @@ export default function ProfessionalWorkspace() {
                                     placeholder="Declare mission goals for swarm orchestration..."
                                     className="w-full bg-black/60 border border-white/5 rounded-2xl p-6 text-sm font-mono text-white focus:outline-none focus:border-primary/40 transition-all min-h-[120px] resize-none group-hover:border-white/10"
                                 />
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={handleExecute}
-                                    disabled={!objective || isExecuting}
-                                    className="absolute bottom-4 right-4 px-6 py-2.5 bg-primary text-background rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all box-glow disabled:opacity-50 disabled:grayscale"
-                                >
-                                    {isExecuting ? <Loader2 className="animate-spin" size={14} /> : <Zap size={14} className="fill-background" />}
-                                    {isExecuting ? "Orchestrating..." : "Deploy Swarm"}
-                                </motion.button>
+                                <div className="absolute bottom-4 right-4 flex items-center gap-2">
+                                    <button
+                                        onClick={() => setIsConfigOpen(true)}
+                                        className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-muted hover:text-primary hover:border-primary/30 transition-all group"
+                                        title="Swarm Tuning"
+                                    >
+                                        <Settings2 size={16} className="group-hover:rotate-90 transition-transform duration-500" />
+                                    </button>
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={handleExecute}
+                                        disabled={!objective || isExecuting}
+                                        className="px-6 py-2.5 bg-primary text-background rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all box-glow disabled:opacity-50 disabled:grayscale"
+                                    >
+                                        {isExecuting ? <Loader2 className="animate-spin" size={14} /> : <Zap size={14} className="fill-background" />}
+                                        {isExecuting ? "Orchestrating..." : "Deploy Swarm"}
+                                    </motion.button>
+                                </div>
                             </div>
                         </div>
 
@@ -357,6 +455,19 @@ export default function ProfessionalWorkspace() {
                                 </div>
                             )}
                             <div className="flex gap-1">
+                                <ExportBtn
+                                    icon={isDeploying ? <Loader2 size={12} className="animate-spin" /> : <Github size={12} />}
+                                    onClick={() => {
+                                        const repo = prompt("Enter GitHub Repo (username/repo):", repoName);
+                                        const pat = prompt("Enter GitHub Personal Access Token (for PR creation):", ghToken);
+                                        if (repo && pat) {
+                                            setRepoName(repo);
+                                            setGhToken(pat);
+                                            handleDeployToGithub();
+                                        }
+                                    }}
+                                    title="Deploy to GitHub"
+                                />
                                 <ExportBtn icon={<Download size={12} />} onClick={() => handleExport("zip")} title="ZIP Archive" />
                                 <ExportBtn icon={<History size={12} />} onClick={() => handleExport("json")} title="JSON Trace" />
                                 <ExportBtn icon={<Maximize2 size={12} />} onClick={() => { }} title="Fullscreen" />
@@ -372,17 +483,41 @@ export default function ProfessionalWorkspace() {
                                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                                     className="h-full flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-white/5"
                                 >
-                                    {/* Code Editor Pane */}
+                                    {/* Web IDE Pane */}
                                     <div className="flex-1 flex flex-col min-h-0 bg-black/20">
-                                        <div className="px-4 py-2 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <Code size={12} className="text-primary" />
-                                                <span className="text-[9px] font-bold uppercase tracking-widest text-white/40">Mission Code Base</span>
+                                        <div className="flex-1 flex flex-col min-h-0 divide-x divide-white/5 lg:flex-row">
+                                            {/* File Explorer Sidebar */}
+                                            {Object.keys(fileMap).length > 0 && (
+                                                <div className="w-full lg:w-48 xl:w-64 shrink-0">
+                                                    <FileExplorer
+                                                        fileMap={fileMap}
+                                                        selectedFile={selectedFile}
+                                                        onFileSelect={setSelectedFile}
+                                                    />
+                                                </div>
+                                            )}
+
+                                            <div className="flex-1 flex flex-col min-h-0">
+                                                <div className="px-4 py-2 border-b border-white/5 bg-white/[0.02] flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <Code size={12} className="text-primary" />
+                                                        <span className="text-[9px] font-bold uppercase tracking-widest text-white/40">
+                                                            {selectedFile || "Mission Code Base"}
+                                                        </span>
+                                                    </div>
+                                                    <span className="text-[8px] font-mono text-muted/20 uppercase tracking-widest">Read Only</span>
+                                                </div>
+                                                <div className="flex-1 overflow-hidden">
+                                                    {codeResult ? (
+                                                        <WebIDE
+                                                            code={selectedFile ? fileMap[selectedFile] : codeResult}
+                                                            filename={selectedFile || "result.html"}
+                                                        />
+                                                    ) : (
+                                                        <EmptyState icon={<Terminal size={48} />} label="Awaiting Swarm Output..." />
+                                                    )}
+                                                </div>
                                             </div>
-                                            <span className="text-[8px] font-mono text-muted/20 uppercase tracking-widest">Ready</span>
-                                        </div>
-                                        <div className="flex-1 overflow-auto p-4 font-mono text-xs text-white/80 leading-relaxed selection:bg-primary/20 custom-scrollbar">
-                                            {codeResult ? <pre className="whitespace-pre-wrap"><code>{codeResult}</code></pre> : <EmptyState icon={<Terminal size={48} />} label="Awaiting Swarm Output..." />}
                                         </div>
                                     </div>
 
@@ -451,6 +586,13 @@ export default function ProfessionalWorkspace() {
             <aside className="w-80 lg:w-96 hidden md:block border-l border-white/5">
                 <TraceSidebar logs={logs} steps={traceSteps} isExecuting={isExecuting} />
             </aside>
+            {/* Swarm Configurator Modal */}
+            <SwarmConfigurator
+                isOpen={isConfigOpen}
+                onClose={() => setIsConfigOpen(false)}
+                config={swarmConfig}
+                onChange={setSwarmConfig}
+            />
         </div>
     );
 }
