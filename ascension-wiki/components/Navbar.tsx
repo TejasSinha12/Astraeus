@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUser, UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { motion } from "framer-motion";
-import { Brain, Zap, LayoutDashboard, Shield, Code, Wallet } from "lucide-react";
+import { Brain, Zap, LayoutDashboard, Shield, Code, Wallet, Key } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { TopUpModal } from "@/components/auth/TopUpModal";
@@ -20,6 +20,7 @@ export function Navbar() {
     const navLinks = [
         { href: "/pricing", label: "Pricing" },
         { href: "/docs/core", label: "Docs" },
+        { href: "/settings/developer", label: "Developer", icon: Key },
         ...(isAdmin
             ? [{ href: "/dashboard", label: "Dashboard", icon: LayoutDashboard }]
             : [{ href: "/coding", label: "Dashboard", icon: Code }] // Non-admins see Arena as their Dashboard

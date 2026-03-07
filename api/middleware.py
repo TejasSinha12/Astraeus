@@ -14,7 +14,26 @@ async def rbac_middleware(request: Request, call_next):
     # 1. Extraction (Clerk headers typically added by a reverse proxy or frontend)
     user_id = request.headers.get("x-clerk-user-id")
     role = request.headers.get("x-clerk-user-role", "PUBLIC")
+    api_key_raw = request.headers.get("api-key")
     
+    # 2. API Key Authentication (Programmatic Bypass)
+    if not user_id and api_key_raw and api_key_raw != "SYSTEM_ADMIN_BYPASS":
+        import hashlib
+        from api.usage_db import SessionLocal, APIKey
+        key_hash = hashlib.sha256(api_key_raw.encode()).hexdigest()
+        
+        with SessionLocal() as db:
+            key_record = db.query(APIKey).filter(APIKey.key_hash == key_hash, APIKey.is_active == True).first()
+            if key_record:
+                # Inject authenticated context from the key
+                user_id = key_record.user_id
+                role = "RESEARCHER" # Generic scoped role for API Key users
+                logger.info(f"AUTH: Programmatic access via key {key_record.id} for user {user_id}")
+                
+                # Update Usage
+                key_record.current_usage += 1.0
+                db.commit()
+
     if not user_id:
         # For evaluation/testing purposes we allow bypass if explicitly configured
         logger.warning("AUTH BYPASS: No User ID detected in request.")
