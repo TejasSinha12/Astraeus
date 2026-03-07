@@ -67,30 +67,30 @@ Astraeus replaces raw LLM API calls with a high-performance **Swarm Execution AP
 
 ## 🧬 Intelligence Evolution & Research
 
-Astraeus is not just an execution engine; it is a **scientific crucible** for multi-agent evolution. Every mission contributes to a global intelligence index, enabling continuous refinement of swarm strategies.
+Astraeus is a **longitudinal crucible** for multi-agent evolution, powered by the `metrics/reliability_tracker.py` and `metrics/intelligence_index.py` engines. Every mission is a data point for the swarm's collective intelligence drift analysis.
 
 ### 🔬 Research Framework
-- **Hypothesis Tagging**: Agents declare measurable success criteria (e.g., "Reduce O(n) to O(log n)") before initiating tree mutations.
-- **Mission Lineage**: Full genealogy tracking of code artifacts, allowing researchers to fork and evolve specific intelligence trajectories.
-- **Consensus Metrics**: Quantitative scoring of agent agreement levels, providing an "Uncertainty Index" for every generation.
-- **Automated Peer Review**: The *Critic* and *Auditor* agents perform cross-validation of implementations against the original *Architect* design.
+- **Mission Lineage (DAG)**: Every artifact is part of a non-linear evolution tree. Researchers can fork specific mission IDs to test alternate cognitive trajectories.
+- **Hypothesis-Driven Consensus**: Agents (Planner/Architect) declare a success hypothesis which is cross-audited by the *Critic* and *Auditor* using quantitative reliability scoring.
+- **Uncertainty Quantization**: The `IntelligenceIndex` calculates an agreement-to-complexity ratio, helping researchers identify "Hallucination Risk Zones" in complex architectures.
+- **Evolutionary Persistence**: Successful logic patterns are "weighted" in the swarm's memory, ensuring that optimal architectural decisions are reused in subsequent generations.
 
-### 📈 Benchmarking & Performance
-- **Neural Cost Efficiency**: Real-time tracking of intelligence-to-token ratios, optimizing for the most "concise" reasoning paths.
-- **Latency Benchmarks**: Standardized measurement of "Time to First File" and "Full Swarm Convergence" across distributed clusters.
-- **Accuracy Drifts**: Automated detection of performance plateaus, triggering swarm recalibration cycles when logic accuracy drops below 95%.
-- **Reputation System**: Agents earn "Trust Weight" based on previous successful missions, influencing their influence in future consensus rounds.
+### 📈 Benchmarking & Reliability
+- **Agent Leaderboards**: Real-time performance tracking via `ReliabilityTracker`, monitoring success rates, regression counts, and average confidence levels per agent role.
+- **Neural Cost Efficiency**: The platform tracks the **Intelligence-to-Token (I/T) Ratio**, optimizing for the minimum token expenditure required to achieve architectural convergence.
+- **Longitudinal Reliability**: Automatic tracking of regression frequencies across evolution cycles, with a platform threshold of **98.2% zero-regression compliance**.
+- **Accuracy Calibration**: The `telemetry.py` engine monitors real-time "Latency-to-Confidence" curves, ensuring the swarm never compromises on reasoning depth for execution speed.
 
 ---
 
 ## 🔒 Security & Governance
 
-- **Clerk JWT Authentication**: All requests are gated by verified session tokens and role-based access.
-- **Dual-Scheme RBAC**: Seamless support for both web-based Clerk sessions and programmatic Developer API Keys.
-- **HMAC-SHA256 Signed Ledger**: Financial and execution records are cryptographically chained and tamper-evident.
-- **Hardened Sandbox**: Code execution runs in isolated, resource-constrained environments to prevent lateral escalation.
-- **Audit Explorer**: Filterable compliance logs with structured metadata for institutional oversight.
-- **System Health Dashboard**: Real-time monitoring of federation vitals, revenue flow, and cluster load.
+- **Clerk JWT Authentication**: Institutional-grade session management with role-based access gates.
+- **Dual-Scheme RBAC**: Full interoperability between web-based researcher sessions and programmatic Developer API Keys.
+- **HMAC-SHA256 Signed Ledger**: Every token debit and code generation event is cryptographically signed and stored in a tamper-evident audit trail.
+- **Hardened Execution Sandbox**: Critical mission logic runs in isolated containers with restricted egress and CPU/Memory quotas.
+- **Audit Compliance Explorer**: Streamed audit logs with structured metadata for institutional compliance and revenue overhead analysis.
+- **Platform Health Telemetry**: Multi-tier heartbeat monitoring of the FastAPI Gateway, Swarm Orchestrator, and PostgreSQL state.
 
 ---
 
