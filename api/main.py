@@ -14,6 +14,8 @@ from api.research_interface import router as research_router
 from api.institutional_interface import router as institutional_router
 from api.rest_interface import router as rest_router
 from api.admin import router as admin_router
+from api.developer_keys import router as keys_router
+from api.github_bridge import router as github_router
 from utils.telemetry_config import setup_telemetry
 
 from core.token_ledger import TokenLedgerService
@@ -39,6 +41,8 @@ app.include_router(admin_router)
 app.include_router(research_router)
 app.include_router(institutional_router)
 app.include_router(rest_router)
+app.include_router(keys_router)
+app.include_router(github_router)
 
 # Enable CORS for frontend integration
 app.add_middleware(
@@ -72,8 +76,14 @@ adapter = CoreAdapter()
 async def auth_middleware(request: Request, call_next):
     return await rbac_middleware(request, call_next)
 
+class SwarmConfig(BaseModel):
+    agents: dict = {"auditor": True, "optimizer": True, "critic": True}
+    creativity: float = 0.5
+    strictness: float = 0.8
+
 class ExecutionRequest(BaseModel):
     objective: str
+    config: SwarmConfig = SwarmConfig()
 
 @app.get("/")
 async def root():
@@ -113,8 +123,15 @@ async def execute_swarm_stream(
     if not success:
         raise HTTPException(status_code=402, detail="Insufficient credits in signed ledger.")
 
-    log_audit_trail(x_clerk_user_id, "SWARM_STREAM_EXEC", {"objective": request.objective, "cost": cost})
-    return StreamingResponse(adapter.run_swarm_stream(request.objective, x_clerk_user_id), media_type="text/event-stream")
+    log_audit_trail(x_clerk_user_id, "SWARM_STREAM_EXEC", {"objective": request.objective, "cost": cost, "config": request.config.dict()})
+    return StreamingResponse(
+        adapter.run_swarm_stream(
+            objective=request.objective, 
+            user_id=x_clerk_user_id,
+            swarm_config=request.config.dict()
+        ), 
+        media_type="text/event-stream"
+    )
 
 @app.get("/user/status")
 async def get_user_status(x_clerk_user_id: str = Header(...)):

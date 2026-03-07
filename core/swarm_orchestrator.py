@@ -25,60 +25,66 @@ class SwarmOrchestrator:
         
         logger.info(f"SwarmOrchestrator online with {len(self.active_agents)} specialized agent profiles.")
 
-    async def execute_swarm_objective(self, objective: str) -> Dict[str, Any]:
+    async def execute_swarm_objective(self, objective: str, config: dict | None = None) -> Dict[str, Any]:
         """
         Hierarchical execution objective through the swarm.
         Returns a structured result: {"content": str, "is_multifile": bool, "file_map": dict}
         """
-        logger.info(f"Swarm mobilization triggered for objective: {objective}")
+        config = config or {"agents": {"auditor": True, "optimizer": True, "critic": True}, "creativity": 0.5, "strictness": 0.8}
+        logger.info(f"Swarm mobilization triggered for objective: {objective} (Config: {config})")
 
         # 1. PLAN (Planner Agent)
-        plan = await self._delegate_to_agent("planner", f"Decompose this objective into a DAG: {objective}")
+        plan = await self._delegate_to_agent("planner", f"Decompose this objective into a DAG: {objective}", config)
         logger.info("Swarm Plan phase complete.")
 
         # 2. DESIGN (Architect Agent)
-        design = await self._delegate_to_agent("architect", f"Design the structural implementation for this plan: {plan}")
+        design = await self._delegate_to_agent("architect", f"Design the structural implementation for this plan: {plan}", config)
         logger.info("Architectural Design phase complete.")
 
         # 3. IMPLEMENT & CRITIQUE LOOP (Implementer + Critic)
-        # We instruct the implementer to use a multi-file JSON format if the objective is complex
         implementer_prompt = (
             f"Execute this design: {design}. "
             "IMPORTANT: If the project requires multiple files, return a JSON object with filenames as keys "
             "and file content as values. Otherwise, return the code directly."
         )
-        implementation = await self._delegate_to_agent("implementer", implementer_prompt)
+        implementation = await self._delegate_to_agent("implementer", implementer_prompt, config)
         
-        critique = await self._delegate_to_agent("critic", f"Perform security and logic review of: {implementation}")
+        # Optional Agents based on config
+        critique = ""
+        if config["agents"].get("critic"):
+            critique = await self._delegate_to_agent("critic", f"Perform security and logic review of: {implementation}", config)
         
         # 4. OPTIMIZE (Optimizer Agent)
-        optimization = await self._delegate_to_agent("optimizer", f"Optimize this implementation based on critique: {implementation}\nCritique: {critique}")
+        optimization = implementation
+        if config["agents"].get("optimizer"):
+            optimization = await self._delegate_to_agent("optimizer", f"Optimize this implementation based on critique: {implementation}\nCritique: {critique}", config)
         
         # 5. AUDIT (Auditor Agent)
-        audit_prompt = (
-            f"Verify and audit the following optimized solution: {optimization}. "
-            "Ensure the final output is finalized. If it's a multi-file project, ensure the JSON is valid."
-        )
-        audit_result = await self._delegate_to_agent("auditor", audit_prompt)
+        final_result = optimization
+        if config["agents"].get("auditor"):
+            audit_prompt = (
+                f"Verify and audit the following optimized solution: {optimization}. "
+                "Ensure the final output is finalized. If it's a multi-file project, ensure the JSON is valid."
+            )
+            final_result = await self._delegate_to_agent("auditor", audit_prompt, config)
         
         logger.info("Swarm objective cycle finalized.")
         
         # Attempt to parse as multi-file JSON
         try:
             import json
-            # Extract JSON if wrapped in markdown
-            temp_result = audit_result.strip()
+            temp_result = final_result.strip()
             if temp_result.startswith("```json"):
                 temp_result = temp_result[7:-3].strip()
             elif temp_result.startswith("{"):
-                pass # Already looks like JSON
+                pass 
             
             data = json.loads(temp_result)
             if isinstance(data, dict) and len(data) > 0:
                 return {
                     "is_multifile": True,
                     "file_map": data,
-                    "content": audit_result # Keep raw for reference
+                    "content": final_result 
                 }
         except:
             pass
@@ -86,7 +92,7 @@ class SwarmOrchestrator:
         # Fallback to single file
         return {
             "is_multifile": False,
-            "content": audit_result,
+            "content": final_result,
             "file_map": {}
         }
 
@@ -110,11 +116,12 @@ class SwarmOrchestrator:
         # Integrate with MetaGovernance for authorization
         return proposal
 
-    async def _delegate_to_agent(self, agent_key: str, prompt: str) -> str:
+    async def _delegate_to_agent(self, agent_key: str, prompt: str, config: dict | None = None) -> str:
         """
         Routes a subtask to a specific specialized agent.
         """
-        from core_config import config
+        from core_config import config as global_config
+        config = config or {"creativity": 0.5, "strictness": 0.8}
         
         agent = self.active_agents.get(agent_key)
         if not agent:
@@ -129,16 +136,19 @@ class SwarmOrchestrator:
         logger.debug(f"Delegating to {agent.name} (Role: {agent.role})...")
         
         # Override the global task limit with the agent's independent heavy-duty budget
-        original_limit = config.TASK_TOKEN_LIMIT
-        config.TASK_TOKEN_LIMIT = agent.independent_token_budget
+        original_limit = global_config.TASK_TOKEN_LIMIT
+        global_config.TASK_TOKEN_LIMIT = agent.independent_token_budget
         self.reasoning.tokens.reset_task_usage()
         
         try:
+            # Adjust temperature based on creativity (creativity 0..1 -> temp 0.1..0.9)
+            temp = 0.1 + (config.get("creativity", 0.5) * 0.8)
+
             # We wrap the reasoning request with the agent's specific persona
             response = await self.reasoning.generate_response(
                 system_prompt=agent.system_prompt,
                 user_prompt=prompt,
-                temperature=0.2 # Higher consistency across swarm
+                temperature=temp 
             )
             
             # Bottleneck Detection Logic
