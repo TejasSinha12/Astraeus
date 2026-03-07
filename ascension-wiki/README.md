@@ -42,7 +42,18 @@ npm run dev
 
 ---
 
-## Key Components
+## 🔬 Researcher Experience (REX)
+
+The Astraeus console is designed for **high-fidelity observability** of autonomous intelligence. It provides researchers with the tools needed to audit, optimize, and scale swarm deployments.
+
+- **Mission DAG Visualization**: High-performance React Flow graphs mapping every agent decision, critique, and consensus round.
+- **Deep-Trace Telemetry**: Real-time streaming of internal monologue, tool execution, and neural confidence scores.
+- **Genealogy Tracking**: Visual history of code evolution, allowing for comparison between different swarm generations.
+- **Institutional Governance**: Full visibility into team credit pools, audit trails, and scoped credential management.
+
+---
+
+## 🛠️ Key Components Reference
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
@@ -54,6 +65,8 @@ npm run dev
 | `TraceSidebar` | `components/coding/` | Live execution logs and reasoning step inspector |
 | `MissionDAG` | `components/coding/` | React Flow visualization of swarm reasoning steps |
 | `RoleGate` | `components/auth/` | Clerk-based RBAC wrapper for protected routes |
+| `SwarmConfigurator` | `components/coding/` | UI for tuning creativity, strictness, and agent mobilization |
+| `WebIDE` | `components/coding/` | Monaco-powered multi-file editor with syntax and structure |
 
 ---
 

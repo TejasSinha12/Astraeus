@@ -37,7 +37,7 @@ Astraeus replaces raw LLM API calls with a high-performance **Swarm Execution AP
 └──────────────────────────────────────────────┘
 ```
 
----
+--- 
 
 ## ✨ Key Features
 
@@ -65,17 +65,32 @@ Astraeus replaces raw LLM API calls with a high-performance **Swarm Execution AP
 - **Org-Level RBAC**: Middleware-enforced solvency and permission checks
 - **Scoped API Keys**: Granular access control with monthly quotas
 
-### Scientific Verification
-- **A/B Evolution Testing**: Parallel runs against control branches
-- **Hypothesis Tagging**: Agents declare measurable targets before modification
-- **Intelligence Drift Detection**: Plateau detection and calibration tracking
-- **Research Publication Pipeline**: Automated report compilation with integrity signing
+## 🧬 Intelligence Evolution & Research
 
-### Enterprise Governance
-- **OpenTelemetry Tracing**: Distributed observability across the full request lifecycle
-- **Audit Explorer**: Filterable compliance logs with structured metadata
-- **System Health Dashboard**: Real-time monitoring of platform vitals
-- **Revenue Analytics**: Token flow visualization and billing metrics
+Astraeus is not just an execution engine; it is a **scientific crucible** for multi-agent evolution. Every mission contributes to a global intelligence index, enabling continuous refinement of swarm strategies.
+
+### 🔬 Research Framework
+- **Hypothesis Tagging**: Agents declare measurable success criteria (e.g., "Reduce O(n) to O(log n)") before initiating tree mutations.
+- **Mission Lineage**: Full genealogy tracking of code artifacts, allowing researchers to fork and evolve specific intelligence trajectories.
+- **Consensus Metrics**: Quantitative scoring of agent agreement levels, providing an "Uncertainty Index" for every generation.
+- **Automated Peer Review**: The *Critic* and *Auditor* agents perform cross-validation of implementations against the original *Architect* design.
+
+### 📈 Benchmarking & Performance
+- **Neural Cost Efficiency**: Real-time tracking of intelligence-to-token ratios, optimizing for the most "concise" reasoning paths.
+- **Latency Benchmarks**: Standardized measurement of "Time to First File" and "Full Swarm Convergence" across distributed clusters.
+- **Accuracy Drifts**: Automated detection of performance plateaus, triggering swarm recalibration cycles when logic accuracy drops below 95%.
+- **Reputation System**: Agents earn "Trust Weight" based on previous successful missions, influencing their influence in future consensus rounds.
+
+---
+
+## 🔒 Security & Governance
+
+- **Clerk JWT Authentication**: All requests are gated by verified session tokens and role-based access.
+- **Dual-Scheme RBAC**: Seamless support for both web-based Clerk sessions and programmatic Developer API Keys.
+- **HMAC-SHA256 Signed Ledger**: Financial and execution records are cryptographically chained and tamper-evident.
+- **Hardened Sandbox**: Code execution runs in isolated, resource-constrained environments to prevent lateral escalation.
+- **Audit Explorer**: Filterable compliance logs with structured metadata for institutional oversight.
+- **System Health Dashboard**: Real-time monitoring of federation vitals, revenue flow, and cluster load.
 
 ---
 
