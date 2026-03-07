@@ -214,12 +214,26 @@ export default function DeveloperSettings() {
                                     <p className="text-[9px] text-muted/40 uppercase tracking-wide">Enable automated PR creation & repo mutations</p>
                                 </div>
                                 <button
-                                    onClick={() => {
+                                    onClick={async () => {
                                         if (isGitHubConnected) {
                                             window.open("https://accounts.astraeus.ai/user/profile", "_blank");
                                         } else {
-                                            // Trigger Clerk OAuth flow for GitHub
-                                            user?.createExternalAccount({ strategy: "oauth_github", redirectUrl: window.location.href });
+                                            try {
+                                                // Trigger Clerk OAuth flow for GitHub
+                                                const res = await user?.createExternalAccount({
+                                                    strategy: "oauth_github",
+                                                    redirectUrl: window.location.href
+                                                });
+
+                                                if (res && res.verification?.externalVerificationRedirectURL) {
+                                                    window.location.href = res.verification.externalVerificationRedirectURL.toString();
+                                                } else {
+                                                    toast.error("Failed to initialize GitHub connection flow.");
+                                                }
+                                            } catch (err: any) {
+                                                console.error("Clerk OAuth Error:", err);
+                                                toast.error(err.message || "Failed to link GitHub account");
+                                            }
                                         }
                                     }}
                                     className={cn(
