@@ -35,8 +35,8 @@ async def stripe_webhook(request: Request, stripe_signature: str = Header(None))
                 logger.warning(f"BILLING: Duplicate webhook received for session {session_id}. Ignoring.")
                 return {"status": "duplicate"}
         
-        # 2. Calculate tokens (Premium Tier pricing)
-        token_gain = amount_paid * 100.0 # 1 Token = $0.01
+        # 2. Calculate tokens (Standard Economy Pricing: 10k Tokens / $1)
+        token_gain = amount_paid * 10000.0
         
         # 3. Credit the User Account
         logger.info(f"BILLING: Processing credit for {user_id} -> {token_gain} tokens.")

@@ -33,6 +33,7 @@ class UserAccount(Base):
     org_id = Column(String, index=True, nullable=True) # Multitenancy link
     role = Column(String, default="PUBLIC")
     token_balance = Column(Integer, default=1000)
+    reputation_score = Column(Float, default=1.0) # Governance weight
     webhook_url = Column(String, nullable=True) # For Phase 56 outbound hooks
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 

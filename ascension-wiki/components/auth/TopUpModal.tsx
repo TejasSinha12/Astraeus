@@ -2,37 +2,60 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Zap, CreditCard, Loader2 } from "lucide-react";
-import { loadStripe } from "@stripe/stripe-js";
+import { X, Zap, CreditCard, Loader2, Sparkles, ShieldCheck, ChevronRight } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
 import useSWR from "swr";
+import { cn } from "@/lib/utils";
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || "pk_test_dummy");
 const API_URL = process.env.NEXT_PUBLIC_PLATFORM_API_URL || "http://localhost:8000";
 
+const PACKAGES = [
+    { amount: 10, label: "Starter", tokens: "100k", popular: false },
+    { amount: 25, label: "Professional", tokens: "250k", popular: true },
+    { amount: 100, label: "Enterprise", tokens: "1M", popular: false },
+];
+
 export function TopUpModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
-    const [amount, setAmount] = useState(10); // Default $10
+    const { userId, getToken } = useAuth();
+    const [amount, setAmount] = useState<string>("25");
     const [isLoading, setIsLoading] = useState(false);
-    const { data: userStatus, mutate } = useSWR(`${API_URL}/user/status`, (url) =>
-        fetch(url, { headers: { "Authorization": `Bearer ${window.localStorage.getItem("clerk-db-jwt") || ""}` } }).then(res => res.json())
-    );
+
+    // Fetch user status with proper Clerk Auth
+    const { data: userStatus, mutate } = useSWR(userId ? `${API_URL}/user/status` : null, async (url) => {
+        const response = await fetch(url, {
+            headers: {
+                "x-clerk-user-id": userId || "",
+            }
+        });
+        return response.json();
+    });
 
     useEffect(() => {
         if (isOpen) mutate();
     }, [isOpen, mutate]);
 
     const handleCheckout = async () => {
+        const numAmount = parseFloat(amount);
+        if (isNaN(numAmount) || numAmount < 5) {
+            toast.error("Minimum purchase is $5.00");
+            return;
+        }
+
         setIsLoading(true);
         try {
             const res = await fetch("/api/checkout", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ amount, packageCode: "standard_topup" }),
+                body: JSON.stringify({
+                    amount: numAmount,
+                    packageCode: numAmount >= 100 ? "enterprise_topup" : "standard_topup"
+                }),
             });
             const data = await res.json();
 
             if (data.url) {
-                window.location.href = data.url; // Redirect to Stripe Checkout
+                window.location.href = data.url;
             } else {
                 toast.error(data.error || "Failed to initiate checkout");
                 setIsLoading(false);
@@ -43,104 +66,149 @@ export function TopUpModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =
         }
     };
 
+    const displayAmount = parseFloat(amount) || 0;
+
     return (
         <AnimatePresence>
             {isOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="absolute inset-0 bg-background/80 backdrop-blur-sm"
+                        className="absolute inset-0 bg-[#020617]/80 backdrop-blur-md"
                     />
 
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                        initial={{ opacity: 0, scale: 0.9, y: 30 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="relative w-full max-w-md bg-surface border border-white/10 rounded-2xl shadow-2xl overflow-hidden glass-card"
+                        exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                        className="relative w-full max-w-lg bg-[#0f172a]/60 border border-white/10 rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden backdrop-blur-2xl"
                     >
+                        {/* Animated Gradient Background */}
+                        <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
+
                         {/* Header */}
-                        <div className="p-6 border-b border-white/5 flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-primary/10 border border-primary/20">
-                                    <Zap className="text-primary w-5 h-5" />
+                        <div className="relative p-8 pb-4 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 rounded-2xl bg-primary/10 border border-primary/20 shadow-[0_0_20px_rgba(0,229,255,0.1)]">
+                                    <Sparkles className="text-primary w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-white tracking-tight">Purchase Credits</h3>
-                                    <p className="text-xs text-muted font-mono uppercase tracking-widest">SaaS Billing Gateway</p>
+                                    <h3 className="text-xl font-bold text-white tracking-tight">Expand Quota</h3>
+                                    <p className="text-[10px] text-muted font-bold uppercase tracking-[0.2em] opacity-60">Ascension Economy Engine</p>
                                 </div>
                             </div>
-                            <button onClick={onClose} className="p-2 rounded-lg hover:bg-white/5 text-muted hover:text-white transition-colors">
+                            <button
+                                onClick={onClose}
+                                className="p-2.5 rounded-xl hover:bg-white/5 text-muted hover:text-white transition-all hover:rotate-90"
+                            >
                                 <X size={20} />
                             </button>
                         </div>
 
                         {/* Content */}
-                        <div className="p-6 space-y-6">
+                        <div className="relative p-8 pt-4 space-y-8">
 
-                            {/* Current Balance */}
-                            <div className="p-4 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between">
-                                <span className="text-sm text-muted font-medium">Current Balance</span>
-                                <span className="font-mono text-lg font-bold text-white">
-                                    {userStatus?.balance ? userStatus.balance.toLocaleString() : "..."} <span className="text-xs text-primary uppercase">Tokens</span>
-                                </span>
+                            {/* Current Status Card */}
+                            <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-between shadow-inner">
+                                <div className="space-y-1">
+                                    <span className="text-[10px] text-muted font-bold uppercase tracking-widest block opacity-50">Current Reserves</span>
+                                    <div className="flex items-center gap-2">
+                                        <Zap size={14} className="text-primary" />
+                                        <span className="font-mono text-xl font-bold text-white">
+                                            {userStatus ? userStatus.balance?.toLocaleString() : "---"}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="px-3 py-1 rounded-full bg-primary/5 border border-primary/10">
+                                    <span className="text-[9px] text-primary font-bold uppercase tracking-tighter">Verified Identity</span>
+                                </div>
                             </div>
 
-                            {/* Preset Amounts */}
-                            <div className="grid grid-cols-3 gap-3">
-                                {[5, 20, 100].map((preset) => (
+                            {/* Preset Packages */}
+                            <div className="grid grid-cols-3 gap-4">
+                                {PACKAGES.map((pkg) => (
                                     <button
-                                        key={preset}
-                                        onClick={() => setAmount(preset)}
-                                        className={`py-3 rounded-xl border flex flex-col items-center justify-center gap-1 transition-all ${amount === preset
-                                                ? "bg-primary/10 border-primary text-primary shadow-[0_0_15px_rgba(0,229,255,0.15)]"
-                                                : "bg-white/[0.02] border-white/10 text-muted hover:border-white/20 hover:bg-white/[0.05]"
-                                            }`}
+                                        key={pkg.amount}
+                                        onClick={() => setAmount(pkg.amount.toString())}
+                                        className={cn(
+                                            "relative p-4 rounded-2xl border transition-all duration-300 flex flex-col items-center gap-2 group",
+                                            parseFloat(amount) === pkg.amount
+                                                ? "bg-primary/5 border-primary text-white shadow-[0_0_30px_rgba(0,229,255,0.1)]"
+                                                : "bg-white/[0.02] border-white/5 text-muted hover:border-white/20 hover:bg-white/[0.04]"
+                                        )}
                                     >
-                                        <span className="font-bold text-lg">${preset}</span>
-                                        <span className="text-[10px] uppercase font-mono tracking-wider opacity-80">{preset * 10}k Tokens</span>
+                                        {pkg.popular && (
+                                            <div className="absolute -top-2 px-2 py-0.5 bg-primary text-[8px] font-black text-background uppercase rounded-full tracking-widest shadow-lg">
+                                                Best Value
+                                            </div>
+                                        )}
+                                        <span className="text-xs font-bold uppercase tracking-widest opacity-40 group-hover:opacity-60 transition-opacity">
+                                            {pkg.label}
+                                        </span>
+                                        <span className="font-mono text-2xl font-black">${pkg.amount}</span>
+                                        <span className="text-[9px] font-bold text-primary/70">{pkg.tokens} Tokens</span>
                                     </button>
                                 ))}
                             </div>
 
-                            {/* Custom Amount */}
-                            <div className="space-y-2">
-                                <label className="text-xs text-muted uppercase tracking-widest font-mono">Custom Amount (USD)</label>
-                                <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted font-bold">$</span>
-                                    <input
-                                        type="number"
-                                        min="5"
-                                        value={amount}
-                                        onChange={(e) => setAmount(Math.max(5, parseInt(e.target.value) || 5))}
-                                        className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-8 pr-4 text-white font-mono focus:outline-none focus:border-primary/50 transition-colors"
-                                    />
-                                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-muted font-mono uppercase">
-                                        = {(amount * 1000).toLocaleString()} Tokens
+                            {/* Custom Amount Interaction */}
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-end">
+                                    <label className="text-[10px] text-muted font-bold uppercase tracking-[0.2em] opacity-60">Custom Injection</label>
+                                    <span className="text-[10px] font-mono text-primary animate-pulse">
+                                        + {(displayAmount * 10000).toLocaleString()} PROG_KEYS
                                     </span>
+                                </div>
+                                <div className="relative group">
+                                    <div className="absolute left-5 top-1/2 -translate-y-1/2 text-muted font-bold transition-colors group-focus-within:text-primary">$</div>
+                                    <input
+                                        type="text"
+                                        value={amount}
+                                        onChange={(e) => {
+                                            const val = e.target.value.replace(/[^0-9.]/g, '');
+                                            setAmount(val);
+                                        }}
+                                        className="w-full bg-[#020617]/40 border border-white/5 rounded-2xl py-4 pl-10 pr-4 text-white font-mono text-lg focus:outline-none focus:border-primary/40 focus:bg-black/60 transition-all shadow-inner"
+                                        placeholder="0.00"
+                                    />
+                                    <div className="absolute right-5 top-1/2 -translate-y-1/2 flex items-center gap-2 text-[10px] text-muted font-bold uppercase tracking-widest">
+                                        <span className="opacity-40">USD</span>
+                                        <ChevronRight size={12} className="opacity-20" />
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Checkout Button */}
-                            <button
-                                onClick={handleCheckout}
-                                disabled={isLoading}
-                                className="w-full py-4 rounded-xl bg-primary text-background font-bold tracking-wide hover:bg-primary/90 hover:shadow-[0_0_20px_rgba(0,229,255,0.3)] transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isLoading ? (
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                ) : (
-                                    <>
-                                        <CreditCard className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                                        Pay ${amount}.00 via Stripe
-                                    </>
-                                )}
-                            </button>
-                            <p className="text-center text-[10px] text-muted/60 font-mono uppercase tracking-widest mt-4">
-                                Secure cryptographic billing by Stripe
-                            </p>
+                            {/* Action Area */}
+                            <div className="space-y-4 pt-2">
+                                <button
+                                    onClick={handleCheckout}
+                                    disabled={isLoading || !displayAmount || displayAmount < 5}
+                                    className="relative w-full py-5 rounded-2xl bg-primary text-background font-black text-sm uppercase tracking-[0.2em] hover:bg-white hover:shadow-[0_0_40px_rgba(255,255,255,0.2)] transition-all flex items-center justify-center gap-3 group disabled:opacity-20 disabled:grayscale"
+                                >
+                                    {isLoading ? (
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                    ) : (
+                                        <>
+                                            <CreditCard size={18} className="translate-y-[-1px]" />
+                                            Initialize Secure Payment
+                                        </>
+                                    )}
+                                </button>
+
+                                <div className="flex items-center justify-center gap-6 opacity-40">
+                                    <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-white">
+                                        <ShieldCheck size={12} className="text-primary" />
+                                        End-to-End Secure
+                                    </div>
+                                    <div className="w-px h-3 bg-white/20" />
+                                    <div className="text-[9px] font-bold uppercase tracking-widest text-white">
+                                        Powered by Stripe
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </motion.div>
                 </div>

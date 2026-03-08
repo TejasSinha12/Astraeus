@@ -8,7 +8,7 @@ import json
 import time
 from typing import Optional
 from sqlalchemy.orm import Session
-from api.usage_db import UserBalance, TokenLedger, Organization, UserAccount, SessionLocal
+from api.usage_db import TokenLedger, Organization, UserAccount, SessionLocal
 from utils.logger import logger
 
 class TokenLedgerService:
@@ -66,16 +66,18 @@ class TokenLedgerService:
                         return False
                     target_entity.token_balance += amount
                 else:
-                    # Individual Path
-                    user_balance = db.query(UserBalance).filter(UserBalance.user_id == user_id).with_for_update().first()
-                    if not user_balance:
-                        user_balance = UserBalance(user_id=user_id, credit_balance=100.0)
-                        db.add(user_balance)
+                    # Individual Path using unified UserAccount pool
+                    user = db.query(UserAccount).filter(UserAccount.id == user_id).with_for_update().first()
+                    if not user:
+                        # Auto-provision if missing
+                        user = UserAccount(id=user_id, email=f"user_{user_id[:8]}@ascension.ai", role="PUBLIC", token_balance=1000)
+                        db.add(user)
+                        db.flush()
                     
-                    if tx_type == "DEBIT" and user_balance.credit_balance < abs(amount):
+                    if tx_type == "DEBIT" and user.token_balance < abs(amount):
                         logger.warning(f"ECONOMY: Insufficient individual funds for User {user_id}.")
                         return False
-                    user_balance.credit_balance += amount
+                    user.token_balance += amount
                 
                 # 3. Record in Ledger
                 prev_hash = self._get_previous_hash(db, user_id, org_id)
@@ -104,8 +106,8 @@ class TokenLedgerService:
 
     async def get_balance(self, user_id: str) -> float:
         """
-        Retrieves the current credit balance for a user.
+        Retrieves the current credit balance for a user from the unified pool.
         """
         with SessionLocal() as db:
-            balance = db.query(UserBalance).filter(UserBalance.user_id == user_id).first()
-            return balance.credit_balance if balance else 0.0
+            user = db.query(UserAccount).filter(UserAccount.id == user_id).first()
+            return user.token_balance if user else 0.0

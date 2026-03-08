@@ -4,7 +4,7 @@ Earns non-transferable 'Reputation Tokens' based on mission success and structur
 """
 from typing import Optional
 from sqlalchemy.orm import Session
-from api.usage_db import UserBalance, SessionLocal
+from api.usage_db import UserAccount, SessionLocal
 from core.token_ledger import TokenLedgerService
 from utils.logger import logger
 
@@ -29,12 +29,13 @@ class ReputationTracker:
         
         try:
             with SessionLocal() as db:
-                user_balance = db.query(UserBalance).filter(UserBalance.user_id == user_id).first()
-                if not user_balance:
-                    user_balance = UserBalance(user_id=user_id)
-                    db.add(user_balance)
+                user = db.query(UserAccount).filter(UserAccount.id == user_id).first()
+                if not user:
+                    # Auto-provision if missing
+                    user = UserAccount(id=user_id, email=f"user_{user_id[:8]}@astraeus.ai", token_balance=1000, reputation_score=1.0)
+                    db.add(user)
                 
-                user_balance.reputation_score += gain
+                user.reputation_score += gain
                 db.commit()
                 
                 # Log in signed ledger
@@ -55,8 +56,8 @@ class ReputationTracker:
         Weight is logarithmic to prevent reputation monopolization.
         """
         with SessionLocal() as db:
-            user_balance = db.query(UserBalance).filter(UserBalance.user_id == user_id).first()
-            score = user_balance.reputation_score if user_balance else 1.0
+            user = db.query(UserAccount).filter(UserAccount.id == user_id).first()
+            score = user.reputation_score if user else 1.0
             
             import math
             return 1.0 + math.log10(max(1.0, score))

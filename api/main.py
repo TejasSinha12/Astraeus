@@ -139,36 +139,34 @@ async def get_user_status(x_clerk_user_id: str = Header(...)):
     Returns the current economy status (balance, reputation, tier).
     Resolves to Organization shared pool if user is institutionalized.
     """
-    from api.usage_db import SessionLocal, UserBalance, UserAccount, Organization
+    from api.usage_db import SessionLocal, UserAccount, Organization
     with SessionLocal() as db:
-        # 1. Resolve Org Affinity
-        user_info = db.query(UserAccount).filter(UserAccount.id == x_clerk_user_id).first()
-        org_id = user_info.org_id if user_info else None
-        
-        if org_id:
-            org = db.query(Organization).filter(Organization.id == org_id).first()
+        # 1. Resolve User and Org Affinity
+        user = db.query(UserAccount).filter(UserAccount.id == x_clerk_user_id).first()
+        if not user:
+            # Auto-provision if missing
+            user = UserAccount(id=x_clerk_user_id, email=f"user_{x_clerk_user_id[:8]}@astraeus.ai", role="PUBLIC", token_balance=1000)
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+
+        if user.org_id:
+            org = db.query(Organization).filter(Organization.id == user.org_id).first()
             if org:
                 return {
                     "user_id": x_clerk_user_id,
-                    "org_id": org_id,
+                    "org_id": user.org_id,
                     "balance": org.token_balance,
                     "reputation": 10.0, # Orgs start with high baseline reputation
                     "tier": "INSTITUTIONAL"
                 }
 
-        # 2. Fallback to Individual
-        balance = db.query(UserBalance).filter(UserBalance.user_id == x_clerk_user_id).first()
-        if not balance:
-            balance = UserBalance(user_id=x_clerk_user_id, credit_balance=100.0)
-            db.add(balance)
-            db.commit()
-            db.refresh(balance)
-            
+        # 2. Return Individual Balance
         return {
             "user_id": x_clerk_user_id,
-            "balance": balance.credit_balance,
-            "reputation": balance.reputation_score,
-            "tier": "RESEARCHER" if balance.reputation_score > 5.0 else "PUBLIC"
+            "balance": user.token_balance,
+            "reputation": 5.0, # Placeholder for reputation logic
+            "tier": user.role
         }
 
 @app.on_event("startup")

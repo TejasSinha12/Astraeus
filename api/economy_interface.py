@@ -40,7 +40,6 @@ async def create_api_key(request: APIKeyRequest):
     
     return {
         "api_key": raw_key,
-        "key_id": key_id,
         "message": "Store this key securely. It will not be shown again."
     }
 
@@ -70,10 +69,10 @@ async def get_reputation(x_clerk_user_id: str = Header(...)):
     weight = await tracker.calculate_voting_weight(x_clerk_user_id)
     
     # We need to fetch the score from the DB
-    from api.usage_db import SessionLocal, UserBalance
+    from api.usage_db import SessionLocal, UserAccount
     with SessionLocal() as db:
-        balance = db.query(UserBalance).filter(UserBalance.user_id == x_clerk_user_id).first()
-        score = balance.reputation_score if balance else 1.0
+        user = db.query(UserAccount).filter(UserAccount.id == x_clerk_user_id).first()
+        score = user.reputation_score if user else 1.0
         
     return {
         "user_id": x_clerk_user_id,
