@@ -156,6 +156,33 @@ class SwarmMission(Base):
     file_map = Column(String) # JSON blob for multi-file: {"path/to/file.py": "content", ...}
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
+class MissionBranch(Base):
+    """
+    Groups multiple Swarm Missions into a single 'Forge' session for parallel comparison.
+    """
+    __tablename__ = "mission_branches"
+    
+    id = Column(String, primary_key=True) # Forge Session ID
+    user_id = Column(String, index=True)
+    objective = Column(String)
+    metrics_json = Column(String) # JSON blob for side-by-side comparison (performance, security, etc.)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class MissionTraceStep(Base):
+    """
+    Time-indexed reasoning and code snapshots for the Chronos Replay engine.
+    """
+    __tablename__ = "mission_trace_steps"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    mission_id = Column(String, index=True)
+    step_index = Column(Integer)
+    agent_role = Column(String)
+    label = Column(String) # e.g., 'Plan', 'Logic', 'Refactor'
+    reasoning_content = Column(String)
+    code_snapshot = Column(String) # JSON blob of the code state at this step
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+
 class ResearchArtifact(Base):
     """
     Formal scientific records generated from platform telemetry and evolution cycles.

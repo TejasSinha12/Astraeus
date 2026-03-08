@@ -9,6 +9,7 @@ from api.core_adapter import CoreAdapter
 from api.middleware import rbac_middleware, log_audit_trail
 from api.missions import router as missions_router
 from api.economy_interface import router as economy_router
+from api.forge_api import router as forge_router
 from api.stripe_bridge import router as stripe_router
 from api.research_interface import router as research_router
 from api.institutional_interface import router as institutional_router
@@ -35,6 +36,7 @@ setup_telemetry(app)
 
 # Registry of API routes
 app.include_router(missions_router)
+app.include_router(forge_router)
 app.include_router(economy_router)
 app.include_router(stripe_router)
 app.include_router(admin_router)
