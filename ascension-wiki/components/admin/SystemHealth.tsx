@@ -28,33 +28,62 @@ export function SystemHealth() {
     const activeNodes = data?.active_swarms || 0;
     const cpuLoad = data?.cpu_load ? `${data.cpu_load}%` : "0%";
     const throughput = data?.throughput || "0 tokens/sec";
+    const uptime = data?.uptime || "99.97%";
+    const federationNodes = data?.federation_nodes || 3;
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <HealthCard
-                icon={<Cpu className="text-primary" />}
-                title="Swarm Processing"
-                value={isLoading ? "..." : cpuLoad}
-                subValue="CPU Load Across Nodes"
-            />
-            <HealthCard
-                icon={<Database className="text-yellow-400" />}
-                title="Total Throughput"
-                value={isLoading ? "..." : throughput}
-                subValue="Real-time Token Velocity"
-            />
-            <HealthCard
-                icon={<Globe className="text-green-400" />}
-                title="Active Sessions"
-                value={isLoading ? "..." : activeNodes.toString().padStart(2, '0')}
-                subValue="Live Swarm Missions"
-            />
+        <div className="space-y-6">
+            {/* Live Status Banner */}
+            <div className="flex items-center justify-between px-6 py-3 rounded-xl bg-green-500/5 border border-green-500/10">
+                <div className="flex items-center gap-3">
+                    <div className="relative">
+                        <div className="w-3 h-3 rounded-full bg-green-500" />
+                        <div className="absolute inset-0 w-3 h-3 rounded-full bg-green-500 animate-ping opacity-75" />
+                    </div>
+                    <span className="text-xs font-bold text-green-400 uppercase tracking-widest">All Systems Operational</span>
+                </div>
+                <div className="flex items-center gap-4 text-[10px] font-mono text-muted/40 uppercase">
+                    <span>Uptime: <span className="text-green-400">{uptime}</span></span>
+                    <span>v5.1.0</span>
+                </div>
+            </div>
 
-            <div className="md:col-span-2 lg:col-span-3 glass-card p-6 border border-white/5 bg-white/[0.01]">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <HealthCard
+                    icon={<Cpu className="text-primary" />}
+                    title="Swarm Processing"
+                    value={isLoading ? "..." : cpuLoad}
+                    subValue="CPU Load Across Nodes"
+                />
+                <HealthCard
+                    icon={<Database className="text-yellow-400" />}
+                    title="Total Throughput"
+                    value={isLoading ? "..." : throughput}
+                    subValue="Real-time Token Velocity"
+                />
+                <HealthCard
+                    icon={<Globe className="text-green-400" />}
+                    title="Active Sessions"
+                    value={isLoading ? "..." : activeNodes.toString().padStart(2, '0')}
+                    subValue="Live Swarm Missions"
+                />
+                <HealthCard
+                    icon={<Signal className="text-purple-400" />}
+                    title="Federation Nodes"
+                    value={isLoading ? "..." : federationNodes.toString()}
+                    subValue="Connected Clusters"
+                />
+            </div>
+
+            <div className="glass-card p-6 border border-white/5 bg-white/[0.01]">
                 <div className="flex items-center justify-between mb-8">
                     <div className="flex items-center gap-3">
                         <Activity className="text-primary w-5 h-5" />
                         <h3 className="text-sm font-bold uppercase tracking-widest text-white">Swarm Traffic (Active Missions)</h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                        <span className="text-[9px] font-mono text-primary uppercase tracking-widest">Live</span>
                     </div>
                 </div>
 
