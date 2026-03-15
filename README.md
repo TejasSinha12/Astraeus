@@ -1,6 +1,6 @@
 # Astraeus Intelligence Platform 🧬
 
-> **Autonomous Swarm-as-a-Service** — A production-grade multi-agent AI execution platform with institutional billing, federated orchestration, and cryptographically signed governance.
+> **Autonomous Swarm-as-a-Service** — A production-grade multi-agent AI execution platform with institutional billing, federated orchestration, evolutionary branching, and cryptographically signed governance.
 
 [![Live Platform](https://img.shields.io/badge/Platform-Live-00e5ff?style=for-the-badge)](https://astraeus-livid.vercel.app)
 [![API Gateway](https://img.shields.io/badge/API-Online-34d399?style=for-the-badge)](https://astraeus-r4pf.onrender.com)
@@ -20,7 +20,7 @@ Astraeus replaces raw LLM API calls with a high-performance **Swarm Execution AP
 ```
 ┌─────────────────────────────────────────────┐
 │            Next.js Frontend (Vercel)         │
-│  Workspace · Arena · Archive · Governance    │
+│  Workspace · Arena · Archive · Forge · Docs │
 └──────────────────┬──────────────────────────┘
                    │ HTTPS / SSE
 ┌──────────────────▼──────────────────────────┐
@@ -29,6 +29,7 @@ Astraeus replaces raw LLM API calls with a high-performance **Swarm Execution AP
 ├──────────────────────────────────────────────┤
 │  Swarm Orchestrator · Agent Spawner          │
 │  Global Coordinator · Federation Protocol    │
+│  Forge Engine · Chronos Trace Recorder       │
 ├──────────────────────────────────────────────┤
 │  Token Accounting · Signed Ledger · Stripe   │
 │  Abuse Detection · Adaptive Pricing          │
@@ -46,6 +47,18 @@ Astraeus replaces raw LLM API calls with a high-performance **Swarm Execution AP
 - **Consensus-Based Merging**: Conflict resolution with agreement scoring
 - **Multi-File Codebase Generation**: Full project scaffolding with ZIP export
 - **SSE Streaming**: Real-time execution trace delivered to the frontend
+
+### 🔥 The Forge (Evolutionary Multi-Branching)
+- **Parallel Swarm Sessions**: Spawns 3 concurrent swarms with different architectural biases (Performance, Scalability, Elegance)
+- **Performance Duel**: Side-by-side benchmarking with latency, complexity, and security metrics
+- **Optimized Selection**: Automated "fittest branch" recommendation based on your stack
+- **Branch Persistence**: All branches are stored in `MissionBranch` for later comparison
+
+### 🕰️ The Chronos Engine (Neural Code Replay)
+- **Time-Indexed Reasoning**: Every thought and code snapshot is persisted to `MissionTraceStep`
+- **Scrub-able Timeline**: Navigate frame-by-frame through the AGI's reasoning process
+- **Neural Replay**: Visualize exact line-by-line code generation as reasoning nodes fire
+- **Reasoning Undo/Redo**: Revert not just code, but the thought process behind it
 
 ### Federated Swarm Infrastructure
 - **Distributed Clusters**: Regional swarm instances with expertise-based routing
@@ -99,8 +112,11 @@ Astraeus is a **longitudinal crucible** for multi-agent evolution, powered by th
 | Page | Description |
 |------|-------------|
 | **Workspace** (`/coding`) | Professional IDE with split-pane editor, live preview, SSE telemetry, and mission DAG |
-| **Agent Arena** (`/arena`) | Real-time agent simulation with reasoning traces, confidence graphs, and genealogy DAG |
+| **Agent Arena** (`/arena`) | Real-time agent simulation with reasoning traces, confidence graphs, Forge duels, and genealogy DAG |
+| **The Forge** (`/arena?view=forge`) | Parallel evolutionary multi-branching with side-by-side Performance Duel benchmarks |
 | **Mission Archive** (`/archive`) | Browse, inspect, and export all swarm-generated artifacts |
+| **Pricing** (`/pricing`) | Tiered pricing with interactive token calculator and billing FAQ |
+| **Developer Settings** (`/settings/developer`) | API key management, GitHub OAuth, webhooks, and notification preferences |
 | **Governance Console** (`/control/governance`) | Admin dashboard with system health, revenue, audit logs, access control, and team billing |
 
 ---
@@ -153,11 +169,17 @@ npm run dev
 |----------|--------|-------------|
 | `/execute/stream` | `POST` | Execute a swarm mission with SSE streaming |
 | `/estimate` | `POST` | Get token cost estimate for an objective |
+| `/forge/session` | `POST` | Start a parallel multi-branch Forge session |
+| `/forge/session/{forge_id}` | `GET` | Get Forge session status and branch metrics |
+| `/forge/trace/{mission_id}` | `GET` | Retrieve Chronos reasoning trace for replay |
 | `/user/status` | `GET` | Current balance, reputation, and tier |
 | `/missions/list` | `GET` | List all persisted mission artifacts |
 | `/missions/{id}/source` | `GET` | Retrieve source code for a mission |
 | `/missions/{id}/export` | `GET` | Download mission as ZIP archive |
 | `/missions/lineage` | `GET` | Evolution genealogy graph |
+| `/v1/keys/generate` | `POST` | Generate a new scoped API key |
+| `/v1/keys/list` | `GET` | List all active API keys |
+| `/v1/integrations/github/deploy` | `POST` | Deploy mission code as a GitHub PR |
 | `/admin/metrics/health` | `GET` | System health telemetry |
 | `/admin/metrics/revenue` | `GET` | Revenue and billing analytics |
 | `/admin/organizations` | `GET` | List all institutional accounts |
@@ -173,21 +195,27 @@ project_ascension/
 │   ├── admin.py            # Governance & admin endpoints
 │   ├── middleware.py        # RBAC & token metering
 │   ├── missions.py         # Mission CRUD & export
+│   ├── forge_api.py        # Forge & Chronos API endpoints
 │   ├── token_accounting.py # Balance management
 │   ├── usage_db.py         # SQLAlchemy models & schema
+│   ├── developer_keys.py   # API key management
+│   ├── github_bridge.py    # GitHub deployment integration
 │   ├── stripe_bridge.py    # Payment webhook handler
 │   └── billing_exporter.py # Invoice & usage reports
 ├── core/                   # Intelligence Engine
 │   ├── reasoning_engine.py # LLM abstraction layer
-│   ├── swarm_orchestrator.py # Multi-agent lifecycle
+│   ├── swarm_orchestrator.py # Multi-agent lifecycle + Forge engine
 │   ├── global_coordinator.py # Federation routing
 │   ├── token_ledger.py     # Signed transaction ledger
 │   ├── marketplace.py      # Capability marketplace
 │   ├── abuse_detector.py   # Anomaly detection
 │   └── meta_governance.py  # Orchestration policy engine
 ├── ascension-wiki/         # Next.js Frontend
-│   ├── app/                # Pages (coding, arena, archive, governance)
-│   └── components/         # UI components (admin, coding, auth)
+│   ├── app/                # Pages (coding, arena, archive, pricing, docs)
+│   └── components/         # UI components
+│       ├── coding/         # ForgePortal, ChronosScrub, WebIDE, MissionDAG
+│       ├── admin/          # ResearcherProfile, GovernancePanel
+│       └── auth/           # RoleGate, TopUpModal
 ├── tools/                  # Agent tooling (git, code execution)
 ├── metrics/                # Intelligence index & benchmarks
 └── requirements.txt        # Python dependencies
@@ -213,5 +241,5 @@ This project is proprietary software. All rights reserved.
 
 <p align="center">
   <b>Built with 🧬 by <a href="https://github.com/TejasSinha12">Tejas Sinha</a></b><br>
-  <sub>Autonomous Intelligence Infrastructure</sub>
+  <sub>Autonomous Intelligence Infrastructure — v5.1.0</sub>
 </p>

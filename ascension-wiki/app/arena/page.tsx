@@ -131,10 +131,8 @@ function buildFederationEdges(clusters: any[]) {
 
 const API_URL = process.env.NEXT_PUBLIC_PLATFORM_API_URL || "http://localhost:8000";
 
-// ... [The rest of the component starts here]
-
 export default function ArenaPage() {
-    const { getToken } = useAuth();
+    const { getToken, userId } = useAuth();
     const { selectedAgent, task, isRunning, traceSteps, confidence, setAgent, setTask, startSim, stopSim, pushStep, pushConfidence, reset } = useAgentSimStore();
     const [lineage, setLineage] = useState<any[]>([]);
     const [clusters, setClusters] = useState<any[]>([]);
@@ -178,7 +176,7 @@ export default function ArenaPage() {
             const token = await getToken();
             const res = await fetch(`${API_URL}/forge/session`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json", "x-clerk-user-id": "CURRENT_USER" }, // Backend handles actual auth
+                headers: { "Content-Type": "application/json", "x-clerk-user-id": userId || "" },
                 body: JSON.stringify({ objective: task })
             });
             const data = await res.json();

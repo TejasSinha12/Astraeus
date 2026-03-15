@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Terminal, Zap, Shield, Cpu, Play, CheckCircle2, Loader2 } from "lucide-react";
+import { ArrowRight, Terminal, Zap, Shield, Cpu, Play, CheckCircle2, Loader2, Flame, Github, Twitter, Linkedin, ChevronDown } from "lucide-react";
 import Link from "next/link";
 
 export default function Home() {
   const [demoState, setDemoState] = useState<"idle" | "running" | "completed">("idle");
   const [demoLogs, setDemoLogs] = useState<string[]>([]);
 
-  // Simulate a live swarm execution for the demo
   useEffect(() => {
     if (demoState !== "running") return;
 
@@ -39,10 +38,26 @@ export default function Home() {
   }, [demoState]);
 
   return (
-    <div className="min-h-screen pt-20 pb-16 px-4 sm:px-8 md:px-12 lg:px-20 max-w-7xl mx-auto flex flex-col items-center relative overflow-hidden font-inter">
+    <div className="min-h-screen pt-20 pb-0 px-4 sm:px-8 md:px-12 lg:px-20 max-w-7xl mx-auto flex flex-col items-center relative overflow-hidden font-inter">
 
       {/* Dynamic Background Glow */}
       <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-primary/20 blur-[120px] rounded-full pointer-events-none -z-10 animate-pulse-slow" />
+
+      {/* 🔥 New Feature Announcement Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="w-full max-w-3xl mx-auto mb-8"
+      >
+        <Link href="/arena" className="block">
+          <div className="flex items-center justify-center gap-3 px-6 py-3 rounded-2xl bg-gradient-to-r from-purple-500/10 via-primary/10 to-purple-500/10 border border-primary/20 hover:border-primary/40 transition-all group cursor-pointer">
+            <Flame size={16} className="text-orange-400 animate-pulse" />
+            <span className="text-xs font-bold text-white uppercase tracking-widest">New:</span>
+            <span className="text-xs text-muted font-mono">The Forge — Parallel Evolutionary Multi-Branching is live</span>
+            <ArrowRight size={14} className="text-primary group-hover:translate-x-1 transition-transform" />
+          </div>
+        </Link>
+      </motion.div>
 
       {/* Hero Section */}
       <motion.section
@@ -56,7 +71,7 @@ export default function Home() {
           whileHover={{ scale: 1.05 }}
         >
           <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          Astraeus v5.0 is Live
+          Astraeus v5.1 is Live
         </motion.div>
 
         <h1 className="text-5xl sm:text-7xl md:text-[5.5rem] font-extrabold tracking-tight text-white mb-6 leading-tight">
@@ -100,8 +115,6 @@ export default function Home() {
         transition={{ duration: 0.7 }}
       >
         <div className="glass-card rounded-2xl overflow-hidden border border-white/10 shadow-2xl relative">
-
-          {/* Terminal Header */}
           <div className="bg-black/50 border-b border-white/5 px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full bg-red-500/80" />
@@ -118,15 +131,12 @@ export default function Home() {
               {demoState === "running" ? "EXECUTING..." : "RUN DEMO"}
             </button>
           </div>
-
-          {/* Terminal Body */}
           <div className="p-6 bg-[#0a0f1a] min-h-[280px] font-mono text-sm">
             <div className="text-white/70 mb-4 flex items-center gap-2">
               <span className="text-green-400">user@ascension</span>
               <span className="text-white/40">~ %</span>
-              <span className="text-blue-300">curl -X POST /v1/execute/swarm -d '{"{"} "objective": "build_auth" {"}"}'</span>
+              <span className="text-blue-300">curl -X POST /v1/execute/swarm -d &apos;&#123; &quot;objective&quot;: &quot;build_auth&quot; &#125;&apos;</span>
             </div>
-
             <div className="space-y-2">
               <AnimatePresence>
                 {demoLogs.map((log, i) => (
@@ -180,6 +190,88 @@ export default function Home() {
         />
       </section>
 
+      {/* Trusted By / Social Proof */}
+      <motion.section
+        className="w-full mb-32"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+      >
+        <p className="text-center text-[10px] font-mono text-muted/40 uppercase tracking-[0.4em] mb-8">Powering Intelligence Infrastructure</p>
+        <div className="flex flex-wrap items-center justify-center gap-12 opacity-30">
+          {["OpenAI", "Vercel", "Neon", "Stripe", "Clerk", "Render"].map(name => (
+            <span key={name} className="text-lg font-bold text-white tracking-widest uppercase">{name}</span>
+          ))}
+        </div>
+      </motion.section>
+
+      {/* FAQ Section */}
+      <section className="w-full max-w-3xl mx-auto mb-32">
+        <h2 className="text-2xl font-bold text-white text-center mb-10">Frequently Asked <span className="text-primary">Questions</span></h2>
+        <div className="space-y-4">
+          <FAQItem q="How does the token billing work?" a="Every swarm execution is priced dynamically based on objective complexity and cluster load. Costs are deducted from your signed ledger in real-time. Failed executions are automatically refunded." />
+          <FAQItem q="What is The Forge?" a="The Forge spawns 3 parallel swarms with different architectural biases (Performance, Scalability, Elegance) for the same objective. A side-by-side Performance Duel benchmarks all three and suggests the optimal branch." />
+          <FAQItem q="Can I use this with my existing codebase?" a="Yes. The Swarm Execution API accepts any objective via REST. Generated code can be deployed directly to GitHub via our integration, or exported as a ZIP archive." />
+          <FAQItem q="Is my data secure?" a="Absolutely. All transactions are HMAC-SHA256 signed, sessions use Clerk JWT authentication, and execution runs in hardened sandboxes with restricted egress." />
+        </div>
+      </section>
+
+      {/* Premium Footer */}
+      <footer className="w-screen -mx-4 sm:-mx-8 md:-mx-12 lg:-mx-20 border-t border-white/5 bg-black/40 backdrop-blur-md mt-auto">
+        <div className="max-w-7xl mx-auto px-8 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 bg-primary rounded-full box-glow" />
+                <span className="text-sm font-bold tracking-widest text-white">ASCENSION</span>
+              </div>
+              <p className="text-xs text-muted leading-relaxed">
+                Autonomous Swarm-as-a-Service. Production-grade multi-agent AI for institutional engineering.
+              </p>
+            </div>
+            <div>
+              <h4 className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-4">Product</h4>
+              <ul className="space-y-3">
+                <li><Link href="/coding" className="text-sm text-muted hover:text-primary transition-colors">Workspace</Link></li>
+                <li><Link href="/arena" className="text-sm text-muted hover:text-primary transition-colors">Agent Arena</Link></li>
+                <li><Link href="/pricing" className="text-sm text-muted hover:text-primary transition-colors">Pricing</Link></li>
+                <li><Link href="/archive" className="text-sm text-muted hover:text-primary transition-colors">Mission Archive</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-4">Developers</h4>
+              <ul className="space-y-3">
+                <li><Link href="/docs/api" className="text-sm text-muted hover:text-primary transition-colors">API Reference</Link></li>
+                <li><Link href="/settings/developer" className="text-sm text-muted hover:text-primary transition-colors">API Keys</Link></li>
+                <li><Link href="/docs/core" className="text-sm text-muted hover:text-primary transition-colors">Documentation</Link></li>
+                <li><Link href="/whitepaper" className="text-sm text-muted hover:text-primary transition-colors">Whitepaper</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-4">Connect</h4>
+              <div className="flex gap-4">
+                <a href="https://github.com/TejasSinha12/Astraeus" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-white/5 text-muted hover:text-white hover:bg-white/10 transition-all">
+                  <Github size={18} />
+                </a>
+                <a href="#" className="p-2 rounded-lg bg-white/5 text-muted hover:text-white hover:bg-white/10 transition-all">
+                  <Twitter size={18} />
+                </a>
+                <a href="#" className="p-2 rounded-lg bg-white/5 text-muted hover:text-white hover:bg-white/10 transition-all">
+                  <Linkedin size={18} />
+                </a>
+              </div>
+            </div>
+          </div>
+          <div className="border-t border-white/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-[10px] text-muted/40 font-mono uppercase tracking-widest">
+              © 2026 Ascension Intelligence. All rights reserved.
+            </p>
+            <p className="text-[10px] text-muted/40 font-mono uppercase tracking-widest">
+              v5.1.0 — Built with 🧬 by Tejas Sinha
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
@@ -206,5 +298,33 @@ function PillarCard({ icon, title, description, features }: any) {
         </ul>
       </div>
     </motion.div>
+  );
+}
+
+function FAQItem({ q, a }: { q: string; a: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="border border-white/5 rounded-2xl overflow-hidden bg-surface hover:border-white/10 transition-all">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between p-6 text-left"
+      >
+        <span className="text-sm font-medium text-white pr-4">{q}</span>
+        <ChevronDown size={18} className={`text-muted shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="overflow-hidden"
+          >
+            <p className="px-6 pb-6 text-sm text-muted leading-relaxed">{a}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

@@ -89,7 +89,7 @@ class ExecutionRequest(BaseModel):
 
 @app.get("/")
 async def root():
-    return {"status": "online", "version": "v3.0.0-ECONOMY", "commit": "eb2acad"}
+    return {"status": "online", "version": "v5.1.0", "engine": "Astraeus Swarm Intelligence"}
 
 @app.post("/estimate")
 async def get_cost_estimate(request: ExecutionRequest):

@@ -1,7 +1,8 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Check, X, Shield, Zap, Sparkles, Building2 } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Check, X, Shield, Zap, Sparkles, Building2, ChevronDown, Flame } from "lucide-react";
 import Link from "next/link";
 
 export default function PricingPage() {
@@ -35,7 +36,7 @@ export default function PricingPage() {
                         { text: "Standard Reasoning Depth", included: true },
                         { text: "Community Support", included: true },
                         { text: "Up to 3 concurrent agents", included: true },
-                        { text: "Enterprise Telemetry", included: false },
+                        { text: "The Forge (Multi-Branch)", included: false },
                         { text: "Team Billing", included: false },
                     ]}
                     cta="Start Exploring"
@@ -53,8 +54,8 @@ export default function PricingPage() {
                         { text: "Purchase Top-Up Credits", included: true },
                         { text: "Up to 10 concurrent agents", included: true },
                         { text: "Deep Reasoning Modes", included: true },
-                        { text: "Priority Execution Queue", included: true },
-                        { text: "Evolution A/B Testing", included: true },
+                        { text: "The Forge (Multi-Branch)", included: true },
+                        { text: "Chronos Replay Engine", included: true },
                         { text: "Team Billing", included: false },
                     ]}
                     cta="Create Account"
@@ -72,7 +73,7 @@ export default function PricingPage() {
                         { text: "Shared Organization Pouches", included: true },
                         { text: "Unlimited concurrent agents", included: true },
                         { text: "Dedicated Swarm Clusters", included: true },
-                        { text: "Cryptographic Audit Exports", included: true },
+                        { text: "The Forge + Chronos Engine", included: true },
                         { text: "Custom Governance Policies", included: true },
                         { text: "SLA Guarantees", included: true },
                     ]}
@@ -82,8 +83,11 @@ export default function PricingPage() {
                 />
             </div>
 
-            {/* FAQ or Trust Section */}
-            <div className="max-w-4xl mx-auto glass rounded-2xl p-8 md:p-12 border border-white/10 flex flex-col md:flex-row items-center gap-8 shadow-2xl">
+            {/* Token Calculator */}
+            <TokenCalculator />
+
+            {/* Trust Section */}
+            <div className="max-w-4xl mx-auto glass rounded-2xl p-8 md:p-12 border border-white/10 flex flex-col md:flex-row items-center gap-8 shadow-2xl mb-20">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex flex-shrink-0 items-center justify-center">
                     <Shield className="text-primary w-8 h-8" />
                 </div>
@@ -94,6 +98,18 @@ export default function PricingPage() {
                     </p>
                 </div>
             </div>
+
+            {/* FAQ Section */}
+            <section className="max-w-3xl mx-auto mb-16">
+                <h2 className="text-2xl font-bold text-white text-center mb-10">Billing <span className="text-primary">FAQ</span></h2>
+                <div className="space-y-4">
+                    <FAQItem q="What happens if a mission fails?" a="If the swarm encounters a critical error or the reasoning confidence drops below the threshold, the execution is halted and your credits are automatically refunded via the signed ledger." />
+                    <FAQItem q="How are tokens priced?" a="Token costs are dynamically calculated based on objective complexity, active cluster load, and reasoning depth. Simple tasks cost ~50-100 tokens, complex multi-file generations cost ~200-500 tokens." />
+                    <FAQItem q="Can I set a spending limit?" a="Yes. In the Developer Settings, you can configure monthly quotas on your API keys. The platform will automatically reject requests that exceed your configured limits." />
+                    <FAQItem q="Do Forge sessions cost more?" a="Forge sessions run 3 parallel swarms, so they cost approximately 3x a standard execution. However, the architectural diversity and benchmark data often save engineering hours." />
+                    <FAQItem q="How does team billing work?" a="Institutional accounts use shared Organization Credit Pouches. All team members draw from the same balance, with admin-level visibility into per-user consumption." />
+                </div>
+            </section>
 
         </div>
     );
@@ -146,5 +162,87 @@ function PricingCard({ tier, price, subtitle, icon, features, cta, href, highlig
                 </button>
             </Link>
         </motion.div>
+    );
+}
+
+function TokenCalculator() {
+    const [amount, setAmount] = useState(5);
+    const tokens = amount * 10000;
+
+    const estimates = [
+        { label: "Simple Tasks", count: Math.floor(tokens / 80), desc: "API endpoints, utilities" },
+        { label: "Standard Missions", count: Math.floor(tokens / 200), desc: "Full components, modules" },
+        { label: "Complex Projects", count: Math.floor(tokens / 450), desc: "Multi-file architectures" },
+        { label: "Forge Sessions", count: Math.floor(tokens / 600), desc: "3-branch parallel duels" },
+    ];
+
+    return (
+        <section className="max-w-4xl mx-auto mb-20">
+            <div className="glass rounded-2xl p-8 md:p-12 border border-white/10">
+                <div className="flex items-center gap-3 mb-8">
+                    <Flame size={20} className="text-orange-400" />
+                    <h3 className="text-xl font-bold text-white">Token Calculator</h3>
+                </div>
+
+                <div className="mb-8">
+                    <div className="flex items-center justify-between mb-3">
+                        <label className="text-xs font-mono text-muted uppercase tracking-widest">Top-Up Amount</label>
+                        <span className="text-2xl font-bold text-primary">${amount}</span>
+                    </div>
+                    <input
+                        type="range"
+                        min={5}
+                        max={100}
+                        step={5}
+                        value={amount}
+                        onChange={(e) => setAmount(Number(e.target.value))}
+                        className="w-full accent-primary"
+                    />
+                    <div className="flex justify-between text-[9px] text-muted/40 font-mono mt-2">
+                        <span>$5</span>
+                        <span>{tokens.toLocaleString()} tokens</span>
+                        <span>$100</span>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {estimates.map(e => (
+                        <div key={e.label} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl text-center">
+                            <div className="text-2xl font-bold text-white mb-1">~{e.count}</div>
+                            <div className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">{e.label}</div>
+                            <div className="text-[9px] text-muted/50">{e.desc}</div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function FAQItem({ q, a }: { q: string; a: string }) {
+    const [isOpen, setIsOpen] = useState(false);
+    return (
+        <div className="border border-white/5 rounded-2xl overflow-hidden bg-surface hover:border-white/10 transition-all">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full flex items-center justify-between p-6 text-left"
+            >
+                <span className="text-sm font-medium text-white pr-4">{q}</span>
+                <ChevronDown size={18} className={`text-muted shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
+            </button>
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="overflow-hidden"
+                    >
+                        <p className="px-6 pb-6 text-sm text-muted leading-relaxed">{a}</p>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
     );
 }

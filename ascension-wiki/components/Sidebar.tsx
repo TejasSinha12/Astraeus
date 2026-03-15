@@ -7,7 +7,7 @@ import { useUser } from "@clerk/nextjs";
 import {
     Brain, Database, Wrench, GraduationCap, ShieldAlert, Network, Menu, X,
     BarChart2, GitBranch, FlaskConical, Cpu, Map, ScrollText, Terminal,
-    LayoutDashboard, Shield, Code, Zap, Archive
+    LayoutDashboard, Shield, Code, Zap, Archive, Flame
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -29,6 +29,7 @@ const NAV_SECTIONS = [
         label: "Coding & API",
         items: [
             { name: "Coding Arena", href: "/coding", icon: Code },
+            { name: "The Forge", href: "/arena", icon: Flame },
             { name: "Mission Archive", href: "/archive", icon: Archive },
             { name: "API Reference", href: "/docs/api", icon: Zap },
         ],
@@ -122,7 +123,7 @@ export function Sidebar() {
                         </div>
                         <div className="flex items-center justify-between text-xs font-mono text-muted">
                             <span>SYSTEM_VER</span>
-                            <span className="text-primary">v5.0.0
+                            <span className="text-primary">v5.1.0
                                 -PROD</span>
                         </div>
                     </div>

@@ -42,7 +42,6 @@ export default function ProfessionalWorkspace() {
     const [viewMode, setViewMode] = useState<"ide" | "dag" | "diff">("ide");
 
     // Swarm Configuration
-    // Swarm Configuration
     const [isConfigOpen, setIsConfigOpen] = useState(false);
     const [swarmConfig, setSwarmConfig] = useState({
         agents: { auditor: true, optimizer: true, critic: true },

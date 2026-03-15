@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUser, UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { motion } from "framer-motion";
-import { Brain, Zap, LayoutDashboard, Shield, Code, Wallet, Key } from "lucide-react";
+import { Brain, Zap, LayoutDashboard, Shield, Code, Wallet, Key, Flame } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { TopUpModal } from "@/components/auth/TopUpModal";
@@ -89,6 +89,14 @@ export function Navbar() {
                 </SignedOut>
 
                 <SignedIn>
+                    <Link
+                        href="/arena"
+                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-orange-500/20 bg-orange-500/5 text-orange-400 text-xs font-bold hover:bg-orange-500/10 transition-colors"
+                        title="The Forge"
+                    >
+                        <Flame size={14} />
+                        <span className="hidden sm:inline">Forge</span>
+                    </Link>
                     <button
                         onClick={() => setIsTopUpOpen(true)}
                         className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-primary/20 bg-primary/5 text-primary text-xs font-bold hover:bg-primary/10 transition-colors"
