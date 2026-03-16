@@ -87,19 +87,14 @@ export default function MissionArchive() {
         }
     };
 
-    const handleExportZip = async (id: string) => {
-        try {
-            const res = await fetch(`${API_BASE_URL}/missions/${id}/export`);
-            const blob = await res.json(); // Wait, it's a file response
-            // We should use window.open or a direct link for binary responses
-            window.open(`${API_BASE_URL}/missions/${id}/export`, "_blank");
-        } catch (e) {
-            console.error("Failed to export ZIP", e);
-        }
+    const handleExportZip = (id: string) => {
+        // Direct link to binary ZIP response
+        window.open(`${API_BASE_URL}/missions/${id}/export`, "_blank");
     };
 
     const filteredMissions = missions.filter(m =>
-        m.id.toLowerCase().includes(searchQuery.toLowerCase())
+        m.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (m.objective && m.objective.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     return (
@@ -117,7 +112,7 @@ export default function MissionArchive() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted/50 group-focus-within:text-primary transition-colors" size={16} />
                     <input
                         type="text"
-                        placeholder="Search Mission ID..."
+                        placeholder="Search Mission ID or Objective..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="bg-white/[0.03] border border-white/10 rounded-full pl-12 pr-6 py-3 text-sm focus:outline-none focus:border-primary/40 focus:bg-white/[0.05] transition-all w-full md:w-64 text-white"
@@ -186,6 +181,11 @@ export default function MissionArchive() {
                                                     </div>
                                                 </div>
                                             </div>
+                                            {mission.objective && (
+                                                <div className="text-[11px] text-muted/80 truncate pr-4">
+                                                    {mission.objective}
+                                                </div>
+                                            )}
 
                                             <ChevronRight className={cn("transition-all text-muted/20 group-hover:text-primary/50", selectedMission === mission.id && "rotate-90 text-primary")} size={16} />
                                         </button>

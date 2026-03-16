@@ -14,6 +14,8 @@ const TOC = [
     { id: "memory", label: "4. Memory Compression" },
     { id: "benchmarks", label: "5. Benchmark Methodology" },
     { id: "swarm", label: "6. Swarm Orchestration" },
+    { id: "forge", label: "7. The Forge (Multi-Branching)" },
+    { id: "chronos", label: "8. Chronos Engine (Replay)" },
 ];
 
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
@@ -67,7 +69,7 @@ export default function WhitepaperPage() {
                 <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
                     <div className="text-xs font-mono text-primary uppercase tracking-widest mb-2">Technical Documentation</div>
                     <h1 className="text-4xl font-bold text-white mb-2">Project Ascension Whitepaper</h1>
-                    <p className="text-muted">v0.1.0-alpha · February 2026</p>
+                    <p className="text-muted">v5.1.0 · March 2026</p>
                 </motion.div>
 
                 <Section id="cognitive-loop" title="1. Cognitive Loop Architecture">
@@ -141,6 +143,27 @@ export default function WhitepaperPage() {
                     <p>Agent specialization via profiles prevents context pollution: the <Code>Researcher_01</Code> profile has access only to <Code>web_search</Code>, preventing it from accidentally running dangerous code. The <Code>Executive_Alpha</Code> has no tool access at all — its sole capability is inter-agent task delegation.</p>
                     <p>The REST API exposes <Code>/swarm/halt</Code> which broadcasts a <Code>SIGKILL</Code> signal to all active asyncio tasks within 500ms. Emergency halt bypasses all in-flight tasks and resets the coordinator state machine to <em>IDLE</em>.</p>
                     <p>Future work includes implementing a distributed coordinator using Redis pub/sub for multi-process agent deployment across separate machines, enabling horizontal scaling of the swarm.</p>
+                </Section>
+
+                <Section id="forge" title="7. Evolutionary Multi-Branching (The Forge)">
+                    <p>The Forge introduces an evolutionary approach to code generation. Instead of producing a single solution, the platform spawns <em>N</em> parallel swarm instances (default: 3) with distinct architectural biases.</p>
+                    <Math>
+                        {`Branches = {B_perf, B_scale, B_elegant}`}
+                    </Math>
+                    <p>Each branch executes the same objective but with a modified system prompt. Branch selection uses a multi-objective fitness function:</p>
+                    <Math>
+                        {`Fitness(B) = w1*perf(B) + w2*complexity_inv(B) + w3*security(B)`}
+                    </Math>
+                    <Alert>All branches execute concurrently via asyncio.gather, ensuring the total wall-clock time is bounded by the slowest branch.</Alert>
+                </Section>
+
+                <Section id="chronos" title="8. Neural Code Replay (Chronos Engine)">
+                    <p>The Chronos Engine records every reasoning step during swarm execution as a time-indexed MissionTraceStep, enabling frame-by-frame replay.</p>
+                    <Math>
+                        {`TraceStep(t) = { thought(t), code_snapshot(t), agent_id(t), confidence(t) }`}
+                    </Math>
+                    <p>Rather than simple undo/redo, Chronos allows users to revert the thought process and re-execute from any reasoning node, creating a tree of alternative paths.</p>
+                    <Alert>Trace steps are persisted with microsecond-precision timestamps, enabling sub-second scrubbing resolution across missions.</Alert>
                 </Section>
             </main>
         </div>
