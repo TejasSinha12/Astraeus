@@ -105,7 +105,7 @@ export function TraceSidebar({ logs, steps, isExecuting }: TraceSidebarProps) {
                     <div className={cn("w-1.5 h-1.5 rounded-full", isExecuting ? "bg-primary animate-pulse" : "bg-muted/20")} />
                     {isExecuting ? "Processing Flow" : "System Idle"}
                 </div>
-                <span>v5.0.0-PROD</span>
+                <span>v5.1.0-PROD</span>
             </div>
         </div>
     );
@@ -115,18 +115,27 @@ function ReasoningStep({ step, index }: { step: TraceStep, index: number }) {
     const [isOpen, setIsOpen] = useState(index === 0); // Open first step by default
 
     return (
-        <div className="border border-white/5 rounded-lg overflow-hidden transition-all hover:border-white/10 bg-white/[0.02]">
+        <div className={cn(
+            "border rounded-lg overflow-hidden transition-all duration-300",
+            isOpen ? "bg-primary/[0.03] border-primary/20 shadow-[0_4px_20px_-10px_rgba(0,229,255,0.1)]" : "bg-white/[0.02] border-white/5 hover:border-white/10"
+        )}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-white/5"
+                className={cn(
+                    "w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors",
+                    isOpen ? "bg-primary/[0.05]" : "hover:bg-white/5"
+                )}
             >
                 {isOpen ? <ChevronDown size={14} className="text-primary" /> : <ChevronRight size={14} className="text-muted" />}
                 <div className="flex-1">
-                    <div className="text-[10px] font-bold text-white uppercase tracking-tighter">
+                    <div className={cn(
+                        "text-[10px] font-bold uppercase tracking-tighter transition-colors",
+                        isOpen ? "text-primary" : "text-white"
+                    )}>
                         {step.status}
                     </div>
                 </div>
-                <span className="text-[8px] text-muted/30">{step.timestamp}</span>
+                <span className="text-[8px] font-mono text-muted/40">{step.timestamp}</span>
             </button>
             <AnimatePresence>
                 {isOpen && (
@@ -136,7 +145,7 @@ function ReasoningStep({ step, index }: { step: TraceStep, index: number }) {
                         exit={{ height: 0, opacity: 0 }}
                         className="overflow-hidden"
                     >
-                        <div className="px-8 pb-3 text-[10px] text-muted/80 leading-relaxed border-t border-white/5 pt-2">
+                        <div className="px-8 pb-3 text-[10px] text-muted/90 font-mono leading-relaxed border-t border-primary/10 pt-2.5">
                             {step.message}
                         </div>
                     </motion.div>

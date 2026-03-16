@@ -60,7 +60,16 @@ async def rbac_middleware(request: Request, call_next):
                 logger.warning(f"INSTITUTIONAL GATE: Org {user.org_id} balance exhausted.")
                 raise HTTPException(status_code=402, detail="Institutional credit pool exhausted. Please contact your administrator.")
 
+    # Evaluate request
     response = await call_next(request)
+    
+    # 5. Inject Security & Rate Limit Headers
+    # In a full deployment, these values would be dynamically driven by Redis
+    response.headers["X-RateLimit-Limit"] = "100"
+    response.headers["X-RateLimit-Remaining"] = "99"
+    response.headers["X-RateLimit-Reset"] = "3600"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    
     return response
 
 def log_audit_trail(user_id: str, action: str, metadata: dict):

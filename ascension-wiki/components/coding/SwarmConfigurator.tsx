@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Settings2, X, Zap, ShieldCheck, Gauge, Cpu, MessageSquareQuote } from "lucide-react";
+import { Settings2, X, Zap, ShieldCheck, Gauge, Cpu, MessageSquareQuote, Layers } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,7 @@ interface SwarmConfig {
     };
     creativity: number;
     strictness: number;
+    useForge: boolean;
 }
 
 interface SwarmConfiguratorProps {
@@ -67,6 +68,20 @@ export function SwarmConfigurator({ isOpen, onClose, config, onChange }: SwarmCo
                         </div>
 
                         <div className="p-6 space-y-8">
+                            <section className="space-y-4">
+                                <h4 className="text-[9px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2">
+                                    <Layers size={12} /> Evolutionary Execution
+                                </h4>
+                                <AgentToggle
+                                    label="The Forge (Multi-Branch)"
+                                    description="Spawn parallel architectures (Perf/Scale/Elegant)"
+                                    active={config.useForge}
+                                    onClick={() => onChange({ ...config, useForge: !config.useForge })}
+                                    icon={<Layers size={14} className={config.useForge ? "text-[#ff6b6b]" : ""} />}
+                                    badge="BETA"
+                                />
+                            </section>
+
                             {/* Agent Selection */}
                             <section className="space-y-4">
                                 <h4 className="text-[9px] font-bold text-white/40 uppercase tracking-widest flex items-center gap-2">
@@ -151,7 +166,7 @@ export function SwarmConfigurator({ isOpen, onClose, config, onChange }: SwarmCo
     );
 }
 
-function AgentToggle({ label, description, active, onClick, icon }: { label: string, description: string, active: boolean, onClick: () => void, icon: React.ReactNode }) {
+function AgentToggle({ label, description, active, onClick, icon, badge }: { label: string, description: string, active: boolean, onClick: () => void, icon: React.ReactNode, badge?: string }) {
     return (
         <button
             onClick={onClick}
@@ -169,7 +184,10 @@ function AgentToggle({ label, description, active, onClick, icon }: { label: str
                 {icon}
             </div>
             <div className="flex-1">
-                <h5 className="text-[11px] font-bold uppercase tracking-tight">{label}</h5>
+                <div className="flex items-center gap-2">
+                    <h5 className="text-[11px] font-bold uppercase tracking-tight">{label}</h5>
+                    {badge && <span className="text-[8px] bg-[#ff6b6b]/20 text-[#ff6b6b] border border-[#ff6b6b]/30 px-1.5 py-0.5 rounded-md font-mono">{badge}</span>}
+                </div>
                 <p className="text-[9px] opacity-40 mt-0.5">{description}</p>
             </div>
             <div className={cn(

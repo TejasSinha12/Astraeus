@@ -91,6 +91,11 @@ class ExecutionRequest(BaseModel):
 async def root():
     return {"status": "online", "version": "v5.1.0", "engine": "Astraeus Swarm Intelligence"}
 
+@app.get("/health")
+async def health_check():
+    """Lightweight endpoint for Pingdom / Uptime checks"""
+    return {"status": "healthy", "uptime": "ok"}
+
 @app.post("/estimate")
 async def get_cost_estimate(request: ExecutionRequest):
     # Use the new pricing engine for dynamic quotes
