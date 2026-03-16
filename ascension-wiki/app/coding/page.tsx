@@ -46,7 +46,8 @@ export default function ProfessionalWorkspace() {
     const [swarmConfig, setSwarmConfig] = useState({
         agents: { auditor: true, optimizer: true, critic: true },
         creativity: 0.5,
-        strictness: 0.8
+        strictness: 0.8,
+        useForge: false
     });
 
     const [isDeploying, setIsDeploying] = useState(false);
