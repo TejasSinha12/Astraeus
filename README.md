@@ -1,17 +1,44 @@
-# Astraeus Intelligence Platform 🧬
+# Ascension Intelligence Platform — v5.1.1
+![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
+![Version](https://img.shields.io/badge/version-v5.1.1-blue)
+![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)
 
-> **Autonomous Swarm-as-a-Service** — A production-grade multi-agent AI execution platform with institutional billing, federated orchestration, evolutionary branching, and cryptographically signed governance.
-
-[![Live Platform](https://img.shields.io/badge/Platform-Live-00e5ff?style=for-the-badge)](https://astraeus-livid.vercel.app)
-[![API Gateway](https://img.shields.io/badge/API-Online-34d399?style=for-the-badge)](https://astraeus-r4pf.onrender.com)
-[![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![Next.js](https://img.shields.io/badge/Next.js-15+-000?style=for-the-badge&logo=next.js)](https://nextjs.org)
+Ascension (codenamed **Astraeus**) is an institutional-grade, multi-agent artificial intelligence infrastructure. It replaces traditional, brittle LLM API calls with a resilient, federated *Swarm Execution API* designed for complete codebase autonomy.
 
 ---
 
-## Overview
+## 🚀 Quick Deploy
 
-Astraeus replaces raw LLM API calls with a high-performance **Swarm Execution API**. Multiple specialized AI agents (Planner, Architect, Implementer, Critic, Optimizer, Auditor) collaborate through structured JSON protocols to produce production-quality code, with full observability and enterprise billing built in.
+Ascension consists of two components: a Next.js frontend and a FastAPI backend.
+
+### Deploy Frontend (Vercel)
+Deploy the Next.js workspace interface directly to Vercel:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FTejasSinha12%2FAstraeus%2Ftree%2Fmain%2Fascension-wiki&env=NEXT_PUBLIC_PLATFORM_API_URL,NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,CLERK_SECRET_KEY)
+
+### Deploy Backend (Docker)
+The Ascension orchestration engine is packaged as a Docker container. You can run the entire backend stack (API + Database) using Docker Compose:
+
+1. Clone the repository and configure `.env`:
+```bash
+git clone https://github.com/TejasSinha12/Astraeus.git
+cd Astraeus
+cp .env.example .env # Configure your API keys
+```
+
+2. Boot the cluster:
+```bash
+docker-compose up -d
+```
+The API will be available at `http://localhost:8000` with automated healthchecks monitoring the swarm engine.
+
+---
+
+## 🧠 Key Features
+
+- **Global Coordinator:** A rigid priority queue managing task delegation across dynamic agent profiles (Auditor, Optimizer, Critic).
+- **The Forge:** An evolutionary computing module allowing researchers to spawn parallel coding attempts (e.g. comparing SSE vs WebSockets vs Long-polling) and evaluate the best approach.
+- **Chronos Engine:** A high-fidelity code replay timeline that lets you scrub through the AGI's neural trace, review decision markers, and reverse engineering reasoning flaws frame-by-frame.
 
 ---
 
