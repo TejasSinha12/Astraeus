@@ -417,6 +417,29 @@ export default function ProfessionalWorkspace() {
                                     >
                                         <Settings2 size={16} className="group-hover:rotate-90 transition-transform duration-500" />
                                     </button>
+                                    <button
+                                        onClick={handleDeployToGithub}
+                                        disabled={!codeResult || isDeploying}
+                                        className={cn(
+                                            "flex items-center gap-2 px-4 py-2 rounded-xl border font-mono text-sm tracking-widest uppercase transition-all",
+                                            codeResult && !isDeploying
+                                                ? "bg-white/5 border-white/10 hover:bg-white/10 text-white"
+                                                : "bg-white/5 border-white/5 text-muted/50 cursor-not-allowed"
+                                        )}
+                                    >
+                                        {isDeploying ? <Loader2 className="w-4 h-4 animate-spin" /> : <Github className="w-4 h-4" />}
+                                        <span className="hidden sm:inline">Deploy PR</span>
+                                    </button>
+                                    
+                                    <button
+                                        onClick={() => toast.info("The Forge is currently in Invite-Only Beta.", {
+                                            description: "Evolutionary multi-branching requires Institutional access.",
+                                        })}
+                                        className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#ff6b6b]/30 bg-[#ff6b6b]/10 hover:bg-[#ff6b6b]/20 font-mono text-sm tracking-widest uppercase text-[#ff6b6b] transition-all shadow-[0_0_15px_rgba(255,107,107,0.15)] hover:shadow-[0_0_20px_rgba(255,107,107,0.3)]"
+                                    >
+                                        <Layers className="w-4 h-4" />
+                                        <span className="hidden sm:inline">Launch Forge</span>
+                                    </button>
                                     <motion.button
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
