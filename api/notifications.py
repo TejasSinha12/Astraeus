@@ -1,5 +1,6 @@
 import httpx
 import json
+import datetime
 from typing import Optional, Dict
 from utils.logger import logger
 from api.usage_db import SessionLocal, UserAccount
@@ -73,7 +74,7 @@ class NotificationService:
                     target_url,
                     json={
                         "event": event_type,
-                        "timestamp": "now",
+        "timestamp": datetime.datetime.utcnow().isoformat() + "Z",
                         "payload": payload
                     }
                 )
@@ -93,10 +94,15 @@ class NotificationService:
                     json={
                         "from": "Astraeus Billing <billing@astraeus.ai>",
                         "to": [email],
-                        "subject": "CRITICAL: Low Execution Credits",
-                        "html": f"<p>Your Astraeus balance is low: <strong>{current_balance:.2f} credits remaining</strong>.</p><p>Top up now to avoid mission interruptions.</p>"
+                        "subject": "⚠️ Low Execution Credits — Astraeus",
+                        "html": f"<div style='font-family: sans-serif; background: #050505; color: #fff; padding: 40px; border-radius: 20px;'>"
+                               f"<h2 style='color: #ff6b6b;'>Low Balance Warning</h2>"
+                               f"<p>Your Astraeus balance is critically low: <strong style='color: #00e5ff;'>{current_balance:.2f} credits remaining</strong>.</p>"
+                               f"<p style='color: #888;'>Top up now to avoid mission interruptions.</p>"
+                               f"<a href='https://astraeus-livid.vercel.app/pricing' style='display: inline-block; padding: 12px 24px; background: #00e5ff; color: #000; text-decoration: none; border-radius: 8px; font-weight: bold; margin-top: 16px;'>Top Up Now</a>"
+                               f"</div>"
                     }
                 )
                 logger.info(f"NOTIFY: Low balance alert sent to {email}")
-        except:
-            pass
+        except Exception as e:
+            logger.error(f"NOTIFY: Low balance email failed: {str(e)}")
