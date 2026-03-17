@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useUser } from "@clerk/nextjs";
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from "recharts";
 import { GitPullRequest, Hash, MessageSquare, ShieldCheck, User, ExternalLink, Calendar } from "lucide-react";
 import useSWR from "swr";
@@ -9,7 +10,12 @@ const API_URL = process.env.NEXT_PUBLIC_PLATFORM_API_URL || "http://localhost:80
 const fetcher = (url: string) => fetch(url, { headers: { "api-key": "SYSTEM_ADMIN_BYPASS" } }).then(res => res.json());
 
 export function ResearcherProfile() {
+    const { user } = useUser();
     const { data: metrics, error } = useSWR(`${API_URL}/admin/metrics/research`, fetcher, { refreshInterval: 5000 });
+
+    const joinedDate = user?.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : "March 2026";
+    const displayName = user?.fullName || "Lead Researcher";
+    const username = user?.primaryEmailAddress?.emailAddress?.split("@")[0] || "system_admin";
 
     // Default fallback if loading or error
     const displayData = metrics || [
@@ -35,8 +41,8 @@ export function ResearcherProfile() {
                                 </div>
                             </div>
                             <div>
-                                <h2 className="text-2xl font-bold text-white tracking-tight text-glow">Lead Researcher</h2>
-                                <p className="text-sm text-primary/60 font-mono">@system_admin</p>
+                                <h2 className="text-2xl font-bold text-white tracking-tight text-glow">{displayName}</h2>
+                                <p className="text-sm text-primary/60 font-mono">@{username}</p>
                             </div>
                         </div>
                         <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-white/40 uppercase tracking-widest">
@@ -47,7 +53,7 @@ export function ResearcherProfile() {
                     <div className="mt-8 space-y-4">
                         <div className="flex items-center gap-3 text-white/60">
                             <Calendar size={16} className="text-white/20" />
-                            <span className="text-xs">Active since March 2026</span>
+                            <span className="text-xs">Active since {joinedDate}</span>
                         </div>
                         <div className="flex items-center gap-3 text-white/60">
                             <Hash size={16} className="text-white/20" />
