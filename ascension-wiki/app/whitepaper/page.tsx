@@ -69,7 +69,7 @@ export default function WhitepaperPage() {
                 <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
                     <div className="text-xs font-mono text-primary uppercase tracking-widest mb-2">Technical Documentation</div>
                     <h1 className="text-4xl font-bold text-white mb-2">Project Ascension Whitepaper</h1>
-                    <p className="text-muted">v5.1.0 · March 2026</p>
+                    <p className="text-muted">v5.2.0 · March 2026</p>
                 </motion.div>
 
                 <Section id="cognitive-loop" title="1. Cognitive Loop Architecture">

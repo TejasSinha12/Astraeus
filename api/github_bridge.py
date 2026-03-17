@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from typing import Optional
 from api.integrations.github import GitHubService
 from api.integrations.clerk import ClerkService
-from api.usage_db import SessionLocal, SwarmMission
+from api.usage_db import SessionLocal, SwarmMission, AuditLog
 from utils.logger import logger
 import json
 import datetime
@@ -66,7 +66,7 @@ async def deploy_to_github(
             f"**Objective:** {mission.objective}\n\n"
             f"**Files:** {len(file_map)}\n"
             f"**Generated:** {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}\n"
-            f"**Platform:** v5.1.0"
+            f"**Platform:** v5.2.0"
         )
 
         # 5. Execute PR Flow
@@ -82,6 +82,9 @@ async def deploy_to_github(
             raise HTTPException(status_code=502, detail="GitHub API failure. Check token scopes or repo permissions.")
 
         logger.info(f"GITHUB: PR deployed for mission {mission.id[:8]} → {payload.repo_name} ({len(file_map)} files)")
+        with SessionLocal() as db:
+            db.add(AuditLog(user_id=x_clerk_user_id, action="GITHUB_PR_DEPLOYED", metadata_json=f"Repo: {payload.repo_name}, Mission: {mission.id[:8]}"))
+            db.commit()
 
         return {
             "status": "success",

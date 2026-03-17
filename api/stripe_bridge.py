@@ -4,7 +4,7 @@ Webhooks for handling credit top-ups and financial settlements.
 """
 from fastapi import APIRouter, Request, Header, HTTPException
 from core.billing_ledger import BillingLedger
-from api.usage_db import SessionLocal, TokenLedger
+from api.usage_db import SessionLocal, TokenLedger, AuditLog
 from utils.logger import logger
 import os
 import hmac
@@ -83,6 +83,9 @@ async def stripe_webhook(request: Request, stripe_signature: str = Header(None))
         success = TokenAccountingSystem.top_up_tokens(user_id, int(token_gain), session_id)
         if success:
             logger.info(f"BILLING: Successfully credited {token_gain} tokens to {user_id}")
+            with SessionLocal() as db:
+                db.add(AuditLog(user_id=user_id, action="STRIPE_CHECKOUT_SUCCESS", metadata_json=f"Amount: ${amount_paid:.2f}, Tokens: {int(token_gain)}"))
+                db.commit()
             return {"status": "success", "tokens_credited": int(token_gain)}
         else:
             logger.error(f"BILLING: Failed to credit {token_gain} tokens to {user_id}")

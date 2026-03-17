@@ -29,7 +29,7 @@ export function AuditExplorer() {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All Events");
 
-    const logs = data?.logs || MOCK_AUDIT_LOGS;
+    const logs = data?.logs || [];
 
     const filteredLogs = useMemo(() => {
         return logs.filter((log: any) => {
@@ -139,6 +139,7 @@ function LogEntry({ log }: { log: any }) {
             case "SUCCESS": return "bg-green-500/10 text-green-400 border-green-500/20";
             case "CRITICAL": return "bg-red-500/10 text-red-500 border-red-500/20";
             case "INFO": return "bg-blue-500/10 text-blue-400 border-blue-500/20";
+            case "WARNING": return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
             default: return "bg-white/5 text-white/40 border-white/10";
         }
     };

@@ -3,7 +3,7 @@ import json
 import datetime
 from typing import Optional, Dict
 from utils.logger import logger
-from api.usage_db import SessionLocal, UserAccount
+from api.usage_db import SessionLocal, UserAccount, AuditLog
 import os
 
 class NotificationService:
@@ -47,6 +47,9 @@ class NotificationService:
                 )
                 if resp.status_code == 201:
                     logger.info(f"NOTIFY: Mission report sent to {email}")
+                    with SessionLocal() as db:
+                        db.add(AuditLog(user_id=email, action="NOTIFICATION_SENT", metadata_json=json.dumps({"type": "mission_report", "mission_id": mission_id})))
+                        db.commit()
                 else:
                     logger.warning(f"NOTIFY: Failed to send email via Resend: {resp.text}")
         except Exception as e:
@@ -78,7 +81,13 @@ class NotificationService:
                         "payload": payload
                     }
                 )
-                logger.info(f"NOTIFY: Webhook triggered ({event_type}) -> {resp.status_code} for {user_id}")
+                if resp.status_code in [200, 201, 202, 204]:
+                    logger.info(f"NOTIFY: Webhook triggered ({event_type}) -> {resp.status_code} for {user_id}")
+                    with SessionLocal() as db:
+                        db.add(AuditLog(user_id=user_id or "SYSTEM", action="WEBHOOK_DISPATCHED", metadata_json=json.dumps({"event": event_type, "status": resp.status_code})))
+                        db.commit()
+                else:
+                    logger.warning(f"NOTIFY: Webhook returned non-success: {resp.status_code}")
         except Exception as e:
             logger.error(f"NOTIFY: Webhook failure for {user_id}: {str(e)}")
 

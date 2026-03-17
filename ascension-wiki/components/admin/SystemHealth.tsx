@@ -21,12 +21,15 @@ const MOCK_TRAFFIC = [
 ];
 
 export function SystemHealth() {
+    const { data: historyData, isLoading: isHistoryLoading } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/history`, fetcher, {
+        refreshInterval: 30000,
+    });
     const { data, error, isLoading } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/health`, fetcher, {
         refreshInterval: 5000,
     });
 
     const activeNodes = data?.active_swarms || 0;
-    const cpuLoad = data?.cpu_load ? `${data.cpu_load}%` : "0%";
+    const cpuLoad = data?.cpu_load ? `${data.cpu_load.toFixed(1)}%` : "0.0%";
     const throughput = data?.throughput || "0 tokens/sec";
     const uptime = data?.uptime || "99.97%";
     const federationNodes = data?.federation_nodes || 3;
@@ -44,7 +47,7 @@ export function SystemHealth() {
                 </div>
                 <div className="flex items-center gap-4 text-[10px] font-mono text-muted/40 uppercase">
                     <span>Uptime: <span className="text-green-400">{uptime}</span></span>
-                    <span>v5.1.0</span>
+                    <span>v5.2.0</span>
                 </div>
             </div>
 
@@ -89,7 +92,7 @@ export function SystemHealth() {
 
                 <div className="h-[300px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={MOCK_TRAFFIC}>
+                        <AreaChart data={historyData || []}>
                             <defs>
                                 <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
                                     <stop offset="5%" stopColor="#00e5ff" stopOpacity={0.3} />

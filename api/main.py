@@ -89,7 +89,7 @@ class ExecutionRequest(BaseModel):
 
 @app.get("/")
 async def root():
-    return {"status": "online", "version": "v5.1.0", "engine": "Astraeus Swarm Intelligence"}
+    return {"status": "online", "version": "v5.2.0", "engine": "Astraeus Swarm Intelligence"}
 
 @app.get("/health")
 async def health_check():

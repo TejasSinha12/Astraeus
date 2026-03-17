@@ -1,6 +1,6 @@
-# Ascension Intelligence Platform — v5.1.1
+# Ascension Intelligence Platform — v5.2.0
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Version](https://img.shields.io/badge/version-v5.1.1-blue)
+![Version](https://img.shields.io/badge/version-v5.2.0-blue)
 ![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)
 
 Ascension (codenamed **Astraeus**) is an institutional-grade, multi-agent artificial intelligence infrastructure. It replaces traditional, brittle LLM API calls with a resilient, federated *Swarm Execution API* designed for complete codebase autonomy.

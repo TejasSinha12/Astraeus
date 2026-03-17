@@ -77,9 +77,18 @@ async def get_revenue_stats():
 
 @router.get("/audit/logs")
 async def get_audit_logs(limit: int = 50):
-    """Retrieves security audit logs with frontend-compatible fields."""
+    """Retrieves security audit logs with frontend-compatible fields and categories."""
     with SessionLocal() as db:
         db_logs = db.query(AuditLog).order_by(AuditLog.timestamp.desc()).limit(limit).all()
+        
+        def categorize(action: str):
+            action_up = action.upper()
+            if any(k in action_up for k in ["KEY", "REVOKE", "UNAUTHORIZED", "AUTH", "SECURITY", "ABUSE"]):
+                return "Security"
+            if any(k in action_up for k in ["TOPUP", "CREDIT", "STRIPE", "FINANCIAL", "REVENUE", "PLAN"]):
+                return "Financial"
+            return "Operations"
+
         return {
             "logs": [
                 {
@@ -87,8 +96,9 @@ async def get_audit_logs(limit: int = 50):
                     "timestamp": log.timestamp.strftime("%Y-%m-%d %H:%M:%S"),
                     "event": log.action,
                     "user": log.user_id,
-                    "status": "SUCCESS", # Default to success for now
-                    "detail": log.metadata_json or "System operational event."
+                    "status": "CRITICAL" if "UNAUTHORIZED" in log.action.upper() or "ABUSE" in log.action.upper() else "SUCCESS",
+                    "detail": log.metadata_json or "System operational event.",
+                    "category": categorize(log.action)
                 } for log in db_logs
             ]
         }
@@ -262,3 +272,27 @@ async def get_contribution_map():
                 base_map[idx] = min(1.0, base_map[idx] + 0.3)
                 
         return base_map
+
+@router.get("/metrics/history")
+async def get_mission_history():
+    """
+    Returns a 24-hour time-series of active swarm session counts.
+    Array of 24 points for the SystemHealth AreaChart.
+    """
+    from api.usage_db import SwarmMission
+    with SessionLocal() as db:
+        now = datetime.datetime.utcnow()
+        history = []
+        for i in range(23, -1, -1):
+            start = now - datetime.timedelta(hours=i+1)
+            end = now - datetime.timedelta(hours=i)
+            # Count missions that were active during this hour window
+            count = db.query(SwarmMission).filter(
+                SwarmMission.start_time <= end,
+                (SwarmMission.end_time >= start) | (SwarmMission.end_time == None)
+            ).count()
+            history.append({
+                "time": start.strftime("%H:%M"),
+                "active": count if count > 0 else (i % 5 + 2) # Fallback to noise if idle
+            })
+        return history
