@@ -11,7 +11,8 @@ const fetcher = (url: string) => fetch(url, { headers: { "api-key": "SYSTEM_ADMI
 
 export function ResearcherProfile() {
     const { user } = useUser();
-    const { data: metrics, error } = useSWR(`${API_URL}/admin/metrics/research`, fetcher, { refreshInterval: 5000 });
+    const { data: metrics, error: metricsError } = useSWR(`${API_URL}/admin/metrics/research`, fetcher, { refreshInterval: 5000 });
+    const { data: contributions, error: contError } = useSWR(`${API_URL}/admin/metrics/contributions`, fetcher);
 
     const joinedDate = user?.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : "March 2026";
     const displayName = user?.fullName || "Lead Researcher";
@@ -142,14 +143,13 @@ export function ResearcherProfile() {
                 </div>
 
                 <div className="grid grid-cols-52 gap-1 h-32 w-full overflow-hidden">
-                    {Array.from({ length: 52 * 7 }).map((_, i) => {
-                        const opacity = Math.random() > 0.7 ? (Math.random() * 0.8 + 0.2) : 0.05;
+                    {(contributions || Array.from({ length: 52 * 7 }).fill(0.05)).slice(0, 364).map((opacity: number, i: number) => {
                         return (
                             <div
                                 key={i}
                                 className="w-full h-full rounded-sm bg-primary/20 transition-colors hover:bg-primary cursor-help"
                                 style={{ opacity }}
-                                title={`Activity on Node ${i}`}
+                                title={`Activity Index: ${(opacity * 100).toFixed(0)}%`}
                             />
                         );
                     })}
