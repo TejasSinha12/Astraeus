@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Zap, Clock, ShieldCheck, Coins } from "lucide-react";
+import { Zap, Clock, ShieldCheck, Coins, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TelemetryMetersProps {
@@ -30,6 +30,7 @@ export function TelemetryMeters({ tokens, latency, confidence, cost, isExecuting
                 subValue="Real-time"
                 active={isExecuting}
                 gradient="from-yellow-400 to-orange-500"
+                tooltip="Time to first byte or roundtrip response time for the active Swarm."
             />
             <Meter
                 icon={<ShieldCheck size={14} className={cn("text-green-400", isExecuting && "animate-pulse")} />}
@@ -38,6 +39,7 @@ export function TelemetryMeters({ tokens, latency, confidence, cost, isExecuting
                 subValue="Validation"
                 active={isExecuting}
                 gradient="from-green-400 to-emerald-500"
+                tooltip="Aggregated score from Auditor agents verifying code stability."
             />
             <Meter
                 icon={<Coins size={14} className={cn("text-purple-400", isExecuting && "animate-pulse")} />}
@@ -51,7 +53,7 @@ export function TelemetryMeters({ tokens, latency, confidence, cost, isExecuting
     );
 }
 
-function Meter({ icon, label, value, subValue, active, gradient }: { icon: React.ReactNode, label: string, value: string, subValue: string, active?: boolean, gradient: string }) {
+function Meter({ icon, label, value, subValue, active, gradient, tooltip }: { icon: React.ReactNode, label: string, value: string, subValue: string, active?: boolean, gradient: string, tooltip?: string }) {
     return (
         <motion.div
             className={cn(
@@ -71,6 +73,14 @@ function Meter({ icon, label, value, subValue, active, gradient }: { icon: React
                     </div>
                     <span className="text-[10px] font-mono text-muted uppercase tracking-widest">{label}</span>
                 </div>
+                {tooltip && (
+                    <div className="group/tooltip relative">
+                        <HelpCircle size={12} className="text-white/20 hover:text-white/80 cursor-help transition-colors" />
+                        <div className="absolute top-full right-0 mt-2 w-48 p-2 rounded-lg bg-black border border-white/10 text-[9px] text-white/70 shadow-2xl opacity-0 translate-y-2 pointer-events-none group-hover/tooltip:opacity-100 group-hover/tooltip:translate-y-0 transition-all z-20">
+                            {tooltip}
+                        </div>
+                    </div>
+                )}
             </div>
             <div className="flex flex-col relative z-10 mt-1">
                 <span className={cn("text-2xl font-bold font-mono tracking-tight text-transparent bg-clip-text bg-gradient-to-r", gradient)}>
