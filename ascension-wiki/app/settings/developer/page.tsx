@@ -19,6 +19,13 @@ export default function DeveloperSettings() {
     const [isLoading, setIsLoading] = useState(true);
     const [webhookUrl, setWebhookUrl] = useState("");
     const [isSavingWebhook, setIsSavingWebhook] = useState(false);
+    const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+
+    useEffect(() => {
+        if (user) {
+            setNotificationsEnabled(!!user.unsafeMetadata?.intelReports);
+        }
+    }, [user]);
 
     const githubAccount = user?.externalAccounts.find(a => a.provider === "github");
     const isGitHubConnected = !!githubAccount;
@@ -105,6 +112,11 @@ export default function DeveloperSettings() {
     };
 
     const handleSaveWebhook = async () => {
+        if (!/^https:\/\/[^\s$.?#].[^\s]*$/.test(webhookUrl)) {
+            toast.error("Invalid Webhook URL. Must be a secure https:// endpoint.");
+            return;
+        }
+
         setIsSavingWebhook(true);
         try {
             const token = await getToken();
@@ -219,7 +231,15 @@ export default function DeveloperSettings() {
                                         <button
                                             onClick={async () => {
                                                 if (isGitHubConnected) {
-                                                    window.open("https://accounts.astraeus.ai/user/profile", "_blank");
+                                                    if(confirm("Are you sure you want to disconnect GitHub?")) {
+                                                        try {
+                                                            await githubAccount?.destroy();
+                                                            toast.success("GitHub Disconnected. Refreshing...");
+                                                            setTimeout(() => window.location.reload(), 1500);
+                                                        } catch (err: any) {
+                                                            toast.error(err.message || "Failed to disconnect GitHub");
+                                                        }
+                                                    }
                                                 } else {
                                                     try {
                                                         const res = await user?.createExternalAccount({
@@ -237,11 +257,11 @@ export default function DeveloperSettings() {
                                             className={cn(
                                                 "w-full py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all",
                                                 isGitHubConnected
-                                                    ? "bg-white/5 text-muted border border-white/5 hover:bg-white/10"
+                                                    ? "bg-white/5 text-muted border border-white/5 hover:bg-white/10 hover:text-red-400"
                                                     : "bg-white text-black hover:bg-primary transition-all active:scale-[0.98]"
                                             )}
                                         >
-                                            {isGitHubConnected ? <><ExternalLink size={12} /> Manage</> : <><LinkIcon size={12} /> Connect</>}
+                                            {isGitHubConnected ? <><Trash2 size={12} /> Disconnect</> : <><LinkIcon size={12} /> Connect</>}
                                         </button>
                                     </div>
                                 </div>
@@ -289,8 +309,20 @@ export default function DeveloperSettings() {
                                         <p className="text-[9px] text-muted uppercase tracking-widest">Email Mission Summaries</p>
                                     </div>
                                 </div>
-                                <div className="w-10 h-5 bg-primary rounded-full relative p-1 cursor-pointer">
-                                    <div className="w-3 h-3 bg-black rounded-full absolute right-1" />
+                                <div 
+                                    onClick={async () => {
+                                        try {
+                                            const newStatus = !notificationsEnabled;
+                                            await user?.update({ unsafeMetadata: { ...user.unsafeMetadata, intelReports: newStatus } });
+                                            setNotificationsEnabled(newStatus);
+                                            toast.success(newStatus ? "Intel Reports Enabled" : "Intel Reports Disabled");
+                                        } catch (e) {
+                                            toast.error("Failed to update notification preferences");
+                                        }
+                                    }}
+                                    className={`w-10 h-5 rounded-full relative p-1 cursor-pointer transition-colors ${notificationsEnabled ? 'bg-primary' : 'bg-white/20'}`}
+                                >
+                                    <div className={`w-3 h-3 bg-black rounded-full absolute top-1 transition-all ${notificationsEnabled ? 'right-1' : 'left-1 bg-white'}`} />
                                 </div>
                             </div>
                         </section>
