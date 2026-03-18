@@ -4,7 +4,8 @@ import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { Search, ShieldAlert, FileJson, Clock, User, Info, AlertTriangle, Filter, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
+import { useEffect } from "react";
 
 const fetcher = (url: string) => fetch(url, { headers: { "api-key": "SYSTEM_ADMIN_BYPASS" } }).then(res => res.json());
 
@@ -28,8 +29,25 @@ export function AuditExplorer() {
 
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All Events");
+    const [isLive, setIsLive] = useState(false);
+    const [liveLogs, setLiveLogs] = useState<any[]>([]);
 
-    const logs = data?.logs || [];
+    useEffect(() => {
+        if (!isLive) return;
+        
+        const eventSource = new EventSource(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/logs/stream`);
+        eventSource.onmessage = (event) => {
+            const newLog = JSON.parse(event.data);
+            setLiveLogs(prev => [newLog, ...prev].slice(0, 100));
+        };
+        
+        return () => eventSource.close();
+    }, [isLive]);
+
+    const logs = useMemo(() => {
+        if (isLive) return liveLogs;
+        return data?.logs || [];
+    }, [isLive, liveLogs, data]);
 
     const filteredLogs = useMemo(() => {
         return logs.filter((log: any) => {
@@ -66,6 +84,18 @@ export function AuditExplorer() {
                             className="bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary w-64 shadow-inner text-white"
                         />
                     </div>
+                    <button
+                        onClick={() => setIsLive(!isLive)}
+                        className={cn(
+                            "flex items-center gap-2 px-3 py-2 rounded-lg border transition-all text-xs font-bold uppercase tracking-widest",
+                            isLive 
+                                ? "bg-red-500/10 border-red-500/20 text-red-500 animate-pulse" 
+                                : "bg-white/5 border-white/10 text-white/40 hover:text-white"
+                        )}
+                    >
+                        <div className={cn("w-2 h-2 rounded-full", isLive ? "bg-red-500" : "bg-white/20")} />
+                        {isLive ? "Live Stream" : "Go Live"}
+                    </button>
                     <div className="flex items-center gap-1 bg-white/5 rounded-lg border border-white/10 p-1">
                         {CATEGORIES.map(cat => (
                             <button
