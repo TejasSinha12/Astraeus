@@ -27,6 +27,7 @@ export function SystemHealth() {
     const { data, error, isLoading } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/health`, fetcher, {
         refreshInterval: 5000,
     });
+    const { data: topology } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/nodes`, fetcher);
 
     const activeNodes = data?.active_swarms || 0;
     const cpuLoad = data?.cpu_load ? `${data.cpu_load.toFixed(1)}%` : "0.0%";
@@ -47,7 +48,7 @@ export function SystemHealth() {
                 </div>
                 <div className="flex items-center gap-4 text-[10px] font-mono text-muted/40 uppercase">
                     <span>Uptime: <span className="text-green-400">{uptime}</span></span>
-                    <span>v5.2.0</span>
+                    <span>v5.2.1</span>
                 </div>
             </div>
 
@@ -108,6 +109,55 @@ export function SystemHealth() {
                             <Area type="monotone" dataKey="active" stroke="#00e5ff" strokeWidth={2} fillOpacity={1} fill="url(#colorActive)" />
                         </AreaChart>
                     </ResponsiveContainer>
+                </div>
+            </div>
+
+            {/* Federation Topology Map */}
+            <div className="glass-card p-6 border border-white/5 bg-white/[0.01]">
+                <div className="flex items-center gap-3 mb-8">
+                    <Globe className="rotate-12 text-green-400 w-5 h-5" />
+                    <h3 className="text-sm font-bold uppercase tracking-widest text-white">Federation Topology (Geographic Distribution)</h3>
+                </div>
+                
+                <div className="relative h-[200px] w-full flex items-center justify-center bg-black/20 rounded-xl overflow-hidden border border-white/5">
+                    {/* Simulated SVG Graph */}
+                    <svg width="100%" height="100%" viewBox="0 0 500 200" className="opacity-80">
+                        <defs>
+                            <filter id="glow">
+                                <feGaussianBlur stdDeviation="2" result="coloredBlur" />
+                                <feMerge>
+                                    <feMergeNode in="coloredBlur" />
+                                    <feMergeNode in="SourceGraphic" />
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        {/* Links */}
+                        <line x1="250" y1="100" x2="100" y2="150" stroke="rgba(0,229,255,0.2)" strokeWidth="1" strokeDasharray="4 4" />
+                        <line x1="250" y1="100" x2="400" y2="60" stroke="rgba(0,229,255,0.2)" strokeWidth="1" strokeDasharray="4 4" />
+                        
+                        {/* Nodes */}
+                        <g filter="url(#glow)">
+                            <circle cx="250" cy="100" r="8" fill="#00e5ff" className="animate-pulse" />
+                            <circle cx="100" cy="150" r="5" fill="#4ade80" />
+                            <circle cx="400" cy="60" r="5" fill="#a855f7" />
+                        </g>
+                        
+                        {/* Labels */}
+                        <text x="265" y="105" fill="white" fontSize="10" fontWeight="bold" className="uppercase font-mono opacity-60">US-EAST (MASTER)</text>
+                        <text x="110" y="155" fill="white" fontSize="9" className="uppercase font-mono opacity-40">EU-CENTRAL</text>
+                        <text x="410" y="65" fill="white" fontSize="9" className="uppercase font-mono opacity-40">AP-SOUTH</text>
+                    </svg>
+
+                    <div className="absolute top-4 right-4 flex flex-col gap-2">
+                        <div className="flex items-center gap-2 bg-black/40 px-2 py-1 rounded border border-white/5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                            <span className="text-[9px] font-mono text-white/40 uppercase">Latency: 42ms</span>
+                        </div>
+                        <div className="flex items-center gap-2 bg-black/40 px-2 py-1 rounded border border-white/5">
+                            <div className="w-1.5 h-1.5 rounded-full bg-primary" />
+                            <span className="text-[9px] font-mono text-white/40 uppercase">Sync: 100%</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
