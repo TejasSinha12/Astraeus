@@ -13,6 +13,9 @@ export function ResearcherProfile() {
     const { user } = useUser();
     const { data: metrics, error: metricsError } = useSWR(`${API_URL}/admin/metrics/research`, fetcher, { refreshInterval: 5000 });
     const { data: contributions, error: contError } = useSWR(`${API_URL}/admin/metrics/contributions`, fetcher);
+    const { data: account, error: accError } = useSWR(`${API_URL}/admin/users/${user?.id || 'current'}`, fetcher);
+
+    const reputation = account?.balance?.reputation || 5.2; // Mock fallback if db is stale
 
     const joinedDate = user?.createdAt ? new Date(user.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : "March 2026";
     const displayName = user?.fullName || "Lead Researcher";
@@ -46,8 +49,25 @@ export function ResearcherProfile() {
                                 <p className="text-sm text-primary/60 font-mono">@{username}</p>
                             </div>
                         </div>
-                        <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-white/40 uppercase tracking-widest">
-                            Verified Node
+                        <div className="flex flex-col items-end gap-1">
+                            <div className="px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-[10px] font-bold text-primary uppercase tracking-widest">
+                                Tier {reputation > 8 ? 'Alpha' : reputation > 5 ? 'Beta' : 'Gamma'}
+                            </div>
+                            <span className="text-[9px] text-white/20 font-mono uppercase">Reputation: {reputation.toFixed(1)}</span>
+                        </div>
+                    </div>
+
+                    <div className="mt-6 flex flex-col gap-2">
+                        <div className="flex justify-between items-end">
+                            <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest">Scientific Tier Progress</span>
+                            <span className="text-[10px] text-primary font-mono">{((reputation % 1) * 100).toFixed(0)}%</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+                            <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${(reputation % 1) * 100}%` }}
+                                className="h-full bg-gradient-to-r from-primary to-blue-500"
+                            />
                         </div>
                     </div>
 
