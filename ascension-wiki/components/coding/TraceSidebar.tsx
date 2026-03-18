@@ -105,7 +105,7 @@ export function TraceSidebar({ logs, steps, isExecuting }: TraceSidebarProps) {
                     <div className={cn("w-1.5 h-1.5 rounded-full", isExecuting ? "bg-primary animate-pulse" : "bg-muted/20")} />
                     {isExecuting ? "Processing Flow" : "System Idle"}
                 </div>
-                <span>v5.2.0-PROD</span>
+                <span>v5.2.1-PROD</span>
             </div>
         </div>
     );
