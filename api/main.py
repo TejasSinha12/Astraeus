@@ -89,12 +89,21 @@ class ExecutionRequest(BaseModel):
 
 @app.get("/")
 async def root():
-    return {"status": "online", "version": "v5.2.0", "engine": "Astraeus Swarm Intelligence"}
+    return {"status": "online", "version": "v5.2.1", "engine": "Astraeus Swarm Intelligence"}
 
-@app.get("/health")
-async def health_check():
     """Lightweight endpoint for Pingdom / Uptime checks"""
     return {"status": "healthy", "uptime": "ok"}
+
+@app.get("/v1/system/info")
+async def get_system_info():
+    return {
+        "engine": "Astraeus Swarm Intelligence",
+        "version": "v5.2.1",
+        "nodes": 3,
+        "federation": "ENABLED",
+        "active_agents": ["PLANNER", "ARCHITECT", "IMPLEMENTER", "CRITIC", "OPTIMIZER", "AUDITOR"],
+        "governance": "STRICT"
+    }
 
 @app.post("/estimate")
 async def get_cost_estimate(request: ExecutionRequest):
