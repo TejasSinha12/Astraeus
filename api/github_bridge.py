@@ -66,7 +66,7 @@ async def deploy_to_github(
             f"**Objective:** {mission.objective}\n\n"
             f"**Files:** {len(file_map)}\n"
             f"**Generated:** {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}\n"
-            f"**Platform:** v5.2.0"
+            f"**Platform:** v5.2.1"
         )
 
         # 5. Execute PR Flow
