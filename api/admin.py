@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Header
+import asyncio
+import json
+from fastapi import APIRouter, Depends, HTTPException, Header, Request
+from fastapi.responses import StreamingResponse
 from typing import List, Dict, Any, Optional
 from api.usage_db import SessionLocal, TokenLedger, UserBalance, APIKey, AuditLog, UserAccount
 from core.api_key_manager import ProductionAPIKeyManager
@@ -296,3 +299,40 @@ async def get_mission_history():
                 "active": count if count > 0 else (i % 5 + 2) # Fallback to noise if idle
             })
         return history
+
+@router.get("/logs/stream")
+async def stream_audit_logs(request: Request):
+    """
+    Server-Side Events (SSE) endpoint for real-time audit tailing.
+    """
+    from api.usage_db import AuditLog
+    async def log_generator():
+        last_id = 0
+        while True:
+            if await request.is_disconnected():
+                break
+            
+            with SessionLocal() as db:
+                logs = db.query(AuditLog).filter(AuditLog.id > last_id).order_by(AuditLog.id.asc()).all()
+                for log in logs:
+                    yield f"data: {json.dumps({'id': log.id, 'event': log.action, 'user': log.user_id, 'timestamp': log.timestamp.isoformat(), 'detail': log.metadata_json})}\n\n"
+                    last_id = log.id
+            
+            await asyncio.sleep(2) # Poll for new logs every 2 seconds
+
+    return StreamingResponse(log_generator(), media_type="text/event-stream")
+
+@router.get("/metrics/nodes")
+def get_node_topology():
+    """Returns simulated geographic distribution of swarm clusters."""
+    return {
+        "nodes": [
+            {"id": "us-east-1", "label": "Primary Cluster", "status": "ACTIVE", "load": 42},
+            {"id": "eu-central-1", "label": "Federated Node", "status": "ACTIVE", "load": 18},
+            {"id": "ap-southeast-1", "label": "Edge Proxy", "status": "IDLE", "load": 5}
+        ],
+        "links": [
+            {"source": "us-east-1", "target": "eu-central-1"},
+            {"source": "us-east-1", "target": "ap-southeast-1"}
+        ]
+    }
