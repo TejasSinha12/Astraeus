@@ -2,6 +2,7 @@
 Hardened Token Accounting System for Project Ascension.
 Provides atomic balance management, subscription plan enforcement, and transaction logging.
 """
+import time
 from typing import Optional, Tuple
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -41,7 +42,7 @@ class TokenAccountingSystem:
             return (user.token_balance, plan.name if plan else "PUBLIC", plan.access_level if plan else 1)
 
     @staticmethod
-    def deduct_tokens(user_id: str, amount: int, reference_id: str) -> bool:
+    def deduct_tokens(user_id: str, amount: int, reference_id: str, reason: str = "DEBIT") -> bool:
         """
         ATOMIC deduction of tokens. Updates balance (user or org) and creates a transaction record.
         """
@@ -85,7 +86,7 @@ class TokenAccountingSystem:
                     user_id=user_id,
                     org_id=user.org_id,
                     amount=-amount,
-                    transaction_type='DEBIT',
+                    transaction_type=reason,
                     reference_id=reference_id
                 )
                 db.add(tx)
@@ -167,3 +168,22 @@ class TokenAccountingSystem:
                 db.rollback()
                 logger.error(f"TOKEN TOPUP ERROR: {e}")
                 return False
+
+    @staticmethod
+    def adjust_reputation(user_id: str, delta: float, reason: str):
+        """
+        Updates the earned reputation score for a user.
+        """
+        with SessionLocal() as db:
+            user = db.query(UserAccount).filter(UserAccount.id == user_id).with_for_update().first()
+            if user:
+                user.reputation_score = max(1.0, user.reputation_score + delta)
+                db.add(TokenTransaction(
+                    user_id=user_id,
+                    amount=0,
+                    transaction_type="REPUTATION_ADJUST",
+                    reference_id=f"REP_{int(time.time())}",
+                    reference_id_alt=reason # Overloading if needed, or just logging
+                ))
+                db.commit()
+                logger.info(f"REPUTATION ADJUST: {delta} for {user_id} ({reason})")
