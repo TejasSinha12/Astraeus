@@ -1,6 +1,6 @@
-# Ascension Intelligence Platform — v5.2.0
+# Ascension Intelligence Platform — v5.2.1
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Version](https://img.shields.io/badge/version-v5.2.0-blue)
+![Version](https://img.shields.io/badge/version-v5.2.1-blue)
 ![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)
 
 Ascension (codenamed **Astraeus**) is an institutional-grade, multi-agent artificial intelligence infrastructure. It replaces traditional, brittle LLM API calls with a resilient, federated *Swarm Execution API* designed for complete codebase autonomy.
@@ -63,6 +63,23 @@ The API will be available at `http://localhost:8000` with automated healthchecks
 ├──────────────────────────────────────────────┤
 │  PostgreSQL (Neon.tech) · ChromaDB · FAISS   │
 └──────────────────────────────────────────────┘
+```
+
+### 🧬 Swarm Intelligence Pipeline
+```mermaid
+graph TD
+    A[Objective] --> B{Global Coordinator}
+    B -->|Priority Queue| C[Swarm Orchestrator]
+    C --> D[Planner Agent]
+    D --> E[Architect Agent]
+    E --> F[Implementer Agent]
+    F --> G[Critic Agent]
+    G -->|Conflict| D
+    G -->|Approval| H[Auditor Agent]
+    H --> I[Verified Artifact]
+    I --> J[Federated Memory]
+    style B fill:#00e5ff,stroke:#00e5ff,stroke-width:2px,color:#000
+    style J fill:#4ade80,stroke:#4ade80,stroke-width:2px,color:#000
 ```
 
 --- 
@@ -209,7 +226,10 @@ npm run dev
 | `/v1/integrations/github/deploy` | `POST` | Deploy mission code as a GitHub PR |
 | `/admin/metrics/health` | `GET` | System health telemetry |
 | `/admin/metrics/revenue` | `GET` | Revenue and billing analytics |
+| `/admin/metrics/nodes` | `GET` | Geographic node topology |
+| `/admin/logs/stream` | `GET` | Real-time Audit Log SSE stream |
 | `/admin/organizations` | `GET` | List all institutional accounts |
+| `/v1/system/info` | `GET` | Public engine transparency |
 
 ---
 
@@ -268,5 +288,5 @@ This project is proprietary software. All rights reserved.
 
 <p align="center">
   <b>Built with 🧬 by <a href="https://github.com/TejasSinha12">Tejas Sinha</a></b><br>
-  <sub>Autonomous Intelligence Infrastructure — v5.1.0</sub>
+  <sub>Autonomous Intelligence Infrastructure — v5.2.1</sub>
 </p>
