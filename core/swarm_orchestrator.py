@@ -8,7 +8,8 @@ from pydantic import BaseModel
 
 from core.reasoning_engine import ReasoningEngine
 from agents.swarm_profiles import AGENT_REGISTRY, AgentProfile, SwarmCommunication
-from api.usage_db import SessionLocal, SwarmMission, MissionBranch, MissionTraceStep
+from api.usage_db import SessionLocal, SwarmMission, MissionBranch, MissionTraceStep, AuditLog
+from core.stability_engine import StabilityEngine
 from utils.logger import logger
 import json
 import uuid
@@ -23,9 +24,8 @@ class SwarmOrchestrator:
         self.reasoning = reasoning_engine
         self.active_agents: Dict[str, AgentProfile] = AGENT_REGISTRY
         
-        # Meta-Evolutionary Modules
-        from core.agent_spawner import AgentSpawner
-        self.spawner = AgentSpawner(reasoning_engine)
+        # Stability & Monitoring Modules
+        self.stability = StabilityEngine()
         
         logger.info(f"SwarmOrchestrator online with {len(self.active_agents)} specialized agent profiles.")
 
@@ -97,6 +97,22 @@ class SwarmOrchestrator:
         except Exception as e:
             logger.error(f"CHRONOS: Failed to record trace step: {e}")
 
+    async def _emit_heartbeat(self, mission_id: str, agent_role: str, action: str, severity: str = "INFO"):
+        """
+        [HEARTBEAT] Emits a live diagnostic pulse to the global audit stream.
+        """
+        try:
+            with SessionLocal() as db:
+                log = AuditLog(
+                    user_id="SYSTEM",  # Internal orchestrator pulse
+                    action=f"HEARTBEAT:{agent_role}:{action}",
+                    metadata_json=json.dumps({"mission_id": mission_id, "severity": severity, "timestamp": str(datetime.datetime.utcnow())})
+                )
+                db.add(log)
+                db.commit()
+        except Exception as e:
+            logger.error(f"ORCHESTRATOR: Heartbeat failure: {e}")
+
     async def execute_swarm_objective(self, objective: str, config: dict | None = None, mission_id: str | None = None) -> Dict[str, Any]:
         """
         Hierarchical execution objective through the swarm.
@@ -108,16 +124,19 @@ class SwarmOrchestrator:
         step_idx = 0
 
         # 1. PLAN
+        await self._emit_heartbeat(mission_id, "planner", "START_PLANNING")
         plan = await self._delegate_to_agent("planner", f"Decompose: {objective}", config)
         await self._record_trace_step(mission_id, step_idx, "planner", "Planning", plan, "")
         step_idx += 1
 
         # 2. DESIGN
+        await self._emit_heartbeat(mission_id, "architect", "START_DESIGNING")
         design = await self._delegate_to_agent("architect", f"Design: {plan}", config)
         await self._record_trace_step(mission_id, step_idx, "architect", "Architecture", design, "")
         step_idx += 1
 
         # 3. IMPLEMENT
+        await self._emit_heartbeat(mission_id, "implementer", "START_IMPLEMENTATION")
         implementation = await self._delegate_to_agent("implementer", f"Execute design: {design}", config)
         await self._record_trace_step(mission_id, step_idx, "implementer", "Implementation", "Initial Code Draft Generated", implementation)
         step_idx += 1
@@ -135,6 +154,11 @@ class SwarmOrchestrator:
             data = json.loads(temp_result)
             return {"is_multifile": True, "file_map": data, "content": final_result}
         except:
+            # Calculate final stability metrics before returning
+            risk = self.stability.calculate_risk([{"objective": objective}])
+            # entropy = self.stability.calculate_entropy([{"step": i} for i in range(step_idx)])
+            
+            await self._emit_heartbeat(mission_id, "orchestrator", f"MISSION_COMPLETED:STABILITY_OK", severity="SUCCESS")
             return {"is_multifile": False, "content": final_result, "file_map": {}}
 
     async def recursive_optimize(self, mission_telemetry: List[Dict[str, Any]]):
