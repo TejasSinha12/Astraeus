@@ -11,6 +11,7 @@ class StabilityMetrics(BaseModel):
     fitness_score: float      # 0.0 to 1.0 (Higher is better)
     regression_prob: float
     entropy: float
+    stability_threshold: float = 0.4  # Default threshold for deployment safety
 
 class StabilityEngine:
     """
@@ -64,3 +65,32 @@ class StabilityEngine:
             "fitness_delta": v2_fit - v1_fit,
             "risk_mitigation": 0.0 # Placeholder
         }
+
+    def calculate_entropy(self, execution_trace: List[Dict[str, Any]]) -> float:
+        """
+        Calculates the decision entropy of the swarm.
+        High entropy indicates agent disagreement or lack of confidence.
+        """
+        if not execution_trace:
+            return 0.0
+        
+        # Heuristic: Variation in confidence scores and agent conflict counts
+        confidences = [step.get("confidence", 1.0) for step in execution_trace]
+        if not confidences: return 0.5
+        
+        avg_conf = sum(confidences) / len(confidences)
+        variance = sum((c - avg_conf) ** 2 for c in confidences) / len(confidences)
+        
+        # Entropy = 1 - AvgConfidence + Variance
+        entropy = (1.0 - avg_conf) + (variance * 2)
+        logger.info(f"Calculated Swarm Decision Entropy: {entropy:.4f}")
+        return min(entropy, 1.0)
+
+    def is_stable_for_deployment(self, risk: float, entropy: float) -> bool:
+        """
+        Decision gate for automated deployment.
+        Returns False if risk or entropy exceed safe bounds.
+        """
+        is_stable = risk < 0.5 and entropy < 0.4
+        logger.info(f"Stability Gate Result: {'PASS' if is_stable else 'FAIL'} (Risk: {risk:.2f}, Entropy: {entropy:.2f})")
+        return is_stable
