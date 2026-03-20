@@ -27,7 +27,8 @@ async def list_missions() -> Dict[str, Any]:
                         "has_result": bool(m.source_code or m.file_map),
                         "objective": m.objective,
                         "source_code": m.source_code, # Needed for selection in workspace
-                        "is_multifile": m.is_multifile
+                        "is_multifile": m.is_multifile,
+                        "stability_index": m.stability_index or 1.0
                     } for m in missions
                 ]
             }
@@ -113,6 +114,7 @@ async def get_evolution_lineage() -> List[Dict[str, Any]]:
                     "parent_id": m.parent_id,
                     "experiment_id": m.experiment_id,
                     "objective": m.objective[:50],
+                    "stability_index": m.stability_index or 1.0,
                     "timestamp": m.timestamp.timestamp()
                 } for m in missions
             ]
