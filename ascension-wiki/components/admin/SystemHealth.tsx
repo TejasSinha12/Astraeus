@@ -117,7 +117,32 @@ export function SystemHealth() {
             </div>
 
             {/* Federation Topology Map */}
-            <div className="glass-card p-6 border border-white/5 bg-white/[0.01]">
+            <div className="relative glass-card p-6 border border-white/5 bg-white/[0.01]">
+                {/* Stability Gauge (Radial Overlay) */}
+                <div className="absolute top-6 right-6 w-24 h-24 bg-black/40 backdrop-blur-md rounded-full border border-white/5 flex flex-col items-center justify-center z-10">
+                    <div className="text-[8px] font-mono text-muted/40 uppercase mb-0.5">Stability</div>
+                    <div className="text-lg font-bold text-primary">{(stability?.overall_index * 100 || 88).toFixed(0)}%</div>
+                    <svg className="absolute inset-0 w-full h-full -rotate-90">
+                        <circle
+                            cx="48" cy="48" r="44"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            className="text-white/5"
+                        />
+                        <motion.circle
+                            cx="48" cy="48" r="44"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="3"
+                            strokeDasharray="276"
+                            initial={{ strokeDashoffset: 276 }}
+                            animate={{ strokeDashoffset: 276 - (276 * (stability?.overall_index || 0.88)) }}
+                            className="text-primary"
+                        />
+                    </svg>
+                </div>
+
                 <div className="flex items-center gap-3 mb-8">
                     <Globe className="rotate-12 text-green-400 w-5 h-5" />
                     <h3 className="text-sm font-bold uppercase tracking-widest text-white">Federation Topology (Geographic Distribution)</h3>
