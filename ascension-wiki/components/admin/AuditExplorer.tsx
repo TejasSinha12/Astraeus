@@ -170,6 +170,7 @@ function LogEntry({ log }: { log: any }) {
             case "CRITICAL": return "bg-red-500/10 text-red-500 border-red-500/20";
             case "INFO": return "bg-blue-500/10 text-blue-400 border-blue-500/20";
             case "WARNING": return "bg-yellow-500/10 text-yellow-400 border-yellow-500/20";
+            case "HEARTBEAT": return "bg-primary/10 text-primary/80 border-primary/20";
             default: return "bg-white/5 text-white/40 border-white/10";
         }
     };
