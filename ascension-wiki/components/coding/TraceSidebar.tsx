@@ -9,6 +9,7 @@ interface TraceStep {
     status: string;
     message: string;
     timestamp: string;
+    confidence?: number;
     details?: any;
 }
 
