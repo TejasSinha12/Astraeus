@@ -89,7 +89,7 @@ class ExecutionRequest(BaseModel):
 
 @app.get("/")
 async def root():
-    return {"status": "online", "version": "v5.2.1", "engine": "Astraeus Swarm Intelligence"}
+    return {"status": "online", "version": "v5.2.2", "engine": "Astraeus Swarm Intelligence"}
 
     """Lightweight endpoint for Pingdom / Uptime checks"""
     return {"status": "healthy", "uptime": "ok"}
@@ -98,9 +98,10 @@ async def root():
 async def get_system_info():
     return {
         "engine": "Astraeus Swarm Intelligence",
-        "version": "v5.2.1",
+        "version": "v5.2.2",
         "nodes": 3,
         "federation": "ENABLED",
+        "stability_index": 0.88,
         "active_agents": ["PLANNER", "ARCHITECT", "IMPLEMENTER", "CRITIC", "OPTIMIZER", "AUDITOR"],
         "governance": "STRICT"
     }
