@@ -154,6 +154,7 @@ class SwarmMission(Base):
     filename = Column(String)
     is_multifile = Column(Boolean, default=False)
     file_map = Column(String) # JSON blob for multi-file: {"path/to/file.py": "content", ...}
+    stability_index = Column(Float, default=1.0) # Structural health score
     timestamp = Column(DateTime, default=datetime.datetime.utcnow)
 
 class MissionBranch(Base):
