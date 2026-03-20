@@ -130,6 +130,9 @@ function ReasoningStep({ step, index }: { step: TraceStep, index: number }) {
                 {isOpen ? <ChevronDown size={14} className="text-primary" /> : <ChevronRight size={14} className="text-muted" />}
                 <div className="flex-1">
                     <div className={cn(
+                        "text-[10px] font-bold uppercase tracking-tighter transition-colors",
+                        isOpen ? "text-primary" : "text-white"
+                    )}>
                         {step.status}
                     </div>
                 </div>
