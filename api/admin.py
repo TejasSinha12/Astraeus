@@ -336,3 +336,25 @@ def get_node_topology():
             {"source": "us-east-1", "target": "ap-southeast-1"}
         ]
     }
+
+@router.get("/metrics/stability")
+async def get_stability_metrics():
+    """
+    Returns time-series diagnostics for structural stability and risk mitigation.
+    """
+    import random
+    import time
+    
+    # Simulation: Stability trend for the last 6 hours
+    return {
+        "overall_index": 0.88,
+        "trend": [
+            {"time": t, "stability": 0.8 + (random.random() * 0.15), "risk": random.random() * 0.25}
+            for t in range(int(time.time()) - 21600, int(time.time()), 3600)
+        ],
+        "distribution": {
+            "stable": 85,
+            "at_risk": 12,
+            "critical": 3
+        }
+    }
