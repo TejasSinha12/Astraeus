@@ -34,6 +34,9 @@ def migrate():
             if 'cluster_id' not in columns:
                 conn.execute(text("ALTER TABLE swarm_missions ADD COLUMN cluster_id VARCHAR"))
                 logger.info("MIGRATION: Added 'cluster_id' to swarm_missions")
+            if 'stability_index' not in columns:
+                conn.execute(text("ALTER TABLE swarm_missions ADD COLUMN stability_index FLOAT DEFAULT 1.0"))
+                logger.info("MIGRATION: Added 'stability_index' to swarm_missions")
             conn.commit()
 
     # 2. Federation & Economy Tables (Phases 29-32)
