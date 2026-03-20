@@ -47,8 +47,9 @@ export function SystemHealth() {
                     <span className="text-xs font-bold text-green-400 uppercase tracking-widest">All Systems Operational</span>
                 </div>
                 <div className="flex items-center gap-4 text-[10px] font-mono text-muted/40 uppercase">
+                    <span>Stability Index: <span className="text-primary font-bold">{stability?.overall_index || '0.88'}</span></span>
                     <span>Uptime: <span className="text-green-400">{uptime}</span></span>
-                    <span>v5.2.1</span>
+                    <span>v5.2.2</span>
                 </div>
             </div>
 
