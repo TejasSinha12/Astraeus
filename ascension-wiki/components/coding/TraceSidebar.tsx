@@ -130,12 +130,29 @@ function ReasoningStep({ step, index }: { step: TraceStep, index: number }) {
                 {isOpen ? <ChevronDown size={14} className="text-primary" /> : <ChevronRight size={14} className="text-muted" />}
                 <div className="flex-1">
                     <div className={cn(
-                        "text-[10px] font-bold uppercase tracking-tighter transition-colors",
-                        isOpen ? "text-primary" : "text-white"
-                    )}>
                         {step.status}
                     </div>
                 </div>
+                {step.confidence && (
+                    <div className="flex items-center gap-1.5 mr-2">
+                        <div className="w-12 h-1 bg-white/5 rounded-full overflow-hidden">
+                            <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${step.confidence * 100}%` }}
+                                className={cn(
+                                    "h-full rounded-full",
+                                    step.confidence > 0.8 ? "bg-primary" : step.confidence > 0.5 ? "bg-yellow-400" : "bg-red-500"
+                                )}
+                            />
+                        </div>
+                        <span className={cn(
+                            "text-[8px] font-bold",
+                            step.confidence > 0.8 ? "text-primary" : step.confidence > 0.5 ? "text-yellow-400" : "text-red-500"
+                        )}>
+                            {(step.confidence * 100).toFixed(0)}%
+                        </span>
+                    </div>
+                )}
                 <span className="text-[8px] font-mono text-muted/40">{step.timestamp}</span>
             </button>
             <AnimatePresence>
