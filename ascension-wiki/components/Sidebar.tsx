@@ -84,7 +84,7 @@ export function Sidebar() {
                             <div className="absolute inset-0 border-2 border-primary rounded-full animate-pulse opacity-50" />
                             <div className="w-2.5 h-2.5 bg-primary rounded-full box-glow" />
                         </div>
-                        <span className="text-lg font-bold tracking-widest text-white group-hover:text-primary transition-colors">ASCENSION</span>
+                        <span className="text-[10px] font-bold text-primary/60 tracking-widest uppercase">Platform v5.2.2</span>
                     </Link>
 
                     <nav className="flex-1 space-y-6">

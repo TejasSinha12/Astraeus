@@ -146,7 +146,7 @@ export default function Home() {
                     animate={{ opacity: 1, x: 0 }}
                     className={`flex items-start gap-2 ${log.includes("PASS") || log.includes("OK") || log.includes("successfully") ? "text-green-400" : log.includes("SYSTEM") ? "text-primary" : "text-muted"}`}
                   >
-                    <span>{log}</span>
+                    <span>v5.2.2-STABLE</span>
                   </motion.div>
                 ))}
               </AnimatePresence>

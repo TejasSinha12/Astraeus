@@ -70,7 +70,7 @@ export function TraceSidebar({ logs, steps, isExecuting }: TraceSidebarProps) {
                             {isExecuting && (
                                 <div className="flex items-center gap-3 p-3 rounded-lg bg-primary/5 border border-primary/20 animate-pulse">
                                     <div className="w-2 h-2 rounded-full bg-primary" />
-                                    <span className="text-[10px] text-primary uppercase tracking-[0.2em]">Neural Chain Expanding...</span>
+                                    <span className="text-[8px] text-white/20 uppercase tracking-widest">Astraeus Engine v5.2.2</span>
                                 </div>
                             )}
                         </motion.div>

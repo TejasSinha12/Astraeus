@@ -87,7 +87,8 @@ async def deploy_to_github(
             db.commit()
 
         return {
-            "status": "success",
+            "status": "SUCCESS",
+            "sha": "v5.2.2-stable",
             "pr_url": pr_url,
             "files_deployed": len(file_map),
             "branch": branch
