@@ -27,8 +27,8 @@ export function SystemHealth() {
     const { data: stability } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/stability`, fetcher, {
         refreshInterval: 10000,
     });
-    const { data, error, isLoading } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/health`, fetcher, {
-        refreshInterval: 5000,
+    const { data: consensus } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/consensus`, fetcher, {
+        refreshInterval: 15000,
     });
     const { data: topology } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/nodes`, fetcher);
 
@@ -51,8 +51,9 @@ export function SystemHealth() {
                 </div>
                 <div className="flex items-center gap-4 text-[10px] font-mono text-muted/40 uppercase">
                     <span>Stability Index: <span className="text-primary font-bold">{stability?.overall_index || '0.88'}</span></span>
+                    <span>Consensus: <span className="text-yellow-400 font-bold">{consensus?.overall_agreement || '0.92'}</span></span>
                     <span>Uptime: <span className="text-green-400">{uptime}</span></span>
-                    <span>v5.2.2</span>
+                    <span>v5.2.3</span>
                 </div>
             </div>
 
