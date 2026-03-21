@@ -18,11 +18,21 @@ class ReasoningEngine:
     Ensures structured parsing via Pydantic when expected.
     """
 
-    def _calculate_weighted_confidence(self, response: str, bias_weight: float = 1.0) -> float:
+    def _calculate_weighted_confidence(self, response: str, model_name: str = "default", bias_weight: float = 1.0) -> float:
         """
         Heuristic for calculating a confidence score based on reasoning depth
         and adherence to architectural constraints.
         """
+        # Model-specific architectural bias weights
+        MODEL_BIAS_MAP = {
+            "gpt-4": 1.1,
+            "claude-3-opus": 1.15,
+            "claude-3-sonnet": 1.0,
+            "gemini-1.5-pro": 1.05,
+            "default": 1.0
+        }
+        
+        applied_bias = MODEL_BIAS_MAP.get(model_name.lower(), 1.0) * bias_weight
         depth = len(response.split())
         # Base confidence 0.7, modulated by depth and bias
         base = 0.7 + (min(depth, 500) / 1000) * 0.2
@@ -52,7 +62,8 @@ class ReasoningEngine:
         system_prompt: str,
         user_prompt: str,
         temperature: float = 0.5,
-        response_model: Optional[type[BaseModel]] = None
+        response_model: Optional[type[BaseModel]] = None,
+        model_override: Optional[str] = None
     ) -> Any:
         """
         Generates a response from the LLM, optionally constrained to a Pydantic schema.
@@ -83,7 +94,7 @@ class ReasoningEngine:
             # Standard text generation
             if response_model is None:
                 response = await self.client.chat.completions.create(
-                    model=self.model,
+                    model=model_override or self.model,
                     messages=messages,
                     temperature=temperature,
                 )
@@ -96,7 +107,7 @@ class ReasoningEngine:
             # Structured JSON parsing
             else:
                 response = await self.client.beta.chat.completions.parse(
-                    model=self.model,
+                    model=model_override or self.model,
                     messages=messages,
                     response_format=response_model,
                     temperature=temperature,
