@@ -1,6 +1,6 @@
-# Ascension Intelligence Platform — v5.2.2
+# Project Ascension: Astraeus Intelligence Platform `v5.2.3`
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Version](https://img.shields.io/badge/version-v5.2.2-blue)
+![Version](https://img.shields.io/badge/version-v5.2.3--STABLE-blue)
 ![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)
 
 Ascension (codenamed **Astraeus**) is an institutional-grade, multi-agent artificial intelligence infrastructure. It replaces traditional, brittle LLM API calls with a resilient, federated *Swarm Execution API* designed for complete codebase autonomy.
@@ -123,8 +123,7 @@ graph TD
 - **Scoped API Keys**: Granular access control with monthly quotas
 
 ## 🧬 Intelligence Evolution & Research
-
-Astraeus is a **longitudinal crucible** for multi-agent evolution, powered by the `metrics/reliability_tracker.py` and `metrics/intelligence_index.py` engines. Every mission is a data point for the swarm's collective intelligence drift analysis.
+*Astraeus Engine v5.2.3 · March 2026**longitudinal crucible** for multi-agent evolution, powered by the `metrics/reliability_tracker.py` and `metrics/intelligence_index.py` engines. Every mission is a data point for the swarm's collective intelligence drift analysis.
 
 ### 🔬 Research Framework
 - **Mission Lineage (DAG)**: Every artifact is part of a non-linear evolution tree. Researchers can fork specific mission IDs to test alternate cognitive trajectories.

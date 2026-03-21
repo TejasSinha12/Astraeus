@@ -96,14 +96,12 @@ async def root():
 
 @app.get("/v1/system/info")
 async def get_system_info():
+    """Returns engine transparency metadata."""
     return {
-        "engine": "Astraeus Swarm Intelligence",
-        "version": "v5.2.2",
-        "nodes": 3,
-        "federation": "ENABLED",
-        "stability_index": 0.88,
-        "active_agents": ["PLANNER", "ARCHITECT", "IMPLEMENTER", "CRITIC", "OPTIMIZER", "AUDITOR"],
-        "governance": "STRICT"
+        "engine": "Astraeus",
+        "version": "v5.2.3-STABLE",
+        "features": ["Forge", "Chronos", "Resilience", "Consensus"],
+        "status": "OPERATIONAL"
     }
 
 @app.post("/estimate")

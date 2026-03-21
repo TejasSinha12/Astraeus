@@ -85,7 +85,7 @@ export function Sidebar() {
                             <div className="w-2.5 h-2.5 bg-primary rounded-full box-glow" />
                         </div>
                         <div className="flex flex-col">
-                            <span className="text-lg font-bold tracking-widest text-white group-hover:text-primary transition-colors">ASCENSION</span>
+                            <span className="text-[10px] uppercase tracking-tighter text-muted/40 font-mono mt-1 group-hover:text-primary/40 transition-colors">v5.2.3</span>
                             <span className="text-[8px] font-bold text-primary/40 tracking-[0.2em] uppercase -mt-1">Intelligence v5.2.2</span>
                         </div>
                     </Link>
