@@ -10,6 +10,7 @@ from core.reasoning_engine import ReasoningEngine
 from agents.swarm_profiles import AGENT_REGISTRY, AgentProfile, SwarmCommunication
 from api.usage_db import SessionLocal, SwarmMission, MissionBranch, MissionTraceStep, AuditLog
 from core.stability_engine import StabilityEngine
+from core.consensus_engine import ConsensusEngine, SwarmDecision
 from utils.logger import logger
 import json
 import uuid
@@ -26,6 +27,7 @@ class SwarmOrchestrator:
         
         # Stability & Monitoring Modules
         self.stability = StabilityEngine()
+        self.consensus = ConsensusEngine(cluster_ids=[]) # Initialize consensus layer
         
         logger.info(f"SwarmOrchestrator online with {len(self.active_agents)} specialized agent profiles.")
 
@@ -222,9 +224,53 @@ class SwarmOrchestrator:
                 await self.spawner.biosynthesize_specialist(prompt, "Output indicated reasoning fragmentation.")
                 
         finally:
-            config.TASK_TOKEN_LIMIT = original_limit
+            global_config.TASK_TOKEN_LIMIT = original_limit
             
         return response
+
+    async def _delegate_with_consensus(self, agent_key: str, prompt: str, models: List[str], config: dict | None = None) -> Dict[str, Any]:
+        """
+        Executes parallel reasoning across multiple models and resolves via ConsensusEngine.
+        """
+        config = config or {"creativity": 0.5, "strictness": 0.8}
+        agent = self.active_agents.get(agent_key)
+        
+        logger.info(f"CONSENSUS: Dispatching {agent_key} task to {len(models)} models in parallel.")
+        
+        tasks = []
+        for model in models:
+            # Note: Assuming reasoning_engine can take a specific model string
+            tasks.append(self.reasoning.generate_response(
+                system_prompt=agent.system_prompt,
+                user_prompt=prompt,
+                temperature=0.1 + (config.get("creativity", 0.5) * 0.8),
+                model_override=model
+            ))
+        
+        responses = await asyncio.gather(*tasks)
+        
+        decisions = []
+        for i, resp in enumerate(responses):
+            try:
+                # Basic parsing to SwarmDecision format
+                # In a real scenario, this would involve structured output parsing
+                decisions.append(SwarmDecision(
+                    model=models[i],
+                    tool="PROPOSE_ACTION", # Mock for now
+                    args={"content": resp},
+                    confidence=0.85 # Mock confidence
+                ))
+            except:
+                continue
+
+        metrics = self.consensus.calculate_swarm_consensus(decisions)
+        
+        await self._emit_heartbeat("CONSENSUS_REACHED", agent_key, f"Score: {metrics.consensus_score:.2f}")
+        
+        return {
+            "content": metrics.winning_decision.get("args", {}).get("content", ""),
+            "consensus_metrics": metrics.dict()
+        }
 
 class consensus_resolution:
     """
