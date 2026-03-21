@@ -37,6 +37,9 @@ def migrate():
             if 'stability_index' not in columns:
                 conn.execute(text("ALTER TABLE swarm_missions ADD COLUMN stability_index FLOAT DEFAULT 1.0"))
                 logger.info("MIGRATION: Added 'stability_index' to swarm_missions")
+            if 'consensus_score' not in columns:
+                conn.execute(text("ALTER TABLE swarm_missions ADD COLUMN consensus_score FLOAT DEFAULT 1.0"))
+                logger.info("MIGRATION: Added 'consensus_score' to swarm_missions")
             conn.commit()
 
     # 2. Federation & Economy Tables (Phases 29-32)
