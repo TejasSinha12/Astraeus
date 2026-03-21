@@ -24,6 +24,9 @@ export function SystemHealth() {
     const { data: historyData, isLoading: isHistoryLoading } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/history`, fetcher, {
         refreshInterval: 30000,
     });
+    const { data: stability } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/stability`, fetcher, {
+        refreshInterval: 10000,
+    });
     const { data: consensus } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/consensus`, fetcher, {
         refreshInterval: 15000,
     });
