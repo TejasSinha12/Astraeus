@@ -10,6 +10,8 @@ interface TraceStep {
     message: string;
     timestamp: string;
     confidence?: number;
+    consensus_score?: number;
+    voters?: string[];
     details?: any;
 }
 
@@ -73,7 +75,7 @@ export function TraceSidebar({ logs, steps, isExecuting }: TraceSidebarProps) {
                                         <div className="w-2 h-2 rounded-full bg-primary" />
                                         <span className="text-[10px] text-primary uppercase tracking-[0.2em]">Neural Chain Expanding...</span>
                                     </div>
-                                    <span className="text-[7px] text-white/20 uppercase tracking-widest pl-5">Astraeus Engine v5.2.2</span>
+                                    <span className="text-[7px] text-white/20 uppercase tracking-widest pl-5">Astraeus Engine v5.2.3</span>
                                 </div>
                             )}
                         </motion.div>
@@ -109,7 +111,7 @@ export function TraceSidebar({ logs, steps, isExecuting }: TraceSidebarProps) {
                     <div className={cn("w-1.5 h-1.5 rounded-full", isExecuting ? "bg-primary animate-pulse" : "bg-muted/20")} />
                     {isExecuting ? "Processing Flow" : "System Idle"}
                 </div>
-                <span>v5.2.1-PROD</span>
+                <span>v5.2.3-STABLE</span>
             </div>
         </div>
     );
@@ -139,6 +141,17 @@ function ReasoningStep({ step, index }: { step: TraceStep, index: number }) {
                         {step.status}
                     </div>
                 </div>
+                {step.consensus_score && (
+                    <div className="flex flex-col items-end mr-3">
+                        <span className="text-[7px] text-muted/40 uppercase font-mono mb-0.5">Consensus Scored</span>
+                        <span className={cn(
+                            "text-[8px] font-bold",
+                            step.consensus_score > 0.8 ? "text-green-400" : "text-yellow-400"
+                        )}>
+                            {(step.consensus_score * 100).toFixed(0)}%
+                        </span>
+                    </div>
+                )}
                 {step.confidence && (
                     <div className="flex items-center gap-1.5 mr-2">
                         <div className="w-12 h-1 bg-white/5 rounded-full overflow-hidden">
@@ -171,6 +184,15 @@ function ReasoningStep({ step, index }: { step: TraceStep, index: number }) {
                     >
                         <div className="px-8 pb-3 text-[10px] text-muted/90 font-mono leading-relaxed border-t border-primary/10 pt-2.5">
                             {step.message}
+                            {step.voters && (
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                    {step.voters.map((voter, idx) => (
+                                        <span key={idx} className="px-1.5 py-0.5 rounded-sm bg-white/5 border border-white/5 text-[7px] uppercase tracking-tighter text-muted/40 hover:text-primary transition-colors cursor-default">
+                                            {voter}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </motion.div>
                 )}
