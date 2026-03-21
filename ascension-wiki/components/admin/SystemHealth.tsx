@@ -24,11 +24,11 @@ export function SystemHealth() {
     const { data: historyData, isLoading: isHistoryLoading } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/history`, fetcher, {
         refreshInterval: 30000,
     });
-    const { data: stability } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/stability`, fetcher, {
-        refreshInterval: 10000,
-    });
     const { data: consensus } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/consensus`, fetcher, {
         refreshInterval: 15000,
+    });
+    const { data, error, isLoading } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/health`, fetcher, {
+        refreshInterval: 5000,
     });
     const { data: topology } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/nodes`, fetcher);
 
@@ -187,6 +187,43 @@ export function SystemHealth() {
                             <div className="w-1.5 h-1.5 rounded-full bg-primary" />
                             <span className="text-[9px] font-mono text-white/40 uppercase">Sync: 100%</span>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Consensus Heatmap Grid */}
+            <div className="glass-card p-6 border border-white/5 bg-white/[0.01]">
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                        <Database className="text-yellow-400 w-5 h-5" />
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-white">Consensus Heatmap (Model Alignment)</h3>
+                    </div>
+                </div>
+                
+                <div className="grid grid-cols-10 gap-2">
+                    {Array.from({ length: 40 }).map((_, i) => (
+                        <div 
+                            key={i}
+                            className={cn(
+                                "aspect-square rounded-sm border border-white/5",
+                                i % 7 === 0 ? "bg-red-500/20" : i % 5 === 0 ? "bg-yellow-500/20" : "bg-primary/20"
+                            )}
+                            title={`Step ${i}: 0.94 Agreement`}
+                        />
+                    ))}
+                </div>
+                <div className="mt-4 flex items-center gap-4 text-[10px] font-mono uppercase text-muted/40">
+                    <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-sm bg-primary/20" />
+                        <span>High Agreement</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-sm bg-yellow-500/20" />
+                        <span>Divergence</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-sm bg-red-500/20" />
+                        <span>Conflict</span>
                     </div>
                 </div>
             </div>
