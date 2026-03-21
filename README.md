@@ -123,7 +123,7 @@ graph TD
 - **Scoped API Keys**: Granular access control with monthly quotas
 
 ## 🧬 Intelligence Evolution & Research
-*Astraeus Engine v5.2.3 · March 2026**longitudinal crucible** for multi-agent evolution, powered by the `metrics/reliability_tracker.py` and `metrics/intelligence_index.py` engines. Every mission is a data point for the swarm's collective intelligence drift analysis.
+Astraeus is a **longitudinal crucible** for multi-agent evolution, powered by the `metrics/reliability_tracker.py` and `metrics/intelligence_index.py` engines. Every mission is a data point for the swarm's collective intelligence drift analysis.
 
 ### 🔬 Research Framework
 - **Mission Lineage (DAG)**: Every artifact is part of a non-linear evolution tree. Researchers can fork specific mission IDs to test alternate cognitive trajectories.
@@ -227,6 +227,7 @@ npm run dev
 | `/admin/metrics/revenue` | `GET` | Revenue and billing analytics |
 | `/admin/metrics/nodes` | `GET` | Geographic node topology |
 | `/admin/metrics/stability` | `GET` | Structural stability diagnostics |
+| `/admin/metrics/consensus` | `GET` | Multi-model agreement diagnostics |
 | `/admin/logs/stream` | `GET` | Real-time Audit Log SSE stream |
 | `/admin/organizations` | `GET` | List all institutional accounts |
 | `/v1/system/info` | `GET` | Public engine transparency |
@@ -288,5 +289,5 @@ This project is proprietary software. All rights reserved.
 
 <p align="center">
   <b>Built with 🧬 by <a href="https://github.com/TejasSinha12">Tejas Sinha</a></b><br>
-  <sub>Autonomous Intelligence Infrastructure — v5.2.2</sub>
+  <sub>Autonomous Intelligence Infrastructure — v5.2.3</sub>
 </p>
