@@ -16,6 +16,19 @@ class Proposal(BaseModel):
     quorum_threshold: int = 3
     is_executed: bool = False
 
+class SwarmDecision(BaseModel):
+    model: str
+    tool: str
+    args: Dict[str, Any]
+    confidence: float
+
+class SwarmConsensusMetrics(BaseModel):
+    agreement_ratio: float
+    conflict_count: int
+    winning_decision: Dict[str, Any]
+    consensus_score: float
+    voters: List[str]
+
 class ConsensusEngine:
     """
     Enforces quorum-based promotion of architectural changes.
@@ -74,3 +87,36 @@ class ConsensusEngine:
         proposal.is_executed = True
         logger.info(f"CONSENSUS-ENG: Proposal [{proposal_id}] reached QUORUM. Executing global refactor...")
         # Integration with FederatedMemory or MetaGovernance would happen here
+
+    def calculate_swarm_consensus(self, decisions: List[SwarmDecision]) -> SwarmConsensusMetrics:
+        """
+        Calculates consensus among multiple models for a specific mission step.
+        """
+        if not decisions:
+            return SwarmConsensusMetrics(
+                agreement_ratio=0.0, conflict_count=0,
+                winning_decision={}, consensus_score=0.0, voters=[]
+            )
+
+        # Unique signature: tool + sorted args
+        signatures = [f"{d.tool}:{str(sorted(d.args.items()))}" for d in decisions]
+        unique_sigs, counts = {}, {}
+        
+        for i, sig in enumerate(signatures):
+            unique_sigs[sig] = decisions[i].dict()
+            counts[sig] = counts.get(sig, 0) + 1
+
+        primary_sig = max(counts, key=counts.get)
+        agreement_ratio = counts[primary_sig] / len(decisions)
+        conflict_count = len(counts) - 1
+        
+        # Penalize score for high conflict
+        consensus_score = agreement_ratio * (1.0 - (conflict_count * 0.15))
+        
+        return SwarmConsensusMetrics(
+            agreement_ratio=agreement_ratio,
+            conflict_count=conflict_count,
+            winning_decision=unique_sigs[primary_sig],
+            consensus_score=max(0.0, min(1.0, consensus_score)),
+            voters=[d.model for d in decisions]
+        )
