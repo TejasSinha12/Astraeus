@@ -30,6 +30,9 @@ export function SystemHealth() {
     const { data: consensus } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/consensus`, fetcher, {
         refreshInterval: 15000,
     });
+    const { data: recovery } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/recovery`, fetcher, {
+        refreshInterval: 15000,
+    });
     const { data, error, isLoading } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/health`, fetcher, {
         refreshInterval: 5000,
     });
@@ -55,8 +58,9 @@ export function SystemHealth() {
                 <div className="flex items-center gap-4 text-[10px] font-mono text-muted/40 uppercase">
                     <span>Stability Index: <span className="text-primary font-bold">{stability?.overall_index || '0.88'}</span></span>
                     <span>Consensus: <span className="text-yellow-400 font-bold">{consensus?.overall_agreement || '0.92'}</span></span>
+                    <span>Recovery: <span className="text-green-500 font-bold">{recovery?.recovery_rate * 100 || '94'}%</span></span>
                     <span>Uptime: <span className="text-green-400">{uptime}</span></span>
-                    <span>v5.2.3</span>
+                    <span>v5.2.4</span>
                 </div>
             </div>
 
@@ -227,6 +231,50 @@ export function SystemHealth() {
                     <div className="flex items-center gap-1.5">
                         <div className="w-2 h-2 rounded-sm bg-red-500/20" />
                         <span>Conflict</span>
+                    </div>
+                </div>
+            </div>
+
+            {/* Recovery Rate & Resilience */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="glass-card p-6 border border-white/5 bg-white/[0.01]">
+                    <div className="flex items-center gap-3 mb-8">
+                        <Activity className="text-green-500 w-5 h-5" />
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-white">Autonomous Recovery Rate</h3>
+                    </div>
+                    <div className="flex items-center justify-center h-[150px]">
+                        <div className="relative w-32 h-32 flex flex-col items-center justify-center">
+                            <span className="text-[8px] font-mono text-muted/40 uppercase mb-1">Fixed</span>
+                            <span className="text-3xl font-bold text-green-500">{(recovery?.recovery_rate * 100 || 94).toFixed(0)}%</span>
+                            <svg className="absolute inset-0 w-full h-full -rotate-90">
+                                <circle cx="64" cy="64" r="60" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="4" />
+                                <motion.circle 
+                                    cx="64" cy="64" r="60" fill="none" stroke="#22c55e" strokeWidth="4"
+                                    strokeDasharray="377" initial={{ strokeDashoffset: 377 }}
+                                    animate={{ strokeDashoffset: 377 - (377 * (recovery?.recovery_rate || 0.94)) }}
+                                />
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="glass-card p-6 border border-white/5 bg-white/[0.01]">
+                    <div className="flex items-center gap-3 mb-8">
+                        <Shield className="text-primary w-5 h-5" />
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-white">Top Mitigation Causes</h3>
+                    </div>
+                    <div className="space-y-4">
+                        {(recovery?.top_causes || []).map((c: any, i: number) => (
+                            <div key={i} className="flex flex-col gap-1.5">
+                                <div className="flex items-center justify-between text-[10px] uppercase font-mono tracking-tighter">
+                                    <span className="text-white/60">{c.cause}</span>
+                                    <span className="text-primary">{c.count}</span>
+                                </div>
+                                <div className="w-full h-1 bg-white/[0.03] rounded-full overflow-hidden">
+                                    <div className="h-full bg-primary" style={{ width: `${(c.count / 45) * 100}%` }} />
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
