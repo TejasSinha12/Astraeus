@@ -11,6 +11,7 @@ from agents.swarm_profiles import AGENT_REGISTRY, AgentProfile, SwarmCommunicati
 from api.usage_db import SessionLocal, SwarmMission, MissionBranch, MissionTraceStep, AuditLog
 from core.stability_engine import StabilityEngine
 from core.consensus_engine import ConsensusEngine, SwarmDecision
+from core.recovery_engine import RecoveryEngine, FailureAnalysis
 from utils.logger import logger
 import json
 import uuid
@@ -27,7 +28,8 @@ class SwarmOrchestrator:
         
         # Stability & Monitoring Modules
         self.stability = StabilityEngine()
-        self.consensus = ConsensusEngine(cluster_ids=[]) # Initialize consensus layer
+        self.consensus = ConsensusEngine(cluster_ids=[]) 
+        self.recovery = RecoveryEngine(config={"max_corrective_depth": 3})
         
         logger.info(f"SwarmOrchestrator online with {len(self.active_agents)} specialized agent profiles.")
 
@@ -127,19 +129,19 @@ class SwarmOrchestrator:
 
         # 1. PLAN
         await self._emit_heartbeat(mission_id, "planner", "START_PLANNING")
-        plan = await self._delegate_to_agent("planner", f"Decompose: {objective}", config)
+        plan = await self._execute_with_recovery("planner", f"Decompose: {objective}", config, mission_id, "Planning")
         await self._record_trace_step(mission_id, step_idx, "planner", "Planning", plan, "")
         step_idx += 1
 
         # 2. DESIGN
         await self._emit_heartbeat(mission_id, "architect", "START_DESIGNING")
-        design = await self._delegate_to_agent("architect", f"Design: {plan}", config)
+        design = await self._execute_with_recovery("architect", f"Design: {plan}", config, mission_id, "Architecture")
         await self._record_trace_step(mission_id, step_idx, "architect", "Architecture", design, "")
         step_idx += 1
 
         # 3. IMPLEMENT
         await self._emit_heartbeat(mission_id, "implementer", "START_IMPLEMENTATION")
-        implementation = await self._delegate_to_agent("implementer", f"Execute design: {design}", config)
+        implementation = await self._execute_with_recovery("implementer", f"Execute design: {design}", config, mission_id, "Implementation")
         await self._record_trace_step(mission_id, step_idx, "implementer", "Implementation", "Initial Code Draft Generated", implementation)
         step_idx += 1
         
@@ -182,6 +184,42 @@ class SwarmOrchestrator:
         
         # Integrate with MetaGovernance for authorization
         return proposal
+
+    async def _execute_with_recovery(self, agent_key: str, prompt: str, config: dict, mission_id: str, step_label: str) -> str:
+        """
+        Wraps agent delegation with an autonomous self-correction loop.
+        """
+        attempts = 0
+        max_attempts = self.recovery.max_corrective_depth
+        current_prompt = prompt
+
+        while attempts < max_attempts:
+            try:
+                response = await self._delegate_to_agent(agent_key, current_prompt, config)
+                
+                # Heuristic: Check if the response seems like a failure or is too short
+                if len(response) < 50 or "error" in response.lower() or "failed" in response.lower():
+                    raise ValueError(f"Agent {agent_key} returned a potentially invalid response.")
+                
+                return response
+            except Exception as e:
+                attempts += 1
+                logger.warning(f"RECOVERY: Step '{step_label}' failed (Attempt {attempts}/{max_attempts}). Error: {e}")
+                
+                if attempts >= max_attempts:
+                    logger.error(f"RECOVERY: Circuit breaker triggered for '{step_label}'. Max attempts reached.")
+                    raise e
+
+                # Analyze failure and generate corrective prompt
+                analysis = await self.recovery.analyze_failure({"status": step_label, "agent": agent_key}, str(e))
+                if not analysis.is_recoverable:
+                    logger.error(f"RECOVERY: Non-recoverable error in '{step_label}'. Aborting.")
+                    raise e
+                
+                current_prompt = await self.recovery.generate_recovery_prompt(analysis, current_prompt)
+                await self._emit_heartbeat(mission_id, "recovery", f"RETRACTING_STEP:{step_label}:ATTEMPT_{attempts+1}")
+        
+        return "" # Should not reach here due to raise e
 
     async def _delegate_to_agent(self, agent_key: str, prompt: str, config: dict | None = None) -> str:
         """
