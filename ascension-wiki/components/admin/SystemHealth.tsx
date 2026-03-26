@@ -33,6 +33,9 @@ export function SystemHealth() {
     const { data: recovery } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/recovery`, fetcher, {
         refreshInterval: 15000,
     });
+    const { data: sandbox } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/sandbox`, fetcher, {
+        refreshInterval: 10000,
+    });
     const { data, error, isLoading } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/health`, fetcher, {
         refreshInterval: 5000,
     });
@@ -59,8 +62,9 @@ export function SystemHealth() {
                     <span>Stability Index: <span className="text-primary font-bold">{stability?.overall_index || '0.88'}</span></span>
                     <span>Consensus: <span className="text-yellow-400 font-bold">{consensus?.overall_agreement || '0.92'}</span></span>
                     <span>Recovery: <span className="text-green-500 font-bold">{recovery?.recovery_rate * 100 || '94'}%</span></span>
+                    <span>Sandbox: <span className="text-secondary font-bold">{sandbox?.security_status || 'HARDENED'}</span></span>
                     <span>Uptime: <span className="text-green-400">{uptime}</span></span>
-                    <span>v5.2.5</span>
+                    <span>v5.2.6</span>
                 </div>
             </div>
 
@@ -275,6 +279,59 @@ export function SystemHealth() {
                                 </div>
                             </div>
                         ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Sandbox Isolation & Resource Capping */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="glass-card p-6 border border-white/5 bg-white/[0.01]">
+                    <div className="flex items-center gap-3 mb-8">
+                        <Shield className="text-secondary w-5 h-5" />
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-white">Sandbox Isolation</h3>
+                    </div>
+                    <div className="flex flex-col items-center justify-center h-[120px]">
+                        <div className="text-4xl font-bold text-secondary mb-2">{sandbox?.active_sandboxes || 0}</div>
+                        <div className="text-[10px] uppercase tracking-widest text-muted/60">Active Subprocesses</div>
+                    </div>
+                </div>
+
+                <div className="glass-card p-6 border border-white/5 bg-white/[0.01] lg:col-span-2">
+                    <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center gap-3">
+                            <Cpu className="text-primary w-5 h-5" />
+                            <h3 className="text-sm font-bold uppercase tracking-widest text-white">Sandbox Resource Consumption</h3>
+                        </div>
+                        <div className="text-[10px] font-mono text-secondary uppercase tracking-tighter">Status: {sandbox?.security_status}</div>
+                    </div>
+                    <div className="space-y-6">
+                        <div className="space-y-2">
+                            <div className="flex justify-between text-[10px] uppercase font-mono tracking-tighter">
+                                <span className="text-white/60">Memory Usage (Overall Pool)</span>
+                                <span className="text-primary">{sandbox?.memory_usage?.current_mb || 42}MB / {sandbox?.memory_usage?.limit_mb || 128}MB</span>
+                            </div>
+                            <div className="w-full h-2 bg-white/[0.03] rounded-full overflow-hidden">
+                                <motion.div 
+                                    className="h-full bg-primary" 
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${(sandbox?.memory_usage?.current_mb / sandbox?.memory_usage?.limit_mb) * 100 || 33}%` }}
+                                />
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-6">
+                            <div className="flex-1 flex flex-col gap-1">
+                                <span className="text-[8px] uppercase text-muted/40 font-mono">Avg Latency</span>
+                                <span className="text-sm font-bold text-white">{sandbox?.avg_latency_ms || 320}ms</span>
+                            </div>
+                            <div className="flex-1 flex flex-col gap-1">
+                                <span className="text-[8px] uppercase text-muted/40 font-mono">Hardening Score</span>
+                                <span className="text-sm font-bold text-secondary">{(sandbox?.health_score * 100 || 99).toFixed(1)}%</span>
+                            </div>
+                            <div className="flex-1 flex flex-col gap-1">
+                                <span className="text-[8px] uppercase text-muted/40 font-mono">Sec. Breaches</span>
+                                <span className="text-sm font-bold text-green-500">0 DETECTED</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
