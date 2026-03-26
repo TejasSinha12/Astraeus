@@ -40,6 +40,11 @@ class AscensionConfig(BaseSettings):
     ADAPTIVE_COMPRESSION_THRESHOLD: float = 0.8  # Compress if > 80% usage
     CONTEXT_PRIORITY: list = ["goal", "task", "short_memory", "long_memory"]
 
+    # Sandbox Security Settings
+    SANDBOX_TIMEOUT: float = 5.0
+    SANDBOX_MAX_MEMORY_MB: int = 128
+    ENABLE_STRICT_ISOLATION: bool = True
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
