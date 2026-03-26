@@ -88,7 +88,7 @@ async def deploy_to_github(
 
         return {
             "status": "SUCCESS",
-            "sha": "v5.2.4-stable",
+            "sha": "v5.2.5-stable",
             "pr_url": pr_url,
             "files_deployed": len(file_map),
             "branch": branch

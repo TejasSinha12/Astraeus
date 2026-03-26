@@ -60,7 +60,7 @@ export function SystemHealth() {
                     <span>Consensus: <span className="text-yellow-400 font-bold">{consensus?.overall_agreement || '0.92'}</span></span>
                     <span>Recovery: <span className="text-green-500 font-bold">{recovery?.recovery_rate * 100 || '94'}%</span></span>
                     <span>Uptime: <span className="text-green-400">{uptime}</span></span>
-                    <span>v5.2.4</span>
+                    <span>v5.2.5</span>
                 </div>
             </div>
 

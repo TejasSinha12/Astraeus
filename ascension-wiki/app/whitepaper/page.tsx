@@ -52,7 +52,7 @@ export default function WhitepaperPage() {
             <aside className="hidden lg:block w-56 shrink-0">
                 <div className="sticky top-24">
                     <p className="text-xs font-mono text-muted uppercase tracking-widest mb-4">Contents</p>
-                    <p className="text-muted/60 text-[10px] uppercase tracking-widest font-mono">v5.2.4 · March 2026</p>
+                    <p className="text-muted/60 text-[10px] uppercase tracking-widest font-mono">v5.2.5 · March 2026</p>
                     <nav className="space-y-1">
                         {TOC.map((item) => (
                             <a key={item.id} href={`#${item.id}`} onClick={() => setActiveSection(item.id)}
