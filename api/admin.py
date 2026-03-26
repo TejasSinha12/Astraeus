@@ -408,3 +408,27 @@ async def get_recovery_metrics():
             {"cause": "Timeout", "count": 25}
         ]
     }
+
+@router.get("/metrics/sandbox")
+async def get_sandbox_metrics():
+    """
+    Returns real-time diagnostics for the isolated execution environment.
+    """
+    import random
+    
+    # Simulation: Sandbox telemetry
+    return {
+        "active_sandboxes": random.randint(2, 8),
+        "avg_latency_ms": 320,
+        "memory_usage": {
+            "current_mb": 42.5,
+            "peak_mb": 118.2,
+            "limit_mb": 128
+        },
+        "health_score": 0.99,
+        "security_status": "HARDENED",
+        "last_restarts": [
+            {"time": "2026-03-27T01:30:00Z", "reason": "PREVENTATIVE_ROTATION"},
+            {"time": "2026-03-24T14:15:22Z", "reason": "RESOURCE_EXHAUSTION"}
+        ]
+    }
