@@ -247,6 +247,32 @@ class BenchmarkChallenge(Base):
     deadline = Column(DateTime)
     is_live = Column(Boolean, default=False)
 
+class MissionKnowledge(Base):
+    """
+    Distilled insights and reasoning patterns extracted from successful missions.
+    Provides long-term memory for the swarm.
+    """
+    __tablename__ = "mission_knowledge"
+    
+    id = Column(String, primary_key=True)
+    org_id = Column(String, index=True, nullable=True) # Knowledge is scoped to org
+    mission_id = Column(String, index=True) # Source mission
+    title = Column(String)
+    content = Column(String) # The distilled lesson or pattern
+    category = Column(String) # 'TOOL_USE', 'ARCH_PATTERN', 'BUG_FIX'
+    utility_score = Column(Float, default=1.0) # Voted by Auditor/Critic
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+
+class KnowledgeTag(Base):
+    """
+    Categorization tags for mission knowledge to enable efficient retrieval.
+    """
+    __tablename__ = "knowledge_tags"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    knowledge_id = Column(String, index=True)
+    tag = Column(String, index=True)
+
 # Database connection logic
 # Prioritize DATABASE_URL for Production (Railway PostgreSQL), fallback to SQLite for local
 DB_URL = os.getenv("DATABASE_URL", "sqlite:///./api_platform.db")
