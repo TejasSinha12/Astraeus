@@ -1,6 +1,6 @@
-# Project Ascension: Astraeus Intelligence Platform `v5.2.5`
+# Project Ascension: Astraeus Intelligence Platform `v5.2.6`
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Version](https://img.shields.io/badge/version-v5.2.5--STABLE-blue)
+![Version](https://img.shields.io/badge/version-v5.2.6--STABLE-blue)
 ![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)
 
 Ascension (codenamed **Astraeus**) is an institutional-grade, multi-agent artificial intelligence infrastructure. It replaces traditional, brittle LLM API calls with a resilient, federated *Swarm Execution API* designed for complete codebase autonomy.
@@ -289,5 +289,5 @@ This project is proprietary software. All rights reserved.
 
 <p align="center">
   <b>Built with 🧬 by <a href="https://github.com/TejasSinha12">Tejas Sinha</a></b><br>
-  <sub>Autonomous Intelligence Infrastructure — v5.2.5</sub>
+  <sub>Autonomous Intelligence Infrastructure — v5.2.6</sub>
 </p>
