@@ -12,6 +12,7 @@ from api.usage_db import SessionLocal, SwarmMission, MissionBranch, MissionTrace
 from core.stability_engine import StabilityEngine
 from core.consensus_engine import ConsensusEngine, SwarmDecision
 from core.recovery_engine import RecoveryEngine, FailureAnalysis
+from core.knowledge_bridge import KnowledgeBridge
 from utils.logger import logger
 import json
 import uuid
@@ -30,6 +31,7 @@ class SwarmOrchestrator:
         self.stability = StabilityEngine()
         self.consensus = ConsensusEngine(cluster_ids=[]) 
         self.recovery = RecoveryEngine(config={"max_corrective_depth": 3})
+        self.knowledge = KnowledgeBridge()
         
         logger.info(f"SwarmOrchestrator online with {len(self.active_agents)} specialized agent profiles.")
 
@@ -127,9 +129,13 @@ class SwarmOrchestrator:
         
         step_idx = 0
 
+        # 0. RETRIEVE PERSISTENT MEMORY
+        past_knowledge = await self.knowledge.retrieve_relevant_knowledge(objective)
+        memory_context = self.knowledge.format_knowledge_context(past_knowledge)
+        
         # 1. PLAN
         await self._emit_heartbeat(mission_id, "planner", "START_PLANNING")
-        plan = await self._execute_with_recovery("planner", f"Decompose: {objective}", config, mission_id, "Planning")
+        plan = await self._execute_with_recovery("planner", f"{objective}\n\n{memory_context}", config, mission_id, "Planning")
         await self._record_trace_step(mission_id, step_idx, "planner", "Planning", plan, "")
         step_idx += 1
 
@@ -163,6 +169,11 @@ class SwarmOrchestrator:
             # entropy = self.stability.calculate_entropy([{"step": i} for i in range(step_idx)])
             
             await self._emit_heartbeat(mission_id, "orchestrator", f"MISSION_COMPLETED:STABILITY_OK", severity="SUCCESS")
+            
+            # Post-Mission Intelligence Distillation
+            # In a real scenario, this would be an async background task
+            await self.knowledge.distill_mission_insight(mission_id, [])
+            
             return {"is_multifile": False, "content": final_result, "file_map": {}}
 
     async def recursive_optimize(self, mission_telemetry: List[Dict[str, Any]]):
