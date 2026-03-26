@@ -4,7 +4,7 @@ Handles structural updates for swarm lineage, federated clusters, and the token 
 """
 import os
 from sqlalchemy import create_engine, inspect, text
-from api.usage_db import engine, SwarmMission, SwarmCluster, FederatedMemory, UserBalance, TokenLedger, APIKey, ResearchArtifact, Organization, ValidatorNode, BenchmarkChallenge
+from api.usage_db import engine, SwarmMission, SwarmCluster, FederatedMemory, UserBalance, TokenLedger, APIKey, ResearchArtifact, Organization, ValidatorNode, BenchmarkChallenge, MissionKnowledge, KnowledgeTag
 from utils.logger import logger
 
 def migrate():
@@ -46,6 +46,19 @@ def migrate():
     if "swarm_clusters" not in tables:
         SwarmCluster.__table__.create(engine)
         logger.info("MIGRATION: Created 'swarm_clusters' table.")
+
+    # 4. Phase 74: Knowledge Persistence
+    with engine.connect() as conn:
+        inspector = inspect(engine)
+        if 'mission_knowledge' not in inspector.get_table_names():
+            MissionKnowledge.__table__.create(engine)
+            logger.info("MIGRATION: Created 'mission_knowledge' table")
+        if 'knowledge_tags' not in inspector.get_table_names():
+            KnowledgeTag.__table__.create(engine)
+            logger.info("MIGRATION: Created 'knowledge_tags' table")
+        conn.commit()
+
+    logger.info("MIGRATION: All Phase-specific updates finalized.")
 
     if "federated_memory" not in tables:
         FederatedMemory.__table__.create(engine)
