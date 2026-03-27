@@ -104,6 +104,46 @@ async def get_system_info():
         "status": "OPERATIONAL"
     }
 
+@app.post("/v1/swarm/objective")
+async def execute_objective(request: Request, body: SwarmObjective):
+    """Entry point for swarm execution."""
+    mission_id = str(uuid.uuid4())
+    org_id = getattr(request.state, "org_id", "GLOBAL")
+    
+    # Run in background to allow long-running swarm tasks
+    asyncio.create_task(adapter.run_mission(body.objective, mission_id, org_id))
+    
+    return {"mission_id": mission_id, "status": "PENDING"}
+
+@app.get("/v1/swarm/telepresence")
+async def stream_telepresence(request: Request):
+    """
+    Server-Sent Events stream for real-time swarm auditing.
+    """
+    org_id = getattr(request.state, "org_id", "GLOBAL")
+    
+    async def event_generator():
+        logger.info(f"TELEPRESENCE: New listener connected for Org {org_id}")
+        while True:
+            # In a real environment, this would listen to a Redis Pub/Sub channel
+            # We simulate live events for now
+            if await request.is_disconnected():
+                logger.info(f"TELEPRESENCE: Listener disconnected for Org {org_id}")
+                break
+                
+            yield {
+                "event": "message",
+                "data": json.dumps({
+                    "timestamp": datetime.datetime.utcnow().isoformat(),
+                    "org_id": org_id,
+                    "type": "HEARTBEAT",
+                    "status": "OPERATIONAL"
+                })
+            }
+            await asyncio.sleep(5) # Keepalive
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
 @app.post("/estimate")
 async def get_cost_estimate(request: ExecutionRequest):
     # Use the new pricing engine for dynamic quotes
