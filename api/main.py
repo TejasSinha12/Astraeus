@@ -61,20 +61,13 @@ app.add_middleware(OrgIsolationMiddleware)
 async def auth_middleware(request: Request, call_next):
     return await rbac_middleware(request, call_next)
 
-# Initialize Economy Services
-try:
-    reasoning = ReasoningEngine()
-    coordinator = GlobalCoordinator(reasoning)
-    ledger_service = TokenLedgerService()
-    pricing_engine = AdaptivePricingEngine(coordinator)
-    abuse_detector = AbuseDetector()
-except Exception as e:
-    logger.error(f"INIT ERROR: Service initialization failed: {e}")
-    reasoning = None
-    coordinator = None
-    ledger_service = TokenLedgerService()
-    pricing_engine = None
-    abuse_detector = None
+# Global Service Holders (Late-initialized for High-Speed Boot)
+reasoning = None
+coordinator = None
+ledger_service = None
+pricing_engine = None
+abuse_detector = None
+adapter = None
 
 # Initialize decoupled service adapter
 adapter = CoreAdapter()
@@ -217,12 +210,17 @@ async def get_user_status(x_clerk_user_id: str = Header(...)):
         }
 
 @app.on_event("startup")
-def startup_db():
+async def startup_lifecycle():
+    """
+    Asynchronous platform startup.
+    Handles database provisioning and background service warming.
+    """
+    global reasoning, coordinator, ledger_service, pricing_engine, abuse_detector
+    
+    # 1. Immediate Database Provisioning
     try:
         from api.usage_db import init_platform_db, SessionLocal, SubscriptionPlan
         init_platform_db()
-        
-        # Seed Plans if missing
         with SessionLocal() as db:
             if not db.query(SubscriptionPlan).first():
                 plans = [
@@ -232,10 +230,23 @@ def startup_db():
                 ]
                 db.add_all(plans)
                 db.commit()
-                logger.info("API: Subscription plans seeded.")
-        
-        logger.info("Ascension Intelligence Economy Online.")
     except Exception as e:
-        logger.error(f"STARTUP ERROR: Database initialization failed: {e}")
-        logger.warning("API will start in DEGRADED mode. Some features may be unavailable.")
+        logger.error(f"STARTUP: Database sync failed: {e}")
+
+    # 2. Background Service Warming (Prevents Boot Blocking)
+    async def warm_engines():
+        global reasoning, coordinator, ledger_service, pricing_engine, abuse_detector
+        try:
+            logger.info("STARTUP: Warming intelligence core in background...")
+            reasoning = ReasoningEngine()
+            coordinator = GlobalCoordinator(reasoning)
+            ledger_service = TokenLedgerService()
+            pricing_engine = AdaptivePricingEngine(coordinator)
+            abuse_detector = AbuseDetector()
+            logger.info("STARTUP: Intelligence core fully converged.")
+        except Exception as e:
+            logger.error(f"STARTUP: Core warming failed: {e}")
+
+    asyncio.create_task(warm_engines())
+    logger.info(f"Astraeus v5.2.8 listening on {os.getenv('PORT', '10000')}. Core warming initiated.")
 
