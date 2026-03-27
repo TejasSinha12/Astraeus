@@ -1,6 +1,6 @@
 import asyncio
 import json
-from fastapi import APIRouter, Depends, Query, HTTPException, Request
+from fastapi import APIRouter, Depends, Query, HTTPException, Request, Header
 from typing import List, Dict, Any, Optional
 from utils.logger import logger
 from api.usage_db import SessionLocal, TokenLedger, UserBalance, APIKey, AuditLog, UserAccount
