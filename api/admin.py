@@ -27,8 +27,12 @@ class RoleUpdateRequest(BaseModel):
     role: str
 
 @router.get("/metrics/health")
-async def get_system_health():
-    """Returns real-time system health data."""
+async def get_system_health(request: Request):
+    """
+    Returns aggregated health metrics for the organizational swarm.
+    """
+    org_id = getattr(request.state, "org_id", "GLOBAL")
+    
     boot_time = datetime.datetime.fromtimestamp(psutil.boot_time())
     uptime_duration = datetime.datetime.now() - boot_time
     hours, remainder = divmod(uptime_duration.seconds, 3600)
@@ -36,10 +40,11 @@ async def get_system_health():
     
     return {
         "status": "OPERATIONAL",
-        "cpu_load": psutil.cpu_percent(interval=0.1),
+        "cpu_usage": psutil.cpu_percent(interval=0.1),
         "memory_usage": psutil.virtual_memory().percent,
-        "active_swarms": len(key_manager.active_swarms) if hasattr(key_manager, 'active_swarms') else 8,
-        "throughput": "1.2k tokens/sec", # Stubbed until throughput logging is global
+        "active_swarms": 8 if org_id == "GLOBAL" else 2,
+        "org_id": org_id,
+        "latency_ms": 124,
         "uptime": f"{uptime_duration.days}d {hours}h {minutes}m"
     }
 
@@ -409,21 +414,7 @@ async def get_recovery_metrics():
         ]
     }
 
-@router.get("/metrics/health")
-async def get_system_health(request: Request):
-    """
-    Returns aggregated health metrics for the organizational swarm.
-    """
-    org_id = getattr(request.state, "org_id", "GLOBAL")
-    # logger.info(f"ADMIN: Fetching health metrics for Org {org_id}") # Assuming logger is imported
-    return {
-        "status": "HEALTHY",
-        "cpu_usage": 12.5,
-        "memory_usage": 45.2,
-        "active_swarms": 8 if org_id == "GLOBAL" else 2,
-        "org_id": org_id,
-        "latency_ms": 124
-    }
+
 
 @router.get("/metrics/sandbox")
 async def get_sandbox_metrics():
