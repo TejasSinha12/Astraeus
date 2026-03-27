@@ -119,11 +119,12 @@ class SwarmOrchestrator:
         except Exception as e:
             logger.error(f"ORCHESTRATOR: Heartbeat failure: {e}")
 
-    async def execute_swarm_objective(self, objective: str, config: dict | None = None, mission_id: str | None = None) -> Dict[str, Any]:
+    async def execute_swarm_objective(self, objective: str, config: dict | None = None, mission_id: str | None = None, org_id: str | None = None) -> Dict[str, Any]:
         """
         Hierarchical execution objective through the swarm.
         Supports TRACE instrumentation for the Chronos Engine.
         """
+        self.knowledge.org_id = org_id # Bound knowledge to org context
         config = config or {"agents": {"auditor": True, "optimizer": True, "critic": True}, "creativity": 0.5, "strictness": 0.8}
         logger.info(f"Swarm mobilization triggered for objective: {objective}")
         
