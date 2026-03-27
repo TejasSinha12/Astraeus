@@ -39,6 +39,16 @@ export function SystemHealth() {
     const { data, error, isLoading } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/health`, fetcher, {
         refreshInterval: 5000,
     });
+    const [telepresence, setTelepresence] = useState<any[]>([]);
+
+    useEffect(() => {
+        const sse = new EventSource(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/v1/swarm/telepresence`);
+        sse.onmessage = (e) => {
+            const event = JSON.parse(e.data);
+            setTelepresence(prev => [event, ...prev].slice(0, 5));
+        };
+        return () => sse.close();
+    }, []);
     const { data: topology } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/nodes`, fetcher);
 
     const activeNodes = data?.active_swarms || 0;
@@ -64,7 +74,7 @@ export function SystemHealth() {
                     <span>Recovery: <span className="text-green-500 font-bold">{recovery?.recovery_rate * 100 || '94'}%</span></span>
                     <span>Sandbox: <span className="text-secondary font-bold">{sandbox?.security_status || 'HARDENED'}</span></span>
                     <span>Uptime: <span className="text-green-400">{uptime}</span></span>
-                    <span>v5.2.7</span>
+                    <span>v5.2.8</span>
                 </div>
             </div>
 
@@ -333,6 +343,40 @@ export function SystemHealth() {
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {/* Live Telepresence Stream */}
+            <div className="glass-card p-6 border border-white/5 bg-white/[0.01]">
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center gap-3">
+                        <Activity className="text-secondary w-5 h-5 animate-pulse" />
+                        <h3 className="text-sm font-bold uppercase tracking-widest text-white">Live Swarm Telepresence</h3>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 rounded-full bg-green-500 animate-ping" />
+                        <span className="text-[10px] font-mono text-green-500 uppercase">Streaming Active</span>
+                    </div>
+                </div>
+                <div className="space-y-3">
+                    {telepresence.length === 0 && (
+                        <div className="text-center py-8 text-muted/40 text-[10px] uppercase font-mono italic">Waiting for swarm events...</div>
+                    )}
+                    {telepresence.map((event, idx) => (
+                        <motion.div 
+                            key={idx}
+                            initial={{ x: -10, opacity: 0 }}
+                            animate={{ x: 0, opacity: 1 }}
+                            className="flex items-center justify-between p-3 rounded bg-white/[0.02] border border-white/5 font-mono text-[10px]"
+                        >
+                            <div className="flex items-center gap-4">
+                                <span className="text-muted/60">[{new Date(event.timestamp).toLocaleTimeString()}]</span>
+                                <span className={event.type === 'HEARTBEAT' ? 'text-secondary' : 'text-primary'}>{event.type}</span>
+                                <span className="text-white/80">{event.status || 'COLLECTING_CONTEXT'}</span>
+                            </div>
+                            <div className="text-muted/40 uppercase tracking-tighter">Org: {event.org_id}</div>
+                        </motion.div>
+                    ))}
                 </div>
             </div>
         </div>
