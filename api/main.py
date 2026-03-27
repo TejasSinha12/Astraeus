@@ -69,8 +69,8 @@ pricing_engine = None
 abuse_detector = None
 adapter = None
 
-# Initialize decoupled service adapter
-adapter = CoreAdapter()
+# Initialize decoupled service adapter placeholder
+adapter = None
 
 class SwarmConfig(BaseModel):
     agents: dict = {"auditor": True, "optimizer": True, "critic": True}
@@ -235,15 +235,16 @@ async def startup_lifecycle():
 
     # 2. Background Service Warming (Prevents Boot Blocking)
     async def warm_engines():
-        global reasoning, coordinator, ledger_service, pricing_engine, abuse_detector
+        global reasoning, coordinator, ledger_service, pricing_engine, abuse_detector, adapter
         try:
             logger.info("STARTUP: Warming intelligence core in background...")
+            adapter = CoreAdapter() # CognitionCore init inside
             reasoning = ReasoningEngine()
             coordinator = GlobalCoordinator(reasoning)
             ledger_service = TokenLedgerService()
             pricing_engine = AdaptivePricingEngine(coordinator)
             abuse_detector = AbuseDetector()
-            logger.info("STARTUP: Intelligence core fully converged.")
+            logger.info(f"STARTUP: Intelligence core fully converged for Astraeus v5.2.8.")
         except Exception as e:
             logger.error(f"STARTUP: Core warming failed: {e}")
 
