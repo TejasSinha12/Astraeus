@@ -1,6 +1,7 @@
 import asyncio
 import json
-from fastapi import APIRouter, Depends, Query, HTTPException, Request, Header
+import fastapi
+from fastapi import APIRouter, Depends, Query, HTTPException, Request
 from typing import List, Dict, Any, Optional
 from utils.logger import logger
 from api.usage_db import SessionLocal, TokenLedger, UserBalance, APIKey, AuditLog, UserAccount
@@ -11,7 +12,7 @@ import psutil
 from pydantic import BaseModel
 from sqlalchemy import func
 
-def get_admin_access(api_key: str = Header(...)):
+def get_admin_access(api_key: str = fastapi.Header(...)):
     """Simple admin verification via key."""
     if api_key != "SYSTEM_ADMIN_BYPASS":
         raise HTTPException(status_code=403, detail="Governance access denied.")
