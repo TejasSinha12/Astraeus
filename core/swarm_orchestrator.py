@@ -103,6 +103,14 @@ class SwarmOrchestrator:
         except Exception as e:
             logger.error(f"CHRONOS: Failed to record trace step: {e}")
 
+    async def _broadcast_telepresence(self, mission_id: str, event_type: str, data: Dict[str, Any], org_id: str | None):
+        """
+        Broadcasts live reasoning events to the telepresence stream.
+        """
+        logger.info(f"TELEPRESENCE: [{org_id or 'GLOBAL'}] {mission_id} -> {event_type}")
+        # In a production environment, this would push to Redis/Pusher
+        pass
+
     async def _emit_heartbeat(self, mission_id: str, agent_role: str, action: str, severity: str = "INFO"):
         """
         [HEARTBEAT] Emits a live diagnostic pulse to the global audit stream.
@@ -136,6 +144,8 @@ class SwarmOrchestrator:
         
         # 1. PLAN
         await self._emit_heartbeat(mission_id, "planner", "START_PLANNING")
+        await self._broadcast_telepresence(mission_id, "PLANNING_INITIATED", {"objective": objective}, org_id)
+        
         plan = await self._execute_with_recovery("planner", f"{objective}\n\n{memory_context}", config, mission_id, "Planning")
         await self._record_trace_step(mission_id, step_idx, "planner", "Planning", plan, "")
         step_idx += 1

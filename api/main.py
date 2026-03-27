@@ -104,17 +104,6 @@ async def get_system_info():
         "status": "OPERATIONAL"
     }
 
-@app.post("/v1/swarm/objective")
-async def execute_objective(request: Request, body: SwarmObjective):
-    """Entry point for swarm execution."""
-    mission_id = str(uuid.uuid4())
-    org_id = getattr(request.state, "org_id", "GLOBAL")
-    
-    # Run in background to allow long-running swarm tasks
-    asyncio.create_task(adapter.run_mission(body.objective, mission_id, org_id))
-    
-    return {"mission_id": mission_id, "status": "PENDING"}
-
 @app.get("/v1/swarm/telepresence")
 async def stream_telepresence(request: Request):
     """
