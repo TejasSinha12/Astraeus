@@ -99,8 +99,8 @@ async def get_system_info():
     """Returns engine transparency metadata."""
     return {
         "engine": "Astraeus",
-        "version": "v5.2.6-STABLE",
-        "features": ["Forge", "Chronos", "Resilience", "Consensus", "Recovery", "Knowledge", "Sandbox"],
+        "version": "v5.2.7-STABLE",
+        "features": ["Forge", "Chronos", "Resilience", "Consensus", "Recovery", "Knowledge", "Sandbox", "Sovereignty"],
         "status": "OPERATIONAL"
     }
 

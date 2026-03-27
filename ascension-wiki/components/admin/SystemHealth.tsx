@@ -64,7 +64,7 @@ export function SystemHealth() {
                     <span>Recovery: <span className="text-green-500 font-bold">{recovery?.recovery_rate * 100 || '94'}%</span></span>
                     <span>Sandbox: <span className="text-secondary font-bold">{sandbox?.security_status || 'HARDENED'}</span></span>
                     <span>Uptime: <span className="text-green-400">{uptime}</span></span>
-                    <span>v5.2.6</span>
+                    <span>v5.2.7</span>
                 </div>
             </div>
 
