@@ -46,14 +46,20 @@ app.include_router(rest_router)
 app.include_router(keys_router)
 app.include_router(github_router)
 
-# Enable CORS for frontend integration
+# Register Middlewares (Order matters: CORS -> Isolation -> RBAC)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, replace with specific domain
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+from api.middleware import OrgIsolationMiddleware
+app.add_middleware(OrgIsolationMiddleware)
+
+@app.middleware("http")
+async def auth_middleware(request: Request, call_next):
+    return await rbac_middleware(request, call_next)
 
 # Initialize Economy Services
 try:
@@ -73,11 +79,6 @@ except Exception as e:
 # Initialize decoupled service adapter
 adapter = CoreAdapter()
 
-# Attach RBAC Middleware
-@app.middleware("http")
-async def auth_middleware(request: Request, call_next):
-    return await rbac_middleware(request, call_next)
-
 class SwarmConfig(BaseModel):
     agents: dict = {"auditor": True, "optimizer": True, "critic": True}
     creativity: float = 0.5
@@ -89,10 +90,13 @@ class ExecutionRequest(BaseModel):
 
 @app.get("/")
 async def root():
-    return {"status": "online", "version": "v5.2.2", "engine": "Astraeus Swarm Intelligence"}
-
-    """Lightweight endpoint for Pingdom / Uptime checks"""
-    return {"status": "healthy", "uptime": "ok"}
+    """Lightweight root for engine diagnostics."""
+    return {
+        "status": "online", 
+        "version": "v5.2.8-STABLE", 
+        "engine": "Astraeus Swarm Intelligence",
+        "org_sovereignty": "ACTIVE"
+    }
 
 @app.get("/v1/system/info")
 async def get_system_info():
@@ -113,23 +117,22 @@ async def stream_telepresence(request: Request):
     
     async def event_generator():
         logger.info(f"TELEPRESENCE: New listener connected for Org {org_id}")
-        while True:
-            # In a real environment, this would listen to a Redis Pub/Sub channel
-            # We simulate live events for now
-            if await request.is_disconnected():
-                logger.info(f"TELEPRESENCE: Listener disconnected for Org {org_id}")
-                break
-                
-            yield {
-                "event": "message",
-                "data": json.dumps({
+        try:
+            while True:
+                if await request.is_disconnected():
+                    logger.info(f"TELEPRESENCE: Listener disconnected for Org {org_id}")
+                    break
+                    
+                data = json.dumps({
                     "timestamp": datetime.datetime.utcnow().isoformat(),
                     "org_id": org_id,
                     "type": "HEARTBEAT",
                     "status": "OPERATIONAL"
                 })
-            }
-            await asyncio.sleep(5) # Keepalive
+                yield f"event: message\ndata: {data}\n\n"
+                await asyncio.sleep(10) # Keepalive interval adjusted for stability
+        except asyncio.CancelledError:
+            logger.info(f"TELEPRESENCE: Stream cancelled for Org {org_id}")
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
