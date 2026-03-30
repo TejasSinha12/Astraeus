@@ -3,6 +3,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 import logging
 import json
 import hashlib
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -76,9 +77,16 @@ async def rbac_middleware(request: Request, call_next):
     # Evaluate request
     response = await call_next(request)
     
-    # 5. Inject Security Headers
+    # 5. Inject Security Headers (Production Hardening)
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Content-Security-Policy"] = "default-src 'self'; frame-ancestors 'none'"
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate"
+    response.headers["X-Request-ID"] = f"asc-{int(time.time() * 1000)}"
     
     return response
 
