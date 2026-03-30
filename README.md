@@ -1,6 +1,6 @@
-# Project Ascension: Astraeus Intelligence Platform `v5.2.8`
+# Project Ascension: Astraeus Intelligence Platform `v5.3.0`
 ![Build Status](https://img.shields.io/badge/build-passing-brightgreen)
-![Version](https://img.shields.io/badge/version-v5.2.8--STABLE-blue)
+![Version](https://img.shields.io/badge/version-v5.3.0--STABLE-blue)
 ![Docker](https://img.shields.io/badge/docker-ready-2496ED?logo=docker&logoColor=white)
 
 Ascension (codenamed **Astraeus**) is an institutional-grade, multi-agent artificial intelligence infrastructure. It replaces traditional, brittle LLM API calls with a resilient, federated *Swarm Execution API* designed for complete codebase autonomy.
@@ -52,7 +52,7 @@ The API will be available at `http://localhost:8000` with automated healthchecks
                    │ HTTPS / SSE
 ┌──────────────────▼──────────────────────────┐
 │           FastAPI Gateway (Render)            │
-│  RBAC Middleware · Token Metering · CORS     │
+│  RBAC · Rate Limiter · Circuit Breaker · CORS│
 ├──────────────────────────────────────────────┤
 │  Swarm Orchestrator · Agent Spawner          │
 │  Global Coordinator · Federation Protocol    │
@@ -147,6 +147,10 @@ Astraeus is a **longitudinal crucible** for multi-agent evolution, powered by th
 - **Hardened Execution Sandbox**: Critical mission logic runs in isolated containers with restricted egress and CPU/Memory quotas.
 - **Audit Compliance Explorer**: Streamed audit logs with structured metadata for institutional compliance and revenue overhead analysis.
 - **Platform Health Telemetry**: Multi-tier heartbeat monitoring of the FastAPI Gateway, Swarm Orchestrator, and PostgreSQL state.
+- **Rate Limiting**: Sliding-window rate limiter with per-user/per-org bucketing and tier-based quotas (30/60/120/500 RPM).
+- **Circuit Breaker**: Per-service circuit breaker (CLOSED/OPEN/HALF_OPEN) preventing cascading failures during recovery.
+- **Drift Detection**: Real-time anomaly scoring via Euclidean distance from established metric baselines.
+- **Security Headers**: HSTS, CSP, Referrer-Policy, Permissions-Policy, and per-request tracing IDs.
 
 ---
 
