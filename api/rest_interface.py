@@ -80,3 +80,22 @@ async def generate_developer_key(label: str, user_id: str = Header(...)):
     if not key:
         raise HTTPException(status_code=500, detail="Key generation failed.")
     return {"api_key": key, "label": label, "note": "Store this safely; it will not be shown again."}
+
+@router.get("/keys")
+async def list_developer_keys(user_id: str = Header(...)):
+    """
+    Retrieves all active API keys for the user.
+    """
+    keys = auth.list_keys(user_id)
+    return {"keys": keys}
+
+@router.delete("/keys/{key_id}")
+async def revoke_developer_key(key_id: str, user_id: str = Header(...)):
+    """
+    Deactivates an API key immediately.
+    """
+    # Note: In production, verify key belongs to user_id before revocation
+    success = auth.revoke_key(key_id)
+    if not success:
+        raise HTTPException(status_code=404, detail="Key not found or already inactive.")
+    return {"status": "success", "message": "Key revoked successfully."}

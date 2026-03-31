@@ -78,3 +78,19 @@ class ProductionAPIKeyManager:
                 db.commit()
                 return True
             return False
+
+    def list_keys(self, user_id: str) -> List[Dict[str, Any]]:
+        """
+        Retrieves all active API keys for a user (without exposing the raw key hash).
+        """
+        with SessionLocal() as db:
+            keys = db.query(APIKey).filter(APIKey.user_id == user_id, APIKey.is_active == True).all()
+            return [
+                {
+                    "id": k.id,
+                    "label": k.label,
+                    "scopes": k.scopes.split(","),
+                    "created_at": k.created_at.isoformat() if hasattr(k, "created_at") and k.created_at else None
+                }
+                for k in keys
+            ]
