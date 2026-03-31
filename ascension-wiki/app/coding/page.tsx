@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { Terminal, Send, Zap, Brain, Loader2, Code, Download, History, Pin, Maximize2, Layers, AlertTriangle, X, Search, Clock, Settings2, Github, GitPullRequest } from "lucide-react";
+import { Terminal, Send, Zap, Brain, Loader2, Code, Download, History, Pin, Maximize2, Layers, AlertTriangle, X, Search, Clock, Settings2, Github, GitPullRequest, GitFork } from "lucide-react";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { toast } from "sonner";
@@ -59,6 +59,7 @@ export default function ProfessionalWorkspace() {
 
     // History & DevEx
     const [history, setHistory] = useState<any[]>([]);
+    const [isLoadingHistory, setIsLoadingHistory] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
     const [pinnedIds, setPinnedIds] = useState<string[]>([]);
     const [diffBase, setDiffBase] = useState<string | null>(null);
@@ -87,11 +88,14 @@ export default function ProfessionalWorkspace() {
 
     const fetchHistory = useCallback(async () => {
         try {
+            setIsLoadingHistory(true);
             const res = await fetch(`${API_BASE_URL}/missions/list?user_id=${user?.id || 'admin'}`);
             const data = await res.json();
             setHistory(data.missions || []);
         } catch (e) {
             console.error("History fetch failed", e);
+        } finally {
+            setIsLoadingHistory(false);
         }
     }, [user, API_BASE_URL]);
 
@@ -322,7 +326,7 @@ export default function ProfessionalWorkspace() {
                                     </h4>
                                     <div className="space-y-2">
                                         {pinnedMissions.map(m => (
-                                            <HistoryItem key={m.id} mission={m} isPinned={true} onSelect={() => { setCodeResult(m.source_code); setObjective(m.objective); setShowHistory(false); }} onTogglePin={togglePin} />
+                                            <HistoryItem key={m.id} mission={m} isPinned={true} onSelect={() => { setCodeResult(m.source_code); setObjective(m.objective); setShowHistory(false); }} onTogglePin={togglePin} onFork={(obj) => { setObjective(obj); setShowHistory(false); }} />
                                         ))}
                                     </div>
                                 </section>
@@ -332,32 +336,39 @@ export default function ProfessionalWorkspace() {
                                 <h4 className="text-[9px] font-bold text-white/20 uppercase tracking-widest mb-3 flex items-center gap-2">
                                     <Clock size={10} /> Recent Runs
                                 </h4>
-                                <div className="space-y-4">
-                                    {filteredHistory.map(m => (
-                                        <HistoryItem
-                                            key={m.id}
-                                            mission={m}
-                                            isPinned={pinnedIds.includes(m.id.toString())}
-                                            onSelect={() => {
-                                                setCodeResult(m.source_code);
-                                                if (m.is_multifile && m.file_map) {
-                                                    try {
-                                                        const fm = typeof m.file_map === 'string' ? JSON.parse(m.file_map) : m.file_map;
-                                                        setFileMap(fm);
-                                                        const first = Object.keys(fm)[0];
-                                                        if (first) setSelectedFile(first);
-                                                    } catch (e) { console.error("FM Parse error", e); }
-                                                } else {
-                                                    setFileMap({});
-                                                    setSelectedFile(null);
-                                                }
-                                                setObjective(m.objective);
-                                                setShowHistory(false);
-                                            }}
-                                            onTogglePin={togglePin}
-                                        />
-                                    ))}
-                                </div>
+                                {isLoadingHistory ? (
+                                    <HistorySkeleton />
+                                ) : filteredHistory.length === 0 ? (
+                                    <div className="text-[10px] text-muted/50 uppercase tracking-widest text-center py-4">No Missions Found</div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {filteredHistory.map(m => (
+                                            <HistoryItem
+                                                key={m.id}
+                                                mission={m}
+                                                isPinned={pinnedIds.includes(m.id.toString())}
+                                                onSelect={() => {
+                                                    setCodeResult(m.source_code);
+                                                    if (m.is_multifile && m.file_map) {
+                                                        try {
+                                                            const fm = typeof m.file_map === 'string' ? JSON.parse(m.file_map) : m.file_map;
+                                                            setFileMap(fm);
+                                                            const first = Object.keys(fm)[0];
+                                                            if (first) setSelectedFile(first);
+                                                        } catch (e) { console.error("FM Parse error", e); }
+                                                    } else {
+                                                        setFileMap({});
+                                                        setSelectedFile(null);
+                                                    }
+                                                    setObjective(m.objective);
+                                                    setShowHistory(false);
+                                                }}
+                                                onTogglePin={togglePin}
+                                                onFork={(obj) => { setObjective(obj); setShowHistory(false); }}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
                             </section>
                         </div>
                     </motion.aside>
@@ -634,11 +645,36 @@ export default function ProfessionalWorkspace() {
 
 // ─── Helper Components ───────────────────────────────────────────────────────
 
-function HistoryItem({ mission, isPinned, onTogglePin, onSelect }: { mission: any, isPinned: boolean, onTogglePin: (id: string) => void, onSelect: () => void }) {
+function HistorySkeleton() {
+    return (
+        <div className="space-y-4 animate-pulse">
+            {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="p-3 rounded-lg bg-white/[0.02] border border-white/5 space-y-3">
+                    <div className="h-2 w-20 bg-white/10 rounded" />
+                    <div className="h-2 w-48 bg-white/20 rounded" />
+                    <div className="flex gap-2 pt-1">
+                        <div className="h-1.5 w-12 bg-white/10 rounded" />
+                        <div className="h-1.5 w-16 bg-white/10 rounded" />
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+function HistoryItem({ mission, isPinned, onTogglePin, onSelect, onFork }: { mission: any, isPinned: boolean, onTogglePin: (id: string) => void, onSelect: () => void, onFork: (obj: string) => void }) {
     return (
         <div className="group relative p-3 rounded-lg hover:bg-white/[0.03] transition-all cursor-pointer border border-transparent hover:border-white/10" onClick={onSelect}>
-            <div className="flex flex-col gap-1 pr-8">
-                <span className="text-[8px] font-mono text-white/20 uppercase tracking-tighter">Mission #{mission.id.toString().slice(0, 8)}</span>
+            <div className="flex flex-col gap-1 pr-12">
+                <span className="text-[8px] flex items-center gap-2 font-mono text-white/20 uppercase tracking-tighter">
+                    Mission #{mission.id.toString().slice(0, 8)}
+                    {mission.pr_url && (
+                        <a href={mission.pr_url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[#238636] hover:text-[#2ea043] transition-colors" onClick={(e) => e.stopPropagation()}>
+                            <GitPullRequest size={8} />
+                            PR
+                        </a>
+                    )}
+                </span>
                 <p className="text-[11px] text-white/60 font-medium line-clamp-1 group-hover:text-primary transition-colors">{mission.objective}</p>
                 <div className="flex items-center gap-2 mt-1">
                     <span className="text-[8px] text-muted/40 uppercase tracking-widest">{new Date(mission.created_at).toLocaleDateString()}</span>
@@ -646,15 +682,24 @@ function HistoryItem({ mission, isPinned, onTogglePin, onSelect }: { mission: an
                     <span className="text-[8px] text-muted/40 uppercase tracking-widest">{mission.is_multifile ? "Multi-file" : "Single-file"}</span>
                 </div>
             </div>
-            <button
-                onClick={(e) => { e.stopPropagation(); onTogglePin(mission.id.toString()); }}
-                className={cn(
-                    "absolute top-3 right-3 p-1 rounded transition-all",
-                    isPinned ? "text-primary opacity-100" : "text-white/10 opacity-0 group-hover:opacity-100"
-                )}
-            >
-                <Pin size={12} className={cn(isPinned && "fill-primary")} />
-            </button>
+            <div className="absolute top-3 right-3 flex flex-col gap-2">
+                <button
+                    onClick={(e) => { e.stopPropagation(); onTogglePin(mission.id.toString()); }}
+                    className={cn(
+                        "p-1 rounded transition-all",
+                        isPinned ? "text-primary opacity-100" : "text-white/10 opacity-0 group-hover:opacity-100 hover:bg-white/5"
+                    )}
+                >
+                    <Pin size={12} className={cn(isPinned && "fill-primary")} />
+                </button>
+                <button
+                    onClick={(e) => { e.stopPropagation(); onFork(mission.objective); }}
+                    title="Fork Mission"
+                    className="p-1 rounded text-white/10 opacity-0 group-hover:opacity-100 hover:text-primary transition-all hover:bg-white/5"
+                >
+                    <GitFork size={12} />
+                </button>
+            </div>
         </div>
     );
 }
