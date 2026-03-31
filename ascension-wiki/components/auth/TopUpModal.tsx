@@ -35,6 +35,11 @@ export function TopUpModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =
         if (isOpen) mutate();
     }, [isOpen, mutate]);
 
+    const handleClose = () => {
+        mutate();
+        onClose();
+    };
+
     const handleCheckout = async () => {
         const numAmount = parseFloat(amount);
         if (isNaN(numAmount) || numAmount < 5) {
@@ -76,7 +81,7 @@ export function TopUpModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        onClick={onClose}
+                        onClick={handleClose}
                         className="absolute inset-0 bg-[#020617]/80 backdrop-blur-md"
                     />
 
@@ -101,7 +106,7 @@ export function TopUpModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                                 </div>
                             </div>
                             <button
-                                onClick={onClose}
+                                onClick={handleClose}
                                 className="p-2.5 rounded-xl hover:bg-white/5 text-muted hover:text-white transition-all hover:rotate-90"
                             >
                                 <X size={20} />
@@ -204,8 +209,9 @@ export function TopUpModal({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                                         End-to-End Secure
                                     </div>
                                     <div className="w-px h-3 bg-white/20" />
-                                    <div className="text-[9px] font-bold uppercase tracking-widest text-white">
+                                    <div className="text-[9px] flex items-center gap-1.5 font-bold uppercase tracking-widest text-white">
                                         Powered by Stripe
+                                        <span className="px-1.5 py-0.5 rounded-sm bg-yellow-500/20 text-yellow-500 border border-yellow-500/30 text-[7px] leading-none">TEST MODE</span>
                                     </div>
                                 </div>
                             </div>
