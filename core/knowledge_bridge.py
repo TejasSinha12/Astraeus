@@ -3,6 +3,9 @@ from typing import Dict, Any, List, Optional
 import uuid
 import datetime
 from api.usage_db import SessionLocal, MissionKnowledge, KnowledgeTag
+import chromadb
+from chromadb.config import Settings
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +17,15 @@ class KnowledgeBridge:
     
     def __init__(self, org_id: Optional[str] = None):
         self.org_id = org_id
+        
+        # Initialize Vector Database
+        db_path = os.getenv("VECTOR_DB_PATH", "./.chroma_db")
+        self.chroma_client = chromadb.PersistentClient(path=db_path)
+        self.collection = self.chroma_client.get_or_create_collection(
+            name="mission_insights",
+            metadata={"hnsw:space": "cosine"}
+        )
+        logger.info(f"KNOWLEDGE: ChromaDB vector store initialized at {db_path}")
 
     async def distill_mission_insight(self, mission_id: str, trace_steps: List[Dict[str, Any]]) -> List[str]:
         """
@@ -60,29 +72,65 @@ class KnowledgeBridge:
                 knowledge_ids.append(k_id)
             
             db.commit()
+            
+        # Add to vector DB for semantic search
+        try:
+            self.collection.add(
+                ids=knowledge_ids,
+                documents=[ins["content"] for ins in insights],
+                metadatas=[
+                    {
+                        "title": ins["title"],
+                        "category": ins["category"],
+                        "org_id": self.org_id or "GLOBAL",
+                        "mission_id": mission_id
+                    } for ins in insights
+                ]
+            )
+            logger.info(f"KNOWLEDGE: Successfully indexed {len(insights)} insights into vector store.")
+        except Exception as e:
+            logger.error(f"KNOWLEDGE: Failed to index insights in ChromaDB: {e}")
         
         return knowledge_ids
 
     async def retrieve_relevant_knowledge(self, query: str, limit: int = 3) -> List[Dict[str, Any]]:
         """
         Retrieves past insights relevant to the current objective query.
-        For now, this performs a simple tag-based or keyword search.
+        Uses vector embeddings similarity search via ChromaDB.
         """
         logger.info(f"KNOWLEDGE: Retrieving context for query: {query}")
         
         results = []
-        with SessionLocal() as db:
-            # Mock retrieval: Find any knowledge matching organic keywords
-            # In production, this uses vector embeddings similarity search
-            knowledge_items = db.query(MissionKnowledge).limit(limit).all()
+        try:
+            # Semantic search
+            search_results = self.collection.query(
+                query_texts=[query],
+                n_results=limit,
+                where={"org_id": self.org_id or "GLOBAL"}
+            )
             
-            for item in knowledge_items:
-                results.append({
-                    "title": item.title,
-                    "content": item.content,
-                    "category": item.category,
-                    "relevance": 0.85 # Mock relevance score
-                })
+            if search_results["documents"] and search_results["documents"][0]:
+                for idx, doc in enumerate(search_results["documents"][0]):
+                    metadata = search_results["metadatas"][0][idx]
+                    distance = search_results["distances"][0][idx] if "distances" in search_results else 0.0
+                    
+                    results.append({
+                        "title": metadata.get("title", "Insight"),
+                        "content": doc,
+                        "category": metadata.get("category", "GENERAL"),
+                        "relevance": max(0.0, 1.0 - (distance / 2.0))  # Normalize cosine distance
+                    })
+        except Exception as e:
+            logger.error(f"KNOWLEDGE: Vector search failed: {e}. Falling back to standard DB.")
+            with SessionLocal() as db:
+                knowledge_items = db.query(MissionKnowledge).filter(MissionKnowledge.org_id == self.org_id).limit(limit).all()
+                for item in knowledge_items:
+                    results.append({
+                        "title": item.title,
+                        "content": item.content,
+                        "category": item.category,
+                        "relevance": 0.5 # Default fallback relevance
+                    })
         
         return results
 
