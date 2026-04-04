@@ -79,3 +79,21 @@ async def get_reputation(x_clerk_user_id: str = Header(...)):
         "reputation_score": score,
         "governance_weight": weight
     }
+
+@router.get("/history")
+async def get_ledger_history(user_id: str = Header(..., alias="x-clerk-user-id")):
+    """
+    Retrieves the raw TokenLedger transactions for the user.
+    """
+    txs = ledger.get_transactions(user_id)
+    return {"transactions": txs}
+
+@router.get("/verify")
+async def verify_ledger(user_id: str = Header(..., alias="x-clerk-user-id")):
+    """
+    Runs a cryptographic sweep of the user's ledger chain.
+    """
+    is_valid = ledger.verify_chain_integrity(user_id)
+    if not is_valid:
+        raise HTTPException(status_code=409, detail="Ledger chain corruption detected.")
+    return {"verified": True, "entity_id": user_id}

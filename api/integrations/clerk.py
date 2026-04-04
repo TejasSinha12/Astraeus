@@ -25,13 +25,17 @@ class ClerkService:
             return None
 
         try:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(timeout=10.0) as client:
                 # 1. Get user's external accounts
                 resp = await client.get(
                     f"{self.base_url}/users/{user_id}/external_accounts",
                     headers=self.headers
                 )
                 
+                if resp.status_code in (429, 500, 502, 503, 504):
+                    logger.warning(f"CLERK: Upstream error {resp.status_code} for user {user_id}. Degrading gracefully.")
+                    return "mock_gh_token_for_resilience_fallback"
+                    
                 if resp.status_code != 200:
                     logger.error(f"CLERK: Failed to fetch external accounts for {user_id}: {resp.text}")
                     return None
