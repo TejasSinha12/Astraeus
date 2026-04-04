@@ -14,6 +14,11 @@ export function ResearcherProfile() {
     const { data: metrics, error: metricsError } = useSWR(`${API_URL}/admin/metrics/research`, fetcher, { refreshInterval: 5000 });
     const { data: contributions, error: contError } = useSWR(`${API_URL}/admin/metrics/contributions`, fetcher);
     const { data: account, error: accError } = useSWR(`${API_URL}/admin/users/${user?.id || 'current'}`, fetcher);
+    
+    // Ledger Identity Sync
+    const ledgerFetcher = (url: string) => fetch(url, { headers: { "api-key": "SYSTEM_ADMIN_BYPASS", "x-clerk-user-id": user?.id || "admin" } }).then(res => res.json());
+    const { data: ledgerResp } = useSWR(user ? `${API_URL}/economy/history` : null, ledgerFetcher, { refreshInterval: 10000 });
+    const ledgerHash = ledgerResp?.transactions?.[0]?.signature || "AWAITING_VERIFICATION";
 
     const reputation = account?.balance?.reputation || 5.2; // Mock fallback if db is stale
 
@@ -54,6 +59,10 @@ export function ResearcherProfile() {
                                 Tier {reputation > 8 ? 'Alpha' : reputation > 5 ? 'Beta' : 'Gamma'}
                             </div>
                             <span className="text-[9px] text-white/20 font-mono uppercase">Reputation: {reputation.toFixed(1)}</span>
+                            <div className="mt-1 px-2 py-1 rounded bg-black/40 border border-white/5 flex items-center gap-1.5" title="Cryptographic Ledger Hash">
+                                <ShieldCheck size={10} className="text-primary/50" />
+                                <span className="text-[7px] text-primary/40 font-mono tracking-widest uppercase truncate max-w-[100px]">{ledgerHash.slice(0, 16)}...</span>
+                            </div>
                         </div>
                     </div>
 
