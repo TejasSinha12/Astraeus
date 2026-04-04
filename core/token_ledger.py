@@ -111,3 +111,43 @@ class TokenLedgerService:
         with SessionLocal() as db:
             user = db.query(UserAccount).filter(UserAccount.id == user_id).first()
             return user.token_balance if user else 0.0
+
+    def get_transactions(self, user_id: str, limit: int = 50) -> list:
+        """
+        Retrieves recent transactions for the user or their organization.
+        """
+        with SessionLocal() as db:
+            txs = db.query(TokenLedger).filter(
+                (TokenLedger.user_id == user_id) | (TokenLedger.org_id == user_id)
+            ).order_by(TokenLedger.id.desc()).limit(limit).all()
+            return [{
+                "id": t.id,
+                "type": t.transaction_type,
+                "amount": t.amount,
+                "reason": t.reason,
+                "timestamp": t.timestamp.isoformat() if t.timestamp else None,
+                "signature": t.signature
+            } for t in txs]
+
+    def verify_chain_integrity(self, entity_id: str) -> bool:
+        """
+        Cryptographically validates the hash chain consistency (prev_hash links) 
+        for an entity to detect tampering.
+        """
+        with SessionLocal() as db:
+            txs = db.query(TokenLedger).filter(
+                (TokenLedger.user_id == entity_id) | (TokenLedger.org_id == entity_id)
+            ).order_by(TokenLedger.id.asc()).all()
+            
+            if not txs:
+                return True
+                
+            expected_prev = "GENESIS"
+            for tx in txs:
+                if tx.previous_hash != expected_prev:
+                    logger.error(f"ECONOMY: Security Alert - Ledger chain broken at tx_id {tx.id}. Expected {expected_prev}, got {tx.previous_hash}")
+                    return False
+                expected_prev = tx.signature
+                
+            logger.info(f"ECONOMY: Verified ledger integrity for {entity_id} spanning {len(txs)} transactions.")
+            return True
