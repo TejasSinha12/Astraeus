@@ -14,15 +14,16 @@ interface TelemetryMetersProps {
 
 export function TelemetryMeters({ tokens, latency, confidence, cost, isExecuting }: TelemetryMetersProps) {
     return (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Meter
-                icon={<Zap size={14} className={cn("text-primary", isExecuting && "animate-pulse")} />}
-                label="Tokens"
-                value={`${tokens.toLocaleString()}`}
-                subValue="Consumed"
-                active={isExecuting}
-                gradient="from-primary to-blue-500"
-            />
+        <div className="flex flex-col gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <Meter
+                    icon={<Zap size={14} className={cn("text-primary", isExecuting && "animate-pulse")} />}
+                    label="Tokens"
+                    value={`${tokens.toLocaleString()}`}
+                    subValue="Consumed"
+                    active={isExecuting}
+                    gradient="from-primary to-blue-500"
+                />
             <Meter
                 icon={<Clock size={14} className={cn("text-yellow-400", isExecuting && "animate-pulse")} />}
                 label="Latency"
@@ -44,16 +45,47 @@ export function TelemetryMeters({ tokens, latency, confidence, cost, isExecuting
             <Meter
                 icon={<Coins size={14} className={cn("text-purple-400", isExecuting && "animate-pulse")} />}
                 label="Est. Cost"
-                value={`${cost.toFixed(2)} ⏣`}
+                value={`${cost.toFixed(4)} ⏣`}
                 subValue="Budget Delta"
                 active={isExecuting}
                 gradient="from-purple-400 to-pink-500"
             />
+            </div>
+            
+            <div className="h-28 overflow-y-auto custom-scrollbar glass-card border border-white/5 bg-white/[0.01] rounded-2xl p-4 flex flex-col gap-2 relative">
+                <div className="flex items-center justify-between mb-1 sticky top-0 bg-background/50 backdrop-blur-md z-10 pb-2">
+                    <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest flex items-center gap-2">
+                        <Coins size={12} className="text-white/20" /> Live Economy Ledger
+                    </span>
+                    <span className="flex h-2 w-2 relative">
+                        {isExecuting && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>}
+                        <span className={cn("relative inline-flex rounded-full h-2 w-2", isExecuting ? "bg-primary" : "bg-white/20")}></span>
+                    </span>
+                </div>
+                
+                <div className="flex flex-col gap-1.5 mt-2">
+                    {/* Mock ledger entries */}
+                    <div className="flex items-center justify-between text-[10px] font-mono p-1.5 rounded hover:bg-white/[0.02] border border-transparent hover:border-white/5 transition-colors">
+                        <span className="text-white/40 font-bold">TX_{(Math.random() * 1000000).toString(16).slice(0, 6).toUpperCase()}</span>
+                        <div className="flex items-center gap-4">
+                            <span className="text-white/20 uppercase">Model Inference</span>
+                            <span className="text-blue-400">-0.0042 ⏣</span>
+                        </div>
+                    </div>
+                    <div className="flex items-center justify-between text-[10px] font-mono p-1.5 rounded hover:bg-white/[0.02] border border-transparent hover:border-white/5 transition-colors">
+                        <span className="text-white/40 font-bold">TX_{(Math.random() * 1000000).toString(16).slice(0, 6).toUpperCase()}</span>
+                        <div className="flex items-center gap-4">
+                            <span className="text-white/20 uppercase">Vector Embeddings</span>
+                            <span className="text-blue-400">-0.0011 ⏣</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }
 
-function Meter({ icon, label, value, subValue, active, gradient, tooltip }: { icon: React.ReactNode, label: string, value: string, subValue: string, active?: boolean, gradient: string, tooltip?: string }) {
+function Meter({ icon, label, value, subValue, active, gradient, tooltip, circularValue }: { icon: React.ReactNode, label: string, value: string, subValue: string, active?: boolean, gradient: string, tooltip?: string, circularValue?: number }) {
     return (
         <motion.div
             className={cn(
@@ -82,11 +114,26 @@ function Meter({ icon, label, value, subValue, active, gradient, tooltip }: { ic
                     </div>
                 )}
             </div>
-            <div className="flex flex-col relative z-10 mt-1">
-                <span className={cn("text-2xl font-bold font-mono tracking-tight text-transparent bg-clip-text bg-gradient-to-r", gradient)}>
-                    {value}
-                </span>
-                <span className="text-[9px] text-muted/50 uppercase tracking-widest mt-0.5">{subValue}</span>
+            <div className="flex items-end justify-between relative z-10 mt-1">
+                <div className="flex flex-col">
+                    <span className={cn("text-2xl font-bold font-mono tracking-tight text-transparent bg-clip-text bg-gradient-to-r", gradient)}>
+                        {value}
+                    </span>
+                    <span className="text-[9px] text-muted/50 uppercase tracking-widest mt-0.5">{subValue}</span>
+                </div>
+                {circularValue !== undefined && (
+                    <div className="relative w-10 h-10 -mt-2 -mr-1">
+                        <svg className="w-full h-full transform -rotate-90">
+                            <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="3" fill="transparent" className="text-white/10" />
+                            <circle
+                                cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="3" fill="transparent"
+                                strokeDasharray={100}
+                                strokeDashoffset={100 - (circularValue * 100)}
+                                className={cn("transition-all duration-1000 ease-out", circularValue > 0.8 ? "text-green-400" : "text-yellow-400")}
+                            />
+                        </svg>
+                    </div>
+                )}
             </div>
         </motion.div>
     );

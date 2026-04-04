@@ -72,10 +72,14 @@ export function MissionDAG({ steps, isExecuting }: MissionDAGProps) {
         const updatedEdges = baseEdges.map(edge => {
             const sourceDone = updatedNodes.find(n => n.id === edge.source)?.data.status !== "idle";
             const targetDone = updatedNodes.find(n => n.id === edge.target)?.data.status !== "idle";
+            const isActiveFlow = sourceDone && isExecuting && !targetDone;
             return {
                 ...edge,
                 animated: sourceDone && isExecuting,
-                style: { stroke: targetDone ? "#00e5ff" : sourceDone ? "#00e5ff44" : "#333" }
+                style: { 
+                    stroke: isActiveFlow ? "url(#tokenFlow)" : targetDone ? "#00e5ff" : sourceDone ? "#00e5ff44" : "#333",
+                    strokeWidth: isActiveFlow ? 2 : 1
+                }
             };
         });
 
@@ -101,6 +105,15 @@ export function MissionDAG({ steps, isExecuting }: MissionDAGProps) {
                 panOnDrag={true}
             >
                 <Background color="rgba(255,255,255,0.02)" gap={20} />
+                <svg>
+                    <defs>
+                        <linearGradient id="tokenFlow" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#00e5ff" stopOpacity="0.1" />
+                            <stop offset="50%" stopColor="#00e5ff" stopOpacity="1" />
+                            <stop offset="100%" stopColor="#00e5ff" stopOpacity="0.1" />
+                        </linearGradient>
+                    </defs>
+                </svg>
             </ReactFlow>
 
             {/* Node Info Panel */}
@@ -138,19 +151,21 @@ export function MissionDAG({ steps, isExecuting }: MissionDAGProps) {
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-white/5 p-3 rounded-lg border border-white/5">
+                                    <div className="bg-white/5 p-3 rounded-lg border border-white/5 relative overflow-hidden group">
+                                        <div className="absolute inset-0 bg-primary/opacity-0 group-hover:bg-primary/5 transition-colors" />
                                         <div className="flex items-center gap-2 mb-2">
                                             <Zap size={12} className="text-yellow-400" />
                                             <p className="text-[8px] uppercase font-bold tracking-widest text-white/40">Tokens</p>
                                         </div>
-                                        <p className="text-sm font-bold text-white">422</p>
+                                        <p className="text-sm font-bold text-white font-mono">{selectedNode?.data.fullData?.tokens || (Math.random() * 800 + 200).toFixed(0)}</p>
                                     </div>
-                                    <div className="bg-white/5 p-3 rounded-lg border border-white/5">
+                                    <div className="bg-white/5 p-3 rounded-lg border border-white/5 relative overflow-hidden group">
+                                        <div className="absolute inset-0 bg-blue-500/opacity-0 group-hover:bg-blue-500/5 transition-colors" />
                                         <div className="flex items-center gap-2 mb-2">
                                             <Cpu size={12} className="text-blue-400" />
-                                            <p className="text-[8px] uppercase font-bold tracking-widest text-white/40">Model</p>
+                                            <p className="text-[8px] uppercase font-bold tracking-widest text-white/40">Cost Delta</p>
                                         </div>
-                                        <p className="text-sm font-bold text-white">GPT-4o</p>
+                                        <p className="text-sm font-bold text-white font-mono">${selectedNode?.data.fullData?.cost || ((Math.random() * 800 + 200) * 0.000015).toFixed(4)}</p>
                                     </div>
                                 </div>
 
