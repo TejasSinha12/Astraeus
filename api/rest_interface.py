@@ -99,3 +99,16 @@ async def revoke_developer_key(key_id: str, user_id: str = Header(...)):
     if not success:
         raise HTTPException(status_code=404, detail="Key not found or already inactive.")
     return {"status": "success", "message": "Key revoked successfully."}
+
+@router.get("/admin/audit/reputation")
+async def get_reputation_audit(admin_key: str = Header(..., alias="api-key")):
+    """
+    Returns aggregated decay and governance tracking signals for the swarm.
+    """
+    if admin_key != "SYSTEM_ADMIN_BYPASS": # Simulation authentication bypass
+        raise HTTPException(status_code=403, detail="Admin token required.")
+    
+    from api.usage_db import SessionLocal, UserAccount
+    with SessionLocal() as db:
+        users = db.query(UserAccount).order_by(UserAccount.reputation_score.desc()).limit(100).all()
+        return [{"user_id": u.id, "reputation": u.reputation_score, "last_decay": "Automated tick"} for u in users]

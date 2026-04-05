@@ -97,3 +97,16 @@ async def verify_ledger(user_id: str = Header(..., alias="x-clerk-user-id")):
     if not is_valid:
         raise HTTPException(status_code=409, detail="Ledger chain corruption detected.")
     return {"verified": True, "entity_id": user_id}
+
+@router.get("/pricing/current")
+async def get_current_pricing():
+    """
+    Exposes the dynamic surge global pricing variables to developers.
+    """
+    from core.pricing_engine import AdaptivePricingEngine
+    from core.global_coordinator import GlobalCoordinator
+    # Instantiate standalone instances for stateless API probing
+    coordinator = GlobalCoordinator()
+    pricing = AdaptivePricingEngine(coordinator)
+    surge = pricing.calculate_dynamic_surge()
+    return {"surge_multiplier": surge, "base_cost": pricing.base_execution_cost}
