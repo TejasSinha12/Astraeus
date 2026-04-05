@@ -93,6 +93,64 @@ class KnowledgeBridge:
         
         return knowledge_ids
 
+    def batch_index(self, insights_batch: List[Dict[str, Any]]) -> List[str]:
+        """
+        Indexes a large array of pre-calculated insights to optimize ChromaDB network paths.
+        """
+        knowledge_ids = []
+        try:
+            import uuid
+            with SessionLocal() as db:
+                for ins in insights_batch:
+                    k_id = str(uuid.uuid4())
+                    knowledge = MissionKnowledge(
+                        id=k_id,
+                        org_id=ins.get("org_id", self.org_id),
+                        mission_id=ins.get("mission_id", "BATCH"),
+                        title=ins["title"],
+                        content=ins["content"],
+                        category=ins.get("category", "GENERAL"),
+                        utility_score=0.9
+                    )
+                    db.add(knowledge)
+                    
+                    for t in ins.get("tags", []):
+                        db.add(KnowledgeTag(knowledge_id=k_id, tag=t))
+                    
+                    knowledge_ids.append(k_id)
+                db.commit()
+
+            self.collection.add(
+                ids=knowledge_ids,
+                documents=[ins["content"] for ins in insights_batch],
+                metadatas=[
+                    {
+                        "title": ins["title"],
+                        "category": ins.get("category", "GENERAL"),
+                        "org_id": ins.get("org_id", self.org_id) or "GLOBAL",
+                        "mission_id": ins.get("mission_id", "BATCH")
+                    } for ins in insights_batch
+                ]
+            )
+            logger.info(f"KNOWLEDGE: Batch indexed {len(insights_batch)} insights into federated vector store.")
+        except Exception as e:
+            logger.error(f"KNOWLEDGE: Batch index failed critically: {e}")
+            
+        return knowledge_ids
+
+    def optimize_index(self) -> None:
+        """
+        Runs compaction and vacuuming on the underlying metadata indices.
+        """
+        try:
+            with SessionLocal() as db:
+                from sqlalchemy import text
+                db.execute(text('VACUUM'))
+                db.commit()
+            logger.info("KNOWLEDGE: Vector DB metadata optimized and compacted.")
+        except Exception as e:
+            logger.error(f"KNOWLEDGE: Vector Index optimization failed: {e}")
+
     async def retrieve_relevant_knowledge(self, query: str, limit: int = 3) -> List[Dict[str, Any]]:
         """
         Retrieves past insights relevant to the current objective query.
