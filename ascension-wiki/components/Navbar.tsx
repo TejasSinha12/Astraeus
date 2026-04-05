@@ -8,11 +8,17 @@ import { Brain, Zap, LayoutDashboard, Shield, Code, Wallet, Key, Flame } from "l
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { TopUpModal } from "@/components/auth/TopUpModal";
+import { usePricing } from "@/components/providers/PricingProvider";
+import { Activity } from "lucide-react";
 
 export function Navbar() {
     const pathname = usePathname();
     const { user, isLoaded } = useUser();
     const [isTopUpOpen, setIsTopUpOpen] = useState(false);
+    
+    // Inject global pricing hooks
+    const { surgeMultiplier, isLoading } = usePricing();
+    const isSurging = surgeMultiplier > 1.2;
 
     const userRole = (user?.publicMetadata?.role as string) || "PUBLIC";
     const isAdmin = isLoaded && userRole.toUpperCase() === "ADMIN";
@@ -35,15 +41,42 @@ export function Navbar() {
             className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center px-6 md:px-8 border-b border-white/5 glass-card backdrop-blur-xl"
         >
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 group mr-8 md:ml-64">
+            <Link href="/" className="flex items-center gap-3 group mr-6 md:ml-64 relative">
                 <div className="relative w-7 h-7 flex items-center justify-center">
-                    <div className="absolute inset-0 border-2 border-primary rounded-full animate-pulse opacity-50" />
-                    <div className="w-2.5 h-2.5 bg-primary rounded-full box-glow" />
+                    <div className={cn(
+                        "absolute inset-0 border-2 rounded-full animate-pulse opacity-50",
+                        isSurging ? "border-red-500" : "border-primary"
+                    )} />
+                    <div className={cn(
+                        "w-2.5 h-2.5 rounded-full box-glow transition-colors",
+                        isSurging ? "bg-red-500" : "bg-primary"
+                    )} />
                 </div>
                 <span className="text-base font-bold tracking-widest text-white group-hover:text-primary transition-colors hidden md:block">
                     ASCENSION
                 </span>
+                
+                {/* Global Orchestrator Load Indicator */}
+                {!isLoading && (
+                    <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-black/80 px-2 py-0.5 rounded border border-white/10">
+                        <Activity size={10} className={cn(isSurging ? "text-red-500 animate-pulse" : "text-primary")} />
+                        <span className={cn("text-[8px] font-mono tracking-widest uppercase font-bold", isSurging ? "text-red-400" : "text-primary/80")}>
+                            {isSurging ? "ELEVATED LOAD" : "IDLE"}
+                        </span>
+                    </div>
+                )}
             </Link>
+
+            {/* Economy Surge Metrics */}
+            <div className="hidden lg:flex flex-col items-start mx-4 border-l border-white/10 pl-4 py-1">
+                <span className="text-[8px] text-white/30 uppercase tracking-widest font-bold">Network Pricing</span>
+                <span className={cn(
+                    "text-xs font-mono font-bold tracking-tight flex items-center gap-1 transition-colors", 
+                    isSurging ? "text-red-400" : "text-green-400"
+                )}>
+                    {surgeMultiplier.toFixed(2)}x
+                </span>
+            </div>
 
             {/* Nav Links */}
             <nav className="hidden md:flex items-center gap-1 mr-auto">
