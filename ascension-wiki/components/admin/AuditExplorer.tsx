@@ -30,6 +30,7 @@ export function AuditExplorer() {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCategory, setSelectedCategory] = useState("All Events");
     const [isLive, setIsLive] = useState(false);
+    const [isHashSearch, setIsHashSearch] = useState(false);
     const [liveLogs, setLiveLogs] = useState<any[]>([]);
 
     useEffect(() => {
@@ -51,10 +52,16 @@ export function AuditExplorer() {
 
     const filteredLogs = useMemo(() => {
         return logs.filter((log: any) => {
-            const matchesSearch = !searchQuery || 
-                log.event.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                log.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                log.detail.toLowerCase().includes(searchQuery.toLowerCase());
+            let matchesSearch = true;
+            if (searchQuery) {
+                if (isHashSearch) {
+                    matchesSearch = log.id?.includes(searchQuery) || log.hash?.includes(searchQuery);
+                } else {
+                    matchesSearch = log.event?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        log.user?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                        log.detail?.toLowerCase().includes(searchQuery.toLowerCase());
+                }
+            }
             const matchesCategory = selectedCategory === "All Events" || log.category === selectedCategory;
             return matchesSearch && matchesCategory;
         });
@@ -74,14 +81,26 @@ export function AuditExplorer() {
         <div className="space-y-6">
             <div className="flex items-center justify-between flex-wrap gap-4">
                 <div className="flex items-center gap-4">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30 w-4 h-4" />
+                    <div className="relative flex items-center">
+                        <button
+                            onClick={() => setIsHashSearch(!isHashSearch)}
+                            className={cn(
+                                "absolute left-1.5 p-1.5 rounded-md transition-colors z-10",
+                                isHashSearch ? "bg-primary/20 text-primary" : "text-white/30 hover:text-white"
+                            )}
+                            title="Toggle Cryptographic Hash Search"
+                        >
+                            <ShieldAlert className="w-3.5 h-3.5" />
+                        </button>
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            placeholder="Search audit trail..."
-                            className="bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary w-64 shadow-inner text-white"
+                            placeholder={isHashSearch ? "Enter exact ledger HMAC..." : "Search audit trail..."}
+                            className={cn(
+                                "bg-white/5 border border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary w-64 shadow-inner text-white transition-all",
+                                isHashSearch && "border-primary/50 bg-primary/5 font-mono text-[10px]"
+                            )}
                         />
                     </div>
                     <button
@@ -130,20 +149,21 @@ export function AuditExplorer() {
                             <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Event</th>
                             <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Origin</th>
                             <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider">Governance</th>
                             <th className="px-6 py-4 text-xs font-semibold text-white/40 uppercase tracking-wider w-1/3">Detail</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/[0.03]">
                         {isLoading ? (
                             <tr>
-                                <td colSpan={5} className="px-6 py-12 text-center text-white/20">
+                                <td colSpan={6} className="px-6 py-12 text-center text-white/20">
                                     Initializing secure audit stream...
                                 </td>
                             </tr>
                         ) : filteredLogs.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="px-6 py-12 text-center text-white/20">
-                                    No events match your filters.
+                                <td colSpan={6} className="px-6 py-12 text-center text-white/20">
+                                    {isHashSearch ? "No cryptographic matches found in current ledger segment." : "No events match your filters."}
                                 </td>
                             </tr>
                         ) : filteredLogs.map((log: any) => (
@@ -202,6 +222,14 @@ function LogEntry({ log }: { log: any }) {
                     getStatusStyle(log.status)
                 )}>
                     {log.status}
+                </span>
+            </td>
+            <td className="px-6 py-4 whitespace-nowrap">
+                <span className={cn(
+                    "font-mono text-[10px] font-bold",
+                    log.impact && log.impact > 0 ? "text-green-400" : log.impact && log.impact < 0 ? "text-red-400" : "text-white/20"
+                )}>
+                    {log.impact ? (log.impact > 0 ? `+${log.impact.toFixed(4)}` : log.impact.toFixed(4)) : "0.0000"}
                 </span>
             </td>
             <td className="px-6 py-4">
