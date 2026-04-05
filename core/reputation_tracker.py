@@ -61,3 +61,47 @@ class ReputationTracker:
             
             import math
             return 1.0 + math.log10(max(1.0, score))
+
+    async def apply_decay_penalty(self, user_id: str) -> None:
+        """
+        Gradually reduces reputation for inactive accounts to prevent hoarding.
+        """
+        try:
+            with SessionLocal() as db:
+                user = db.query(UserAccount).filter(UserAccount.id == user_id).first()
+                if not user or user.reputation_score <= 1.0:
+                    return
+
+                # Compounding 5% decay
+                penalty = user.reputation_score * 0.05
+                if penalty < 0.05:
+                    return # Negligible tick
+
+                user.reputation_score = max(1.0, user.reputation_score - penalty)
+                db.commit()
+
+                await self.ledger.process_transaction(
+                    user_id=user_id,
+                    amount=-penalty,
+                    tx_type="REPUTATION_DECAY",
+                    reason="Inertia protocol applied. Governance decay due to inactivity."
+                )
+                logger.info(f"ECONOMY: Applied {-penalty:.2f} decay to User {user_id}")
+        except Exception as e:
+            logger.error(f"ECONOMY: Decay script failed: {e}")
+
+    async def log_governance_vote(self, user_id: str, proposal_id: str, weight: float) -> None:
+        """
+        Logs a user's usage of their reputation weight on network proposals.
+        """
+        logger.info(f"GOVERNANCE: User {user_id} cast vote {weight:.2f} on {proposal_id}")
+        try:
+            # We treat votes as non-fungible logging, quantity 0 but recorded in ledger reason
+            await self.ledger.process_transaction(
+                user_id=user_id,
+                amount=weight, # Tracking weight explicitly mapped to ledger
+                tx_type="GOVERNANCE_VOTE",
+                reason=f"Cast consensus allocation for Proposal {proposal_id}"
+            )
+        except Exception as e:
+            logger.error(f"GOVERNANCE: Failed to log vote explicitly: {e}")
