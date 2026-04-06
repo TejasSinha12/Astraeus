@@ -1,11 +1,23 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Zap, Power, ShieldOff, Gauge, Globe, Layers, AlertOctagon, RotateCcw } from "lucide-react";
-import { useState } from "react";
+import { Zap, Power, ShieldOff, Gauge, Globe, Layers, AlertOctagon, RotateCcw, Github, Activity } from "lucide-react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 
 export function SystemControls() {
+    const [surgeLimit, setSurgeLimit] = useState(1.2);
+    const [activeAgents, setActiveAgents] = useState(0);
+
+    useEffect(() => {
+        // Mock SSE streaming telemetry of active routing delegates
+        setActiveAgents(12);
+        const iv = setInterval(() => {
+            setActiveAgents(Math.floor(Math.random() * 5) + 12);
+        }, 3000);
+        return () => clearInterval(iv);
+    }, []);
+
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Global Toggles */}
@@ -35,13 +47,28 @@ export function SystemControls() {
                     <div className="flex flex-col gap-4 p-4 bg-white/[0.02] border border-white/5 rounded-xl">
                         <div className="flex items-center justify-between">
                             <div className="flex flex-col">
-                                <span className="text-[10px] font-bold text-white uppercase tracking-widest">Global Token Multiplier</span>
-                                <span className="text-[9px] text-muted/40 uppercase font-mono">Dynamic Pricing Bias</span>
+                                <span className="text-[10px] font-bold text-white uppercase tracking-widest">Surge Overload Limit</span>
+                                <span className="text-[9px] text-muted/40 uppercase font-mono">Dynamic Pricing Cap</span>
                             </div>
-                            <span className="text-xl font-bold font-mono text-primary">1.2x</span>
+                            <span className="text-xl font-bold font-mono text-primary">{surgeLimit}x</span>
                         </div>
-                        <input type="range" className="w-full accent-primary h-1 bg-white/10 rounded-full appearance-none cursor-pointer" />
+                        <input 
+                            type="range" 
+                            min="1.0" max="3.0" step="0.1" 
+                            value={surgeLimit}
+                            onChange={(e) => setSurgeLimit(parseFloat(e.target.value))}
+                            className="w-full accent-primary h-1 bg-white/10 rounded-full appearance-none cursor-pointer" 
+                        />
                     </div>
+                </ControlSection>
+
+                <ControlSection title="Integrations & Hooks">
+                    <ToggleItem
+                        icon={<Github size={16} />}
+                        label="Github App Connection"
+                        description="Linked: TejasSinha12/Astraeus (main branch AST mapping)"
+                        enabled={true}
+                    />
                 </ControlSection>
             </div>
 
@@ -49,10 +76,21 @@ export function SystemControls() {
             <div className="flex flex-col gap-6">
                 <ControlSection title="Extreme Measures">
                     <div className="grid grid-cols-1 gap-4">
+                        <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-xl mb-2">
+                            <div className="flex items-center gap-3">
+                                <Activity size={16} className="text-primary animate-pulse" />
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-bold text-white uppercase tracking-widest">Active Orchestrator Agents</span>
+                                    <span className="text-[9px] text-muted/40 uppercase font-mono mt-0.5">Live telemetry streaming across clusters</span>
+                                </div>
+                            </div>
+                            <span className="text-sm font-bold font-mono text-primary animate-pulse">{activeAgents} NODE</span>
+                        </div>
+
                         <ActionButton
                             icon={<AlertOctagon size={18} />}
-                            label="Emergency Kill Switch"
-                            description="Immediately terminate ALL active swarm missions."
+                            label="Force Forge Global Pause"
+                            description="Immediately suspend ALL active swarm missions without data loss."
                             variant="danger"
                         />
                         <ActionButton
