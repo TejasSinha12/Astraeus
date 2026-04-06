@@ -43,6 +43,23 @@ async def create_api_key(request: APIKeyRequest):
         "message": "Store this key securely. It will not be shown again."
     }
 
+@router.post("/keys/{key_id}/rotate")
+async def rotate_and_audit_key(key_id: str, x_clerk_user_id: str = Header(...)):
+    """
+    Cycles a key and natively maps the security event into the cryptographic TokenLedger.
+    """
+    from api.developer_keys import rotate_key
+    res = await rotate_key(key_id, x_clerk_user_id=x_clerk_user_id)
+    
+    # Map to Cryptographic Audit Trail
+    await ledger.process_transaction(
+        user_id=x_clerk_user_id,
+        amount=0.0,
+        tx_type="KEY_ROTATION",
+        reason=f"Security implicitly enforced. Rotated Developer Key: {key_id}"
+    )
+    return res
+
 @router.get("/billing/analytics")
 async def get_billing_analytics(x_clerk_user_id: str = Header(...)):
     """

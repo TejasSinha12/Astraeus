@@ -16,6 +16,54 @@ class GitHubService:
         }
         self.base_url = "https://api.github.com"
 
+    @staticmethod
+    def verify_webhook_signature(payload_body: bytes, secret_token: str, signature_header: str) -> bool:
+        """
+        Validates the authenticity of inbound HTTPS Webhooks using HMAC SHA-256.
+        """
+        import hmac
+        import hashlib
+        if not signature_header:
+            return False
+        
+        expected_signature = "sha256=" + hmac.new(
+            secret_token.encode('utf-8'),
+            payload_body,
+            hashlib.sha256
+        ).hexdigest()
+
+        return hmac.compare_digest(expected_signature, signature_header)
+
+    async def sync_repository(self, repo_full_name: str, branch: str = "main") -> Dict[str, str]:
+        """
+        Downloads the latest AST footprint from a remote repository into the Swarm Orchestrator.
+        """
+        file_map = {}
+        try:
+            async with httpx.AsyncClient() as client:
+                tree_url = f"{self.base_url}/repos/{repo_full_name}/git/trees/{branch}?recursive=1"
+                resp = await client.get(tree_url, headers=self.headers)
+                resp.raise_for_status()
+                
+                tree_data = resp.json()
+                for item in tree_data.get("tree", []):
+                    if item["type"] == "blob":
+                        # Skip large binaries or locked files
+                        if int(item.get("size", 0)) > 500000:
+                            continue
+                            
+                        # Download raw file
+                        file_raw_url = f"https://raw.githubusercontent.com/{repo_full_name}/{branch}/{item['path']}"
+                        raw_resp = await client.get(file_raw_url, headers={"Authorization": f"token {self.access_token}"})
+                        if raw_resp.status_code == 200:
+                            file_map[item['path']] = raw_resp.text
+                            
+            logger.info(f"GITHUB: Synced {len(file_map)} source files from {repo_full_name}:{branch}")
+            return file_map
+        except Exception as e:
+            logger.error(f"GITHUB: Repository sync failed for {repo_full_name}: {e}")
+            return {}
+
     async def create_pull_request(
         self, 
         repo_full_name: str, 

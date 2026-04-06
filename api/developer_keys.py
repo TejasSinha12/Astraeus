@@ -21,6 +21,36 @@ class KeyResponse(BaseModel):
     is_active: bool
     prefix: str = "ast_"
 
+def check_brute_force_lock(key_id: str, db_session) -> bool:
+    """
+    Analyzes API Key usage velocity to prevent brute-force attacks on the key.
+    Locks the key if thresholds are exceeded.
+    """
+    key = db_session.query(APIKey).filter(APIKey.id == key_id).first()
+    if not key or not key.is_active:
+        return True
+        
+    # Heuristic Threshold: If usage radically spikes beyond allocated norms
+    if key.current_usage > 1000000: # 1M tokens overload
+        key.is_active = False
+        db_session.commit()
+        logger.error(f"SECURITY: Key {key_id} globally locked due to brute-force usage anomaly!")
+        return True
+    return False
+
+async def track_key_usage(key_id: str, tokens_consumed: int):
+    """
+    Tracks metric loads per API key during inference bursts.
+    """
+    try:
+        with SessionLocal() as db:
+            key = db.query(APIKey).filter(APIKey.id == key_id).first()
+            if key and key.is_active:
+                key.current_usage += tokens_consumed
+                db.commit()
+    except Exception as e:
+        logger.error(f"KEYS: Metric tracking failure: {e}")
+
 @router.post("/generate")
 async def generate_key(
     request: KeyCreate,
@@ -28,8 +58,15 @@ async def generate_key(
 ):
     """
     Generates a new developer API key for programmatic access.
+    Supports granular scoping ('execute', 'read-only').
     Returns the raw key ONCE.
     """
+    # Restrict invalid scopes
+    valid_scopes = {"execute", "read-only", "admin"}
+    sanitized_scopes = [s for s in request.scopes if s in valid_scopes]
+    if not sanitized_scopes:
+        sanitized_scopes = ["read-only"] # Default fallback scope
+
     # 1. Generate Raw Key
     raw_key = f"ast_{secrets.token_urlsafe(32)}"
     key_id = secrets.token_hex(4)
@@ -46,7 +83,7 @@ async def generate_key(
             user_id=x_clerk_user_id,
             key_hash=key_hash,
             label=request.label,
-            scopes=",".join(request.scopes),
+            scopes=",".join(sanitized_scopes),
             is_active=True
         )
         db.add(new_key)
@@ -58,7 +95,33 @@ async def generate_key(
             "id": key_id,
             "api_key": raw_key,
             "label": request.label,
-            "scopes": request.scopes,
+            "scopes": sanitized_scopes,
+            "hint": f"{raw_key[:7]}...{raw_key[-4:]}"
+        }
+
+@router.post("/{key_id}/rotate")
+async def rotate_key(key_id: str, x_clerk_user_id: str = Header(...)):
+    """
+    Gracefully cycles an API Key to a new hash footprint without removing the entity.
+    """
+    with SessionLocal() as db:
+        key = db.query(APIKey).filter(APIKey.id == key_id, APIKey.user_id == x_clerk_user_id).first()
+        if not key:
+            raise HTTPException(status_code=404, detail="Key mapping unavailable.")
+        
+        if check_brute_force_lock(key_id, db):
+            raise HTTPException(status_code=403, detail="Key locked administratively.")
+
+        raw_key = f"ast_{secrets.token_urlsafe(32)}"
+        key.key_hash = hashlib.sha256(raw_key.encode()).hexdigest()
+        db.commit()
+        
+        logger.warning(f"SECURITY: User {x_clerk_user_id} structurally rotated key {key_id}")
+        
+        # Cross-call to standard ledger is expected from client via separate hook or handled in economy mapping
+        return {
+            "status": "rotated", 
+            "new_api_key": raw_key,
             "hint": f"{raw_key[:7]}...{raw_key[-4:]}"
         }
 
