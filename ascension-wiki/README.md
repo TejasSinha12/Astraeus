@@ -66,7 +66,15 @@ The Astraeus console is designed for **high-fidelity observability** of autonomo
 | `MissionDAG` | `components/coding/` | React Flow visualization of swarm reasoning steps |
 | `RoleGate` | `components/auth/` | Clerk-based RBAC wrapper for protected routes |
 | `SwarmConfigurator` | `components/coding/` | UI for tuning creativity, strictness, and agent mobilization |
+| `SystemControls` | `components/admin/` | Global Killswitch, Surge Throttles, and Github Node Connections |
 | `WebIDE` | `components/coding/` | Monaco-powered multi-file editor with syntax and structure |
+
+---
+
+## 🐙 Github Integrations
+The workspace natively pulls logic via AST mirroring using GitHub hooks:
+1.  **Configure Actions**: Pass `X-Hub-Signature-256` wrapped in a payload mapped to your active Astraeus Repository Key.
+2.  **Scopes**: Validate the key uses `["read-only"]` scoping natively to prevent unwanted production pipeline overwrites directly originating from the local Next.js instance.
 
 ---
 
