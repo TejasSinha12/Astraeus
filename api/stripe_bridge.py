@@ -76,30 +76,30 @@ async def stripe_webhook(request: Request, stripe_signature: str = Header(None))
                 DEAD_LETTER_QUEUE.append({"payload": payload, "reason": "missing_ids"})
                 return {"status": "error", "reason": "missing_fields"}
 
-        # 2. Idempotency Check
-        with SessionLocal() as db:
-            existing = db.query(TokenLedger).filter(TokenLedger.reason.contains(session_id)).first()
-            if existing:
-                logger.warning(f"BILLING: Duplicate webhook received for session {session_id}. Ignoring.")
-                return {"status": "duplicate"}
-
-        # 3. Calculate tokens (Standard Economy Pricing: 10k Tokens / $1)
-        token_gain = amount_paid * 10000.0
-
-        # 4. Credit the User Account
-        logger.info(f"BILLING: Processing credit for {user_id} -> {token_gain} tokens (${amount_paid:.2f})")
-
-        from api.token_accounting import TokenAccountingSystem
-        success = TokenAccountingSystem.top_up_tokens(user_id, int(token_gain), session_id)
-        if success:
-            logger.info(f"BILLING: Successfully credited {token_gain} tokens to {user_id}")
+            # 2. Idempotency Check
             with SessionLocal() as db:
-                db.add(AuditLog(user_id=user_id, action="STRIPE_CHECKOUT_SUCCESS", metadata_json=f"Amount: ${amount_paid:.2f}, Tokens: {int(token_gain)}"))
-                db.commit()
-            return {"status": "success", "tokens_credited": int(token_gain)}
-        else:
-            logger.error(f"BILLING: Failed to credit {token_gain} tokens to {user_id}")
-            return {"status": "failed", "reason": "top_up_failed"}
+                existing = db.query(TokenLedger).filter(TokenLedger.reason.contains(session_id)).first()
+                if existing:
+                    logger.warning(f"BILLING: Duplicate webhook received for session {session_id}. Ignoring.")
+                    return {"status": "duplicate"}
+
+            # 3. Calculate tokens (Standard Economy Pricing: 10k Tokens / $1)
+            token_gain = amount_paid * 10000.0
+
+            # 4. Credit the User Account
+            logger.info(f"BILLING: Processing credit for {user_id} -> {token_gain} tokens (${amount_paid:.2f})")
+
+            from api.token_accounting import TokenAccountingSystem
+            success = TokenAccountingSystem.top_up_tokens(user_id, int(token_gain), session_id)
+            if success:
+                logger.info(f"BILLING: Successfully credited {token_gain} tokens to {user_id}")
+                with SessionLocal() as db:
+                    db.add(AuditLog(user_id=user_id, action="STRIPE_CHECKOUT_SUCCESS", metadata_json=f"Amount: ${amount_paid:.2f}, Tokens: {int(token_gain)}"))
+                    db.commit()
+                return {"status": "success", "tokens_credited": int(token_gain)}
+            else:
+                logger.error(f"BILLING: Failed to credit {token_gain} tokens to {user_id}")
+                return {"status": "failed", "reason": "top_up_failed"}
 
         elif event_type == "checkout.session.expired":
             session_id = payload.get("data", {}).get("object", {}).get("id", "unknown")
