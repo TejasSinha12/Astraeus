@@ -39,7 +39,7 @@ class NotificationService:
                     "https://api.resend.com/emails",
                     headers={"Authorization": f"Bearer {self.resend_api_key}", "Content-Type": "application/json"},
                     json={
-                        "from": "Astraeus Swarm <missions@astraeus.ai>",
+                        "from": os.getenv("EMAIL_REPLY_HEADER", "Astraeus Platform <noreply@astraeus.ai>"),
                         "to": [email],
                         "subject": f"Mission Report: {objective[:40]}",
                         "html": html_content
@@ -98,6 +98,56 @@ class NotificationService:
         try:
             async with httpx.AsyncClient() as client:
                 await client.post(
+                    "https://api.resend.com/emails",
+                    headers={"Authorization": f"Bearer {self.resend_api_key}", "Content-Type": "application/json"},
+                    json={
+                        "from": os.getenv("EMAIL_REPLY_HEADER", "Astraeus Billing <billing@astraeus.ai>"),
+                        "to": [email],
+                        "subject": "Platform Execution Credits Low",
+                        "html": f"<p>Tokens remaining: {current_balance}. Consider topping up.</p>"
+                    }
+                )
+        except Exception:
+            pass
+
+    async def send_payment_success_receipt(self, email: str, amount_paid: float, tokens_received: int):
+        """
+        Dispatches HTML branded receipt confirming valid topups.
+        """
+        html_content = f"<h2>Payment Successful</h2><p>Received: ${amount_paid:.2f} USD</p><p>Tokens added: +{tokens_received}</p>"
+        try:
+            async with httpx.AsyncClient() as client:
+                await client.post(
+                    "https://api.resend.com/emails",
+                    headers={"Authorization": f"Bearer {self.resend_api_key}", "Content-Type": "application/json"},
+                    json={
+                        "from": os.getenv("EMAIL_REPLY_HEADER", "Astraeus Billing <billing@astraeus.ai>"),
+                        "to": [email],
+                        "subject": "Astraeus Receipt: Swarm Tokens Added",
+                        "html": html_content
+                    }
+                )
+        except Exception:
+            pass
+
+    async def send_payment_failed_alert(self, email: str, amount_failed: float):
+        """
+        Alerts user of card failures / denied Stripe integrations gracefully.
+        """
+        try:
+            async with httpx.AsyncClient() as client:
+                await client.post(
+                    "https://api.resend.com/emails",
+                    headers={"Authorization": f"Bearer {self.resend_api_key}", "Content-Type": "application/json"},
+                    json={
+                        "from": os.getenv("EMAIL_REPLY_HEADER", "Astraeus Billing <billing@astraeus.ai>"),
+                        "to": [email],
+                        "subject": "Astraeus: Payment Authorization Failed",
+                        "html": f"<p>A charge for ${amount_failed:.2f} USD was declined.</p>"
+                    }
+                )
+        except Exception:
+            pass
                     "https://api.resend.com/emails",
                     headers={"Authorization": f"Bearer {self.resend_api_key}", "Content-Type": "application/json"},
                     json={
