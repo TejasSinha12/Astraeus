@@ -10,20 +10,13 @@ import useSWR from "swr";
 
 const fetcher = (url: string) => fetch(url, { headers: { "api-key": "SYSTEM_ADMIN_BYPASS" } }).then(res => res.json());
 
-const MOCK_REVENUE = [
-    { day: "Mon", rev: 1100 },
-    { day: "Tue", rev: 1450 },
-    { day: "Wed", rev: 1320 },
-    { day: "Thu", rev: 1680 },
-    { day: "Fri", rev: 1820 },
-    { day: "Sat", rev: 1400 },
-    { day: "Sun", rev: 1950 },
-];
-
 export function RevenueAnalytics() {
     const { data, error, isLoading } = useSWR(`${process.env.NEXT_PUBLIC_PLATFORM_API_URL}/admin/metrics/revenue`, fetcher, {
-        refreshInterval: 10000,
+        refreshInterval: 5000, // Reduced latency, polls more aggressively
     });
+
+    // Dynamic SWR Pipeline
+    const chartData = data?.revenue_history || [];
 
     const totalCredits = data?.total_credits_circulating ? `${(data.total_credits_circulating / 1000).toFixed(0)}k` : "0k";
     const dailyRev = data?.daily_revenue ? `$${data.daily_revenue.toLocaleString()}` : "$0";
@@ -47,7 +40,7 @@ export function RevenueAnalytics() {
 
                 <div className="h-[350px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={MOCK_REVENUE}>
+                        <BarChart data={chartData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
                             <XAxis dataKey="day" stroke="rgba(255,255,255,0.1)" fontSize={10} tickLine={false} axisLine={false} />
                             <YAxis stroke="rgba(255,255,255,0.1)" fontSize={10} tickLine={false} axisLine={false} />
@@ -55,7 +48,7 @@ export function RevenueAnalytics() {
                                 cursor={{ fill: "rgba(255,255,255,0.05)" }}
                                 contentStyle={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", fontSize: "10px" }}
                             />
-                            <Bar dataKey="rev" fill="#00e5ff" radius={[4, 4, 0, 0]} />
+                            <Bar dataKey="rev" fill="#00e5ff" radius={[4, 4, 0, 0]} animationDuration={500} />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>

@@ -13,24 +13,31 @@ export function TeamBilling() {
     const { data: orgs, error, mutate } = useSWR(`${API_URL}/admin/organizations`, fetcher);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedOrg, setSelectedOrg] = useState<any>(null);
-    const [topupAmount, setTopupAmount] = useState(10000);
+    const [selectedPackage, setSelectedPackage] = useState<any>({ amount: 20, code: "EXEC_BASIC", tokens: "200k" });
+    const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
 
-    const handleTopup = async (orgId: string) => {
+    const handleTopup = async () => {
+        if (!selectedOrg) return;
+        setIsCheckoutLoading(true);
         try {
-            const res = await fetch(`${API_URL}/admin/organizations/${orgId}/topup`, {
+            const res = await fetch(`/api/checkout`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "api-key": "SYSTEM_ADMIN_BYPASS"
                 },
-                body: JSON.stringify({ amount: topupAmount })
+                body: JSON.stringify({ amount: selectedPackage.amount, packageCode: selectedPackage.code })
             });
-            if (res.ok) {
-                mutate();
-                alert("Institutional credits successfully allocated.");
+            const data = await res.json();
+            if (data.url) {
+                window.location.href = data.url; // Trigger Stripe Routing
+            } else {
+                alert(`Checkout Exception: ${data.error}`);
             }
         } catch (err) {
             console.error(err);
+            alert("Network Error navigating to checkout gateway.");
+        } finally {
+            setIsCheckoutLoading(false);
         }
     };
 
@@ -113,21 +120,33 @@ export function TeamBilling() {
                                 <h4 className="text-[10px] font-bold text-muted uppercase tracking-widest mb-4">Institutional Actions</h4>
                                 <div className="space-y-4">
                                     <div className="p-4 rounded-xl bg-black/40 border border-white/5">
-                                        <label className="text-[9px] text-muted uppercase tracking-widest block mb-2">Allocate Credits</label>
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="number"
-                                                className="flex-1 bg-white/[0.05] border border-white/10 rounded-lg px-3 py-2 text-xs font-mono focus:outline-none"
-                                                value={topupAmount}
-                                                onChange={(e) => setTopupAmount(parseInt(e.target.value))}
-                                            />
-                                            <button
-                                                onClick={() => handleTopup(selectedOrg.id)}
-                                                className="p-2 bg-primary text-background rounded-lg hover:box-glow transition-all"
-                                            >
-                                                <Plus size={18} />
-                                            </button>
+                                        <label className="text-[9px] text-muted uppercase tracking-widest block mb-3">Deploy Platform Credits</label>
+                                        
+                                        <div className="grid grid-cols-3 gap-2 mb-4">
+                                            {[
+                                                { amount: 20, code: "EXEC_BASIC", tokens: "200k" },
+                                                { amount: 100, code: "EXEC_PRO", tokens: "1.0M" },
+                                                { amount: 500, code: "EXEC_CORP", tokens: "5.0M" }
+                                            ].map(pkg => (
+                                                <button
+                                                    key={pkg.code}
+                                                    onClick={() => setSelectedPackage(pkg)}
+                                                    className={cn("p-2 rounded-lg border text-[10px] font-bold font-mono tracking-tighter transition-all flex flex-col items-center justify-center gap-1", selectedPackage.code === pkg.code ? "bg-primary/10 border-primary/40 text-primary" : "bg-white/[0.02] border-white/5 hover:border-white/20 text-muted")}
+                                                >
+                                                    <span>${pkg.amount}</span>
+                                                    <span className="text-[8px] opacity-40 uppercase">{pkg.tokens}</span>
+                                                </button>
+                                            ))}
                                         </div>
+
+                                        <button
+                                            onClick={handleTopup}
+                                            disabled={isCheckoutLoading}
+                                            className="w-full flex items-center justify-center gap-2 p-3 bg-primary text-background rounded-lg hover:box-glow transition-all font-bold uppercase tracking-widest text-[10px] disabled:opacity-50"
+                                        >
+                                            {isCheckoutLoading ? "Routing to Stripe Gateway..." : `Checkout via Stripe`}
+                                            <CreditCard size={14} />
+                                        </button>
                                     </div>
 
                                     <button className="w-full flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all">
