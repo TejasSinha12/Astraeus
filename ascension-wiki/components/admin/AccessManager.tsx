@@ -120,16 +120,25 @@ function KeyCard({ apiKey, onUpdate }: { apiKey: any, onUpdate: () => void }) {
                         <span className="opacity-40">Created:</span>
                         <span>{new Date(apiKey.created_at).toLocaleDateString()}</span>
                         <span className="opacity-10">|</span>
-                        <span className="opacity-40">Owner:</span>
-                        <span className="text-white/40">{apiKey.owner_id}</span>
+                        <span className="opacity-40">Scope:</span>
+                        <span className={cn("px-1.5 py-0.5 rounded font-bold uppercase", apiKey.scopes?.includes('execute') ? "bg-orange-500/20 text-orange-500" : "bg-blue-500/20 text-blue-500")}>
+                            {apiKey.scopes?.join(', ') || 'READ-ONLY'}
+                        </span>
                     </div>
                 </div>
             </div>
 
+            {/* Brute-force warning */}
+            <div className="text-[8px] font-mono text-muted/40 uppercase tracking-widest absolute top-2 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                {apiKey.is_active ? "Velocity locked > 100 req/sec" : "Velocity lock engaged."}
+            </div>
+
             <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 px-4 py-2 bg-black/40 border border-white/5 rounded-lg group-hover:border-primary/20 transition-all">
-                    <code className="text-[10px] text-white/20 font-mono tracking-wider">{copied ? "COPIED_TO_CLIPBOARD" : apiKey.key.slice(0, 8) + "•".repeat(24) + apiKey.key.slice(-4)}</code>
-                    <button onClick={handleCopy} className="text-muted hover:text-primary transition-colors">
+                <div className="flex items-center gap-2 px-4 py-2 bg-black/40 border border-white/5 rounded-lg group-hover:border-primary/20 transition-all cursor-pointer hover:bg-white/5" onClick={handleCopy}>
+                    <code className={cn("text-[10px] tracking-wider transition-all duration-300", copied ? "text-green-500 font-bold" : "text-white/20 font-mono blur-[3px] hover:blur-none")}>
+                        {copied ? "COPIED_TO_CLIPBOARD" : apiKey.key}
+                    </code>
+                    <button className="text-muted hover:text-primary transition-colors ml-2">
                         {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
                     </button>
                 </div>

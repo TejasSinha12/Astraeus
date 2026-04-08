@@ -22,7 +22,10 @@ export async function POST(req: Request) {
 
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card'],
-            client_reference_id: userId, // CRITICAL: This links the payment to the Clerk User ID for the Webhook
+            client_reference_id: userId,
+            metadata: {
+                package_code: packageCode // Emits metadata backwards to TokenLedger settlement
+            },
             line_items: [
                 {
                     price_data: {
@@ -30,9 +33,9 @@ export async function POST(req: Request) {
                         product_data: {
                             name: `Ascension Intelligence Tokens (${packageCode})`,
                             description: `${amount * 1000} Execution Credits`,
-                            images: ['https://astraeus-livid.vercel.app/social-card.png'], // Placeholder
+                            images: ['https://astraeus-livid.vercel.app/social-card.png'],
                         },
-                        unit_amount: amount * 100, // Stripe expects cents
+                        unit_amount: amount * 100,
                     },
                     quantity: 1,
                 },
@@ -45,6 +48,9 @@ export async function POST(req: Request) {
         return NextResponse.json({ url: session.url });
     } catch (error: any) {
         console.error('Stripe Checkout Error:', error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        
+        // Defensive exception pipeline mapping Stripe specific hooks explicitly
+        const errorMsg = error?.raw?.message || error.message || 'Unknown network gateway error inside Stripe checkouts.';
+        return NextResponse.json({ error: errorMsg }, { status: 500 });
     }
 }
