@@ -139,14 +139,16 @@ export function TeamBilling() {
                                             ))}
                                         </div>
 
-                                        <button
+                                        <motion.button
+                                            whileHover={{ scale: 1.02, textShadow: "0px 0px 8px rgb(255 255 255 / 0.5)" }}
+                                            whileTap={{ scale: 0.98 }}
                                             onClick={handleTopup}
                                             disabled={isCheckoutLoading}
                                             className="w-full flex items-center justify-center gap-2 p-3 bg-primary text-background rounded-lg hover:box-glow transition-all font-bold uppercase tracking-widest text-[10px] disabled:opacity-50"
                                         >
                                             {isCheckoutLoading ? "Routing to Stripe Gateway..." : `Checkout via Stripe`}
                                             <CreditCard size={14} />
-                                        </button>
+                                        </motion.button>
                                     </div>
 
                                     <button className="w-full flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all">

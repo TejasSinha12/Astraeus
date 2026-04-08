@@ -35,10 +35,20 @@ cat > .env.local << EOF
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 CLERK_SECRET_KEY=sk_test_...
 NEXT_PUBLIC_PLATFORM_API_URL=https://astraeus-r4pf.onrender.com
+STRIPE_WEBHOOK_SECRET=whsec_...
+EMAIL_REPLY_HEADER="Astraeus Platform <noreply@astraeus.ai>"
 EOF
 
 npm run dev
 ```
+
+### Stripe Billing Integration Tests
+To validate checkout sessions natively triggering intelligence economy Ledger credits, use the CLI locally:
+```bash
+stripe listen --forward-to localhost:8000/v1/billing/webhook/stripe
+stripe trigger checkout.session.completed
+```
+To validate the Frontend Checkout session, run `npm run dev` and navigate to the Team Billing UI, triggering the Next.js `POST /api/checkout` route to open the secure Stripe interface.
 
 ---
 
@@ -57,6 +67,7 @@ The Astraeus console is designed for **high-fidelity observability** of autonomo
 
 | Component | Location | Purpose |
 |-----------|----------|---------|
+| `AgentSpawner` | `core/` | Biological synthesizer restricting recursive agent logic generation. |
 | `GovernanceDashboard` | `components/admin/` | Tab-based admin console (Health, Revenue, Audit, Access, Team Billing) |
 | `TeamBilling` | `components/admin/` | Institutional credit pool management |
 | `AccessManager` | `components/admin/` | API key and user role management |
