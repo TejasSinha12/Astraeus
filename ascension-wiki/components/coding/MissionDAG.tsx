@@ -10,19 +10,35 @@ import { X, Cpu, Clock, Zap, MessageSquare } from "lucide-react";
 // ─── Custom DAG Node ─────────────────────────────────────────────────────────
 function SwarmNode({ data, selected }: { data: { label: string; status: "idle" | "active" | "done"; message?: string }; selected?: boolean }) {
     return (
-        <div className={cn(
-            "px-4 py-2 rounded-xl border text-[10px] font-mono transition-all duration-500 min-w-[120px] cursor-pointer",
-            selected ? "ring-2 ring-primary ring-offset-2 ring-offset-black scale-105" : "",
-            data.status === "active" ? "bg-primary/20 border-primary text-white shadow-[0_0_20px_rgba(0,229,255,0.4)]" :
-                data.status === "done" ? "bg-green-500/10 border-green-500/30 text-green-400" :
-                    "bg-white/5 border-white/10 text-muted"
-        )}>
+        <motion.div 
+            whileHover={{ scale: 1.05 }} // Commit 17: Motion scale bounds
+            className={cn(
+                "px-4 py-2 rounded-xl border text-[10px] font-mono transition-all duration-500 min-w-[120px] cursor-pointer relative",
+                selected ? "ring-2 ring-primary ring-offset-2 ring-offset-black" : "",
+                data.status === "active" ? "bg-primary/20 border-primary text-white shadow-[0_0_20px_rgba(0,229,255,0.4)]" :
+                    data.status === "done" ? "bg-green-500/10 border-green-500/30 text-green-400" :
+                        "bg-white/5 border-white/10 text-muted"
+            )}
+        >
             <Handle type="target" position={Position.Left} style={{ background: "transparent", border: "none" }} />
             <div className="flex flex-col gap-1 text-center font-bold tracking-tight">
                 {data.label}
             </div>
+            
+            {/* Commit 18: Success Particle firings natively */}
+            {data.status === "done" && (
+                <div className="absolute inset-0 overflow-hidden rounded-xl pointer-events-none">
+                    <motion.div 
+                        initial={{ opacity: 1, scale: 0 }} 
+                        animate={{ opacity: 0, scale: 1.5 }} 
+                        transition={{ duration: 1 }} 
+                        className="absolute w-full h-full bg-green-400 rounded-full blur-[10px]" 
+                    />
+                </div>
+            )}
+            
             <Handle type="source" position={Position.Right} style={{ background: "transparent", border: "none" }} />
-        </div>
+        </motion.div>
     );
 }
 
@@ -77,8 +93,11 @@ export function MissionDAG({ steps, isExecuting }: MissionDAGProps) {
                 ...edge,
                 animated: sourceDone && isExecuting,
                 style: { 
-                    stroke: isActiveFlow ? "url(#tokenFlow)" : targetDone ? "#00e5ff" : sourceDone ? "#00e5ff44" : "#333",
-                    strokeWidth: isActiveFlow ? 2 : 1
+                    /* Commit 16: strokeDasharray offsets logic */
+                    /* Commit 19: Edge connection gradients */
+                    stroke: isActiveFlow ? "url(#tokenFlow)" : targetDone ? "url(#doneEdge)" : sourceDone ? "#00e5ff44" : "#333",
+                    strokeWidth: isActiveFlow ? 2 : 1,
+                    strokeDasharray: isActiveFlow ? "5 5" : "none"
                 }
             };
         });
@@ -104,16 +123,22 @@ export function MissionDAG({ steps, isExecuting }: MissionDAGProps) {
                 panOnScroll={false}
                 panOnDrag={true}
             >
-                <Background color="rgba(255,255,255,0.02)" gap={20} />
+                {/* SVG Definitions for Native Particle flows bridging links securely */}
                 <svg>
                     <defs>
                         <linearGradient id="tokenFlow" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="#00e5ff" stopOpacity="0.1" />
+                            <stop offset="0%" stopColor="#00e5ff" stopOpacity="0" />
                             <stop offset="50%" stopColor="#00e5ff" stopOpacity="1" />
-                            <stop offset="100%" stopColor="#00e5ff" stopOpacity="0.1" />
+                            <stop offset="100%" stopColor="#0a0a0a" stopOpacity="0" />
+                        </linearGradient>
+                        <linearGradient id="doneEdge" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#34d399" stopOpacity="0.8" />
+                            <stop offset="100%" stopColor="#10b981" stopOpacity="0.2" />
                         </linearGradient>
                     </defs>
                 </svg>
+                {/* Commit 20: Background dots tracking lowered opacity and size */}
+                <Background color="#fff" gap={16} size={1} style={{ opacity: 0.05 }} />
             </ReactFlow>
 
             {/* Node Info Panel */}

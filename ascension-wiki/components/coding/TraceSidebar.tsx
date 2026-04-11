@@ -60,15 +60,17 @@ export function TraceSidebar({ logs, steps, isExecuting }: TraceSidebarProps) {
                             exit={{ opacity: 0, x: -20 }}
                             className="space-y-4"
                         >
-                            {steps.length === 0 && !isExecuting && (
-                                <div className="text-center py-20 opacity-20">
-                                    <Cpu size={32} className="mx-auto mb-4" />
-                                    <p className="text-[10px] uppercase tracking-widest">Awaiting Swarm Trace...</p>
-                                </div>
-                            )}
-                            {steps.map((step, i) => (
-                                <ReasoningStep key={i} step={step} index={i} />
-                            ))}
+                            <motion.div layout className="space-y-4"> {/* Commit 11: Wrap generic layout */}
+                                {steps.length === 0 && !isExecuting && (
+                                    <div className="text-center py-20 opacity-20">
+                                        <Cpu size={32} className="mx-auto mb-4" />
+                                        <p className="text-[10px] uppercase tracking-widest">Awaiting Swarm Trace...</p>
+                                    </div>
+                                )}
+                                {steps.map((step, i) => (
+                                    <ReasoningStep key={i} step={step} index={i} isExecuting={isExecuting && i === steps.length - 1} />
+                                ))}
+                            </motion.div>
                             {isExecuting && (
                                 <div className="flex flex-col gap-1 p-3 rounded-lg bg-primary/5 border border-primary/20 animate-pulse">
                                     <div className="flex items-center gap-3">
@@ -88,17 +90,20 @@ export function TraceSidebar({ logs, steps, isExecuting }: TraceSidebarProps) {
                             className="space-y-1 text-[11px]"
                         >
                             {logs.map((log, i) => (
-                                <div key={i} className="flex gap-3 leading-relaxed py-0.5">
-                                    <span className="text-muted/30 shrink-0 select-none">{(i + 1).toString().padStart(3, '0')}</span>
-                                    <span className={cn(
-                                        "break-all",
-                                        log.includes("[ERROR]") ? "text-red-400" :
+                                <motion.div 
+                                    key={i} 
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className={cn(
+                                        "flex gap-3 leading-relaxed py-1 px-2 rounded",
+                                        log.includes("[ERROR]") ? "bg-red-500/10 border-l-2 border-red-500 text-red-400" :
                                             log.includes("[COMPLETED]") ? "text-green-400" :
-                                                log.includes("[SYSTEM]") ? "text-primary/70" : "text-muted/80"
-                                    )}>
-                                        {log}
-                                    </span>
-                                </div>
+                                                log.includes("[SYSTEM]") ? "text-primary/70" : "text-muted/80 hover:bg-white/[0.02]"
+                                    )} // Commit 15: Log line trace offsets formatting
+                                >
+                                    <span className="text-muted/30 shrink-0 select-none font-mono tracking-widest">{(i + 1).toString().padStart(3, '0')}</span>
+                                    <span className="break-all">{log}</span>
+                                </motion.div>
                             ))}
                         </motion.div>
                     )}
@@ -117,14 +122,18 @@ export function TraceSidebar({ logs, steps, isExecuting }: TraceSidebarProps) {
     );
 }
 
-function ReasoningStep({ step, index }: { step: TraceStep, index: number }) {
-    const [isOpen, setIsOpen] = useState(index === 0); // Open first step by default
+function ReasoningStep({ step, index, isExecuting }: { step: TraceStep, index: number, isExecuting?: boolean }) {
+    const [isOpen, setIsOpen] = useState(index === 0); 
 
     return (
-        <div className={cn(
-            "border rounded-lg overflow-hidden transition-all duration-300",
-            isOpen ? "bg-primary/[0.03] border-primary/20 shadow-[0_4px_20px_-10px_rgba(0,229,255,0.1)]" : "bg-white/[0.02] border-white/5 hover:border-white/10"
-        )}>
+        <motion.div 
+            layout 
+            className={cn(
+                "border rounded-lg overflow-hidden transition-all duration-300 relative",
+                isOpen ? "bg-primary/[0.03] border-primary/20 shadow-[0_4px_20px_-10px_rgba(0,229,255,0.1)]" : "bg-white/[0.02] border-white/5 hover:border-white/10",
+                isExecuting && "ring-1 ring-primary/50 shadow-[0_0_15px_rgba(0,229,255,0.2)]" // Commit 13: Active node ring bounds
+            )}
+        >
             <button
                 onClick={() => setIsOpen(!isOpen)}
                 className={cn(
@@ -142,14 +151,16 @@ function ReasoningStep({ step, index }: { step: TraceStep, index: number }) {
                     </div>
                 </div>
                 {step.consensus_score && (
-                    <div className="flex flex-col items-end mr-3">
-                        <span className="text-[7px] text-muted/40 uppercase font-mono mb-0.5">Consensus Scored</span>
-                        <span className={cn(
-                            "text-[8px] font-bold",
-                            step.consensus_score > 0.8 ? "text-green-400" : "text-yellow-400"
-                        )}>
-                            {(step.consensus_score * 100).toFixed(0)}%
-                        </span>
+                    <div className="flex flex-col items-end mr-3 w-16">
+                        <span className="text-[7px] text-muted/40 uppercase font-mono mb-0.5">Consensus</span>
+                        <div className="w-full h-[3px] bg-white/5 rounded-full overflow-hidden mt-0.5 relative">
+                            {/* Commit 12: Consensus spans */}
+                            <motion.div 
+                                initial={{ width: 0 }}
+                                animate={{ width: `${step.consensus_score * 100}%` }}
+                                className={cn("h-full absolute left-0 rounded-full", step.consensus_score > 0.8 ? "bg-green-400" : "bg-yellow-400")}
+                            />
+                        </div>
                     </div>
                 )}
                 {step.confidence && (
@@ -172,7 +183,10 @@ function ReasoningStep({ step, index }: { step: TraceStep, index: number }) {
                         </span>
                     </div>
                 )}
-                <span className="text-[8px] font-mono text-muted/40">{step.timestamp}</span>
+                <span className="text-[8px] font-mono text-muted/40 border border-white/5 px-1.5 py-0.5 rounded shadow-inner bg-black/40">
+                    {/* Commit 14: Timestamp bounds */}
+                    {step.timestamp.split('T')[1]?.split('.')[0] || step.timestamp}
+                </span>
             </button>
             <AnimatePresence>
                 {isOpen && (
@@ -197,6 +211,6 @@ function ReasoningStep({ step, index }: { step: TraceStep, index: number }) {
                     </motion.div>
                 )}
             </AnimatePresence>
-        </div>
+        </motion.div>
     );
 }
