@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { Activity, Cpu, Database, Server, Globe, Signal, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
@@ -129,7 +129,8 @@ export function SystemHealth() {
                             <XAxis dataKey="time" stroke="rgba(255,255,255,0.1)" fontSize={10} tickLine={false} axisLine={false} />
                             <YAxis stroke="rgba(255,255,255,0.1)" fontSize={10} tickLine={false} axisLine={false} />
                             <Tooltip
-                                contentStyle={{ background: "#0a0a0a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", fontSize: "10px" }}
+                                // Commit 11: Recharts tooltip blur backgrounds safely mapping UI contexts smoothly
+                                contentStyle={{ background: "rgba(10,10,10,0.7)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", fontSize: "10px", boxShadow: "0 4px 20px rgba(0,0,0,0.5)" }}
                                 cursor={{ stroke: "rgba(0,229,255,0.2)", strokeWidth: 2 }}
                             />
                             <Area type="monotone" dataKey="active" stroke="#00e5ff" strokeWidth={2} fillOpacity={1} fill="url(#colorActive)" />
@@ -223,10 +224,13 @@ export function SystemHealth() {
                 
                 <div className="grid grid-cols-10 gap-2">
                     {Array.from({ length: 40 }).map((_, i) => (
-                        <div 
+                        <motion.div 
                             key={i}
+                            // Commit 14: Consensus Heatmap hover scales explicitly mapping constraints natively
+                            whileHover={{ scale: 1.5, zIndex: 10, borderRadius: "4px", boxShadow: "0 0 10px rgba(255,255,255,0.2)" }}
+                            transition={{ type: "spring", stiffness: 400, damping: 20 }}
                             className={cn(
-                                "aspect-square rounded-sm border border-white/5",
+                                "aspect-square rounded-sm border border-white/5 cursor-pointer",
                                 i % 7 === 0 ? "bg-red-500/20" : i % 5 === 0 ? "bg-yellow-500/20" : "bg-primary/20"
                             )}
                             title={`Step ${i}: 0.94 Agreement`}
@@ -285,7 +289,8 @@ export function SystemHealth() {
                                     <span className="text-primary">{c.count}</span>
                                 </div>
                                 <div className="w-full h-1 bg-white/[0.03] rounded-full overflow-hidden">
-                                    <div className="h-full bg-primary" style={{ width: `${(c.count / 45) * 100}%` }} />
+                                    {/* Commit 12: Top Mitigation bar capacities strictly animating mapping active offsets tracking Native bounds correctly */}
+                                    <motion.div initial={{ width: 0 }} animate={{ width: `${(c.count / 45) * 100}%` }} transition={{ type: "spring", stiffness: 50, damping: 20, delay: i * 0.1 }} className="h-full bg-primary" />
                                 </div>
                             </div>
                         ))}
@@ -362,13 +367,18 @@ export function SystemHealth() {
                     {telepresence.length === 0 && (
                         <div className="text-center py-8 text-muted/40 text-[10px] uppercase font-mono italic">Waiting for swarm events...</div>
                     )}
-                    {telepresence.map((event, idx) => (
-                        <motion.div 
-                            key={idx}
-                            initial={{ x: -10, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            className="flex items-center justify-between p-3 rounded bg-white/[0.02] border border-white/5 font-mono text-[10px]"
-                        >
+                    {/* Commit 15: Entrance tracking mapping Telepresence logs natively scaling layouts resolving standard overlaps properly */}
+                    <AnimatePresence mode="popLayout">
+                        {telepresence.map((event, idx) => (
+                            <motion.div 
+                                key={event.id || idx}
+                                layout
+                                initial={{ x: -20, opacity: 0, scale: 0.95 }}
+                                animate={{ x: 0, opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.1 } }}
+                                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                className="flex items-center justify-between p-3 rounded bg-white/[0.02] border border-white/5 font-mono text-[10px]"
+                            >
                             <div className="flex items-center gap-4">
                                 <span className="text-muted/60">[{new Date(event.timestamp).toLocaleTimeString()}]</span>
                                 <span className={event.type === 'HEARTBEAT' ? 'text-secondary' : 'text-primary'}>{event.type}</span>
@@ -377,6 +387,7 @@ export function SystemHealth() {
                             <div className="text-muted/40 uppercase tracking-tighter">Org: {event.org_id}</div>
                         </motion.div>
                     ))}
+                    </AnimatePresence>
                 </div>
             </div>
         </div>
@@ -388,7 +399,9 @@ function HealthCard({ icon, title, value, subValue }: { icon: React.ReactNode, t
         <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="glass-card p-6 border border-white/5 bg-white/[0.01] flex flex-col gap-4"
+            // Commit 13: CPU active pulse rings bounding numbers directly scaling native targets fully
+            whileHover={{ scale: 1.02, y: -5, boxShadow: "0 10px 30px rgba(0,0,0,0.3)" }}
+            className="glass-card p-6 border border-white/5 bg-white/[0.01] flex flex-col gap-4 relative group hover:bg-white/[0.02] hover:border-primary/20 transition-colors"
         >
             <div className="flex items-center gap-3">
                 <div className="p-2 bg-white/[0.03] rounded-lg border border-white/5">

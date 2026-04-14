@@ -30,14 +30,14 @@ export function AccessManager() {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <div className="relative">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 w-3 h-3" />
+                    <div className="relative group/search">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 w-3 h-3 group-focus-within/search:text-primary transition-colors" />
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Filter registry..."
-                            className="bg-black/40 border border-white/10 rounded-lg pl-9 pr-4 py-2 text-[10px] font-mono text-white focus:outline-none focus:border-primary/40 w-64"
+                            className="bg-black/40 border border-white/10 rounded-lg pl-9 pr-4 py-2 text-[10px] font-mono text-white focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 w-64 transition-all shadow-inner" // Commit 4: Search filter focus rings natively
                         />
                     </div>
                 </div>
@@ -48,8 +48,11 @@ export function AccessManager() {
                     <motion.div key="keys" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-6">
                         <SectionHeader title="API Key Registry" description="Manage institutional credentials and system bypass tokens." action={<CreateKeyBtn onUpdate={mutateKeys} />} />
                         <div className="grid grid-cols-1 gap-4">
-                            {keys?.keys?.map((key: any) => (
-                                <KeyCard key={key.id} apiKey={key} onUpdate={mutateKeys} />
+                            {/* Commit 2: Staggered API Key row delays natively wrapping elements cleanly */}
+                            {keys?.keys?.map((key: any, i: number) => (
+                                <motion.div key={key.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05, type: "spring", stiffness: 300, damping: 25 }}>
+                                    <KeyCard apiKey={key} onUpdate={mutateKeys} />
+                                </motion.div>
                             ))}
                             {!keys?.keys?.length && <EmptyRegistry label="No Active API Keys" />}
                         </div>
@@ -136,7 +139,8 @@ function KeyCard({ apiKey, onUpdate }: { apiKey: any, onUpdate: () => void }) {
             <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2 px-4 py-2 bg-black/40 border border-white/5 rounded-lg group-hover:border-primary/20 transition-all cursor-pointer hover:bg-white/5" onClick={handleCopy}>
                     <code className={cn("text-[10px] tracking-wider transition-all duration-300", copied ? "text-green-500 font-bold" : "text-white/20 font-mono blur-[3px] hover:blur-none")}>
-                        {copied ? "COPIED_TO_CLIPBOARD" : apiKey.key}
+                        {/* Commit 5: Format trailing key wrappers explicitly resolving formatting errors correctly */}
+                        {copied ? "COPIED_TO_CLIPBOARD" : (apiKey.key?.trim() ? `${apiKey.key.trim().substring(0, 12)}...${apiKey.key.trim().substring(apiKey.key.trim().length - 8)}` : "INV_KEY_MAPPING")}
                     </code>
                     <button className="text-muted hover:text-primary transition-colors ml-2">
                         {copied ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
@@ -171,7 +175,8 @@ function UserRow({ user, onUpdate }: { user: any, onUpdate: () => void }) {
     };
 
     return (
-        <tr className="border-b border-white/5 hover:bg-white/[0.01] transition-colors group">
+        // Commit 3: Table tbody hover shadows bounding row changes safely
+        <tr className="border-b border-white/5 hover:bg-white/[0.02] hover:shadow-[0_4px_30px_rgba(0,229,255,0.05)] hover:border-primary/20 transition-all duration-300 group relative z-0 hover:z-10">
             <td className="px-6 py-4">
                 <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/20 to-purple-500/20 flex items-center justify-center text-[10px] font-bold text-primary border border-white/5">
@@ -205,14 +210,22 @@ function UserRow({ user, onUpdate }: { user: any, onUpdate: () => void }) {
 }
 
 function SubTabBtn({ active, onClick, icon, label }: { active: boolean, onClick: () => void, icon: React.ReactNode, label: string }) {
+    // Commit 1: SubTabBtn flex offsets properly tracking active Glow limits gracefully.
     return (
         <button
             onClick={onClick}
             className={cn(
-                "flex items-center gap-2 px-4 py-2 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-all",
-                active ? "bg-white/10 text-white" : "text-muted hover:text-white"
+                "relative flex items-center gap-2 px-4 py-2 rounded-lg text-[9px] font-bold uppercase tracking-widest transition-colors z-10",
+                active ? "text-white" : "text-muted hover:text-white"
             )}
         >
+            {active && (
+                <motion.div
+                    layoutId="access-tab-glow"
+                    className="absolute inset-0 bg-white/10 rounded-lg shadow-[0_0_15px_rgba(255,255,255,0.1)] -z-10"
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                />
+            )}
             {icon}
             {label}
         </button>

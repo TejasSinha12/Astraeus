@@ -55,12 +55,13 @@ export function TeamBilling() {
                     </h2>
                     <p className="text-muted text-xs uppercase tracking-widest mt-1">Manage organization-level shared credit pools</p>
                 </div>
-                <div className="relative w-full md:w-64">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted w-4 h-4" />
+                <div className="relative w-full md:w-64 group/search">
+                    {/* Commit 18: Input search icon color wrapping strictly cleanly managing focus groups correctly */}
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted w-4 h-4 group-focus-within/search:text-primary transition-colors duration-300" />
                     <input
                         type="text"
                         placeholder="SEARCH ORGANIZATIONS..."
-                        className="w-full bg-white/[0.03] border border-white/10 rounded-lg pl-10 pr-4 py-2 text-[10px] font-mono tracking-widest focus:outline-none focus:border-primary/50 transition-colors"
+                        className="w-full bg-white/[0.03] border border-white/10 rounded-lg pl-10 pr-4 py-2 text-[10px] font-mono tracking-widest focus:outline-none focus:border-primary/50 transition-colors shadow-inner"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -77,13 +78,17 @@ export function TeamBilling() {
                     ) : orgs.organizations?.filter((o: any) => o.name.toLowerCase().includes(searchQuery.toLowerCase())).map((org: any) => (
                         <div
                             key={org.id}
+                            // Commit 16: selectedOrg relative component background layouts cleanly nesting static states securely replacing CSS with framer
                             className={cn(
-                                "group p-5 rounded-2xl border transition-all cursor-pointer",
-                                selectedOrg?.id === org.id ? "bg-primary/5 border-primary/30" : "bg-white/[0.02] border-white/5 hover:border-white/10"
+                                "group p-5 rounded-2xl border transition-all cursor-pointer relative z-0",
+                                selectedOrg?.id === org.id ? "border-transparent" : "bg-white/[0.02] border-white/5 hover:border-white/10"
                             )}
                             onClick={() => setSelectedOrg(org)}
                         >
-                            <div className="flex justify-between items-start">
+                            {selectedOrg?.id === org.id && (
+                                <motion.div layoutId="team-org-glow" className="absolute inset-0 rounded-2xl bg-primary/5 -z-10 shadow-[0_0_15px_rgba(0,229,255,0.05)] border border-primary/30" transition={{ type: "spring", stiffness: 400, damping: 25 }} />
+                            )}
+                            <div className="flex justify-between items-start z-10 relative">
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center border border-primary/20">
                                         <Building2 className="text-primary w-6 h-6" />
@@ -122,7 +127,8 @@ export function TeamBilling() {
                                     <div className="p-4 rounded-xl bg-black/40 border border-white/5">
                                         <label className="text-[9px] text-muted uppercase tracking-widest block mb-3">Deploy Platform Credits</label>
                                         
-                                        <div className="grid grid-cols-3 gap-2 mb-4">
+                                        {/* Commit 17: Package grid mobile flex wrapping logic constraints safely dynamically structuring flex over internal md layouts */}
+                                        <div className="flex flex-wrap md:grid md:grid-cols-3 gap-2 mb-4">
                                             {[
                                                 { amount: 20, code: "EXEC_BASIC", tokens: "200k" },
                                                 { amount: 100, code: "EXEC_PRO", tokens: "1.0M" },
@@ -141,7 +147,8 @@ export function TeamBilling() {
 
                                         <motion.button
                                             whileHover={{ scale: 1.02, textShadow: "0px 0px 8px rgb(255 255 255 / 0.5)" }}
-                                            whileTap={{ scale: 0.98 }}
+                                            // Commit 19: Execute Checkout button whileTap constraints mapped smoothly safely dropping standard CSS logic correctly
+                                            whileTap={{ scale: 0.96 }}
                                             onClick={handleTopup}
                                             disabled={isCheckoutLoading}
                                             className="w-full flex items-center justify-center gap-2 p-3 bg-primary text-background rounded-lg hover:box-glow transition-all font-bold uppercase tracking-widest text-[10px] disabled:opacity-50"
@@ -175,10 +182,12 @@ export function TeamBilling() {
                             </div>
                         </motion.div>
                     ) : (
-                        <div className="p-8 rounded-2xl border border-dashed border-white/5 flex flex-col items-center justify-center text-center">
-                            <Building2 className="w-12 h-12 text-white/5 mb-4" />
-                            <p className="text-[10px] text-muted font-bold uppercase tracking-widest max-w-[200px]">
-                                Select an organization to manage institutional resources
+                        // Commit 20: Empty state pulse constraints tracking texts wrapping standard text elements into mapped gradient spans directly inside layout containers structurally
+                        <div className="p-8 rounded-2xl border border-dashed border-white/5 flex flex-col items-center justify-center text-center relative overflow-hidden group">
+                            <motion.div animate={{ opacity: [0.1, 0.3, 0.1] }} transition={{ repeat: Infinity, duration: 3, ease: "linear" }} className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent pointer-events-none" />
+                            <Building2 className="w-12 h-12 text-white/5 mb-4 group-hover:text-primary/20 transition-colors duration-500 relative z-10" />
+                            <p className="text-[10px] font-bold uppercase tracking-widest max-w-[200px] relative z-10">
+                                <span className="bg-clip-text text-transparent bg-gradient-to-r from-muted to-white/60">Select an organization to manage institutional resources</span>
                             </p>
                         </div>
                     )}
