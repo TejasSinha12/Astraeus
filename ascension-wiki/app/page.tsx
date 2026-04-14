@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Terminal, Zap, Shield, Cpu, Play, CheckCircle2, Loader2, Flame, Github, Twitter, Linkedin, ChevronDown } from "lucide-react";
+import { ArrowRight, Terminal, Zap, Shield, Cpu, Play, CheckCircle2, Loader2, Flame, Github, Twitter, Linkedin, ChevronDown, Copy } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 export default function Home() {
   const [demoState, setDemoState] = useState<"idle" | "running" | "completed">("idle");
@@ -50,10 +51,15 @@ export default function Home() {
         className="w-full max-w-3xl mx-auto mb-8"
       >
         <Link href="/arena" className="block">
-          <div className="flex items-center justify-center gap-3 px-6 py-3 rounded-2xl bg-gradient-to-r from-purple-500/10 via-primary/10 to-purple-500/10 border border-primary/20 hover:border-primary/40 transition-all group cursor-pointer">
-            <Flame size={16} className="text-orange-400 animate-pulse" />
-            <span className="text-xs font-bold text-white uppercase tracking-widest">New:</span>
-            <span className="text-xs text-muted font-mono">The Forge — Parallel Evolutionary Multi-Branching is live</span>
+          <div className="flex items-center justify-center gap-3 px-6 py-3 rounded-2xl bg-gradient-to-r from-purple-500/10 via-primary/10 to-purple-500/10 border border-primary/20 hover:border-primary/40 transition-all group cursor-pointer relative overflow-hidden">
+            <motion.div 
+              animate={{ x: ["-100%", "200%"] }} 
+              transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent pointer-events-none"
+            />
+            <Flame size={16} className="text-orange-400 group-hover:scale-125 transition-transform" />
+            <span className="text-[10px] font-bold text-white uppercase tracking-widest">Global Patch:</span>
+            <span className="text-[10px] text-muted font-mono">The Forge — Deployment Evolution live</span>
             <ArrowRight size={14} className="text-primary group-hover:translate-x-1 transition-transform" />
           </div>
         </Link>
@@ -87,23 +93,42 @@ export default function Home() {
             <motion.button
               whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(0,229,255,0.4)" }}
               whileTap={{ scale: 0.95 }}
+              aria-label="Get started with Astraeus for free"
               className="px-8 py-4 rounded-xl bg-primary text-background font-bold flex items-center gap-2 transition-all box-glow text-lg"
             >
               Start Building Free
-              <ArrowRight size={20} />
+              <ArrowRight size={20} aria-hidden="true" />
             </motion.button>
           </Link>
           <Link href="/docs/api">
             <motion.button
               whileHover={{ scale: 1.05, backgroundColor: "rgba(255,255,255,0.05)" }}
               whileTap={{ scale: 0.95 }}
+              aria-label="View API Documentation"
               className="px-8 py-4 rounded-xl glass border border-white/10 text-white font-medium flex items-center gap-2 transition-all text-lg"
             >
-              <Terminal size={20} />
+              <Terminal size={20} aria-hidden="true" />
               Read the Docs
             </motion.button>
           </Link>
         </div>
+
+        {/* Scroll Discover Indicator */}
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5 }}
+          className="mt-24 flex flex-col items-center gap-3"
+        >
+          <span className="text-[10px] font-mono text-muted/40 uppercase tracking-[0.3em]">Discover Swarm Flow</span>
+          <div className="w-[1px] h-12 bg-gradient-to-b from-primary/50 to-transparent relative">
+            <motion.div 
+              animate={{ y: [0, 48] }}
+              transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+              className="absolute top-0 left-1/2 -translate-x-1/2 w-1 h-1 bg-primary rounded-full box-glow"
+            />
+          </div>
+        </motion.div>
       </motion.section>
 
       {/* Live Interactive Demo Section */}
@@ -132,10 +157,22 @@ export default function Home() {
             </button>
           </div>
           <div className="p-6 bg-[#0a0f1a] min-h-[280px] font-mono text-sm">
-            <div className="text-white/70 mb-4 flex items-center gap-2">
-              <span className="text-green-400">user@ascension</span>
-              <span className="text-white/40">~ %</span>
-              <span className="text-blue-300">curl -X POST /v1/execute/swarm -d &apos;&#123; &quot;objective&quot;: &quot;build_auth&quot; &#125;&apos;</span>
+            <div className="text-white/70 mb-4 flex items-center justify-between group/code">
+              <div className="flex items-center gap-2">
+                <span className="text-green-400">user@ascension</span>
+                <span className="text-white/40">~ %</span>
+                <span className="text-blue-300">curl -X POST /v1/execute/swarm -d &apos;&#123; &quot;objective&quot;: &quot;build_auth&quot; &#125;&apos;</span>
+              </div>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText("curl -X POST https://api.astraeus.ai/v1/execute/swarm -d '{\"objective\": \"build_auth\"}'");
+                  toast.success("Command copied to clipboard");
+                }}
+                className="opacity-0 group-hover/code:opacity-100 p-1.5 hover:bg-white/10 rounded transition-all text-white/40 hover:text-primary"
+                title="Copy Command"
+              >
+                <Copy size={14} />
+              </button>
             </div>
             <div className="space-y-2">
               <AnimatePresence>
@@ -198,9 +235,9 @@ export default function Home() {
         viewport={{ once: true }}
       >
         <p className="text-center text-[10px] font-mono text-muted/40 uppercase tracking-[0.4em] mb-8">Powering Intelligence Infrastructure</p>
-        <div className="flex flex-wrap items-center justify-center gap-12 opacity-30">
+        <div className="flex flex-wrap items-center justify-center gap-8 md:gap-16 opacity-30 px-6">
           {["OpenAI", "Vercel", "Neon", "Stripe", "Clerk", "Render"].map(name => (
-            <span key={name} className="text-lg font-bold text-white tracking-widest uppercase">{name}</span>
+            <span key={name} className="text-sm md:text-lg font-bold text-white tracking-widest uppercase">{name}</span>
           ))}
         </div>
       </motion.section>
@@ -250,14 +287,14 @@ export default function Home() {
             <div>
               <h4 className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-4">Connect</h4>
               <div className="flex gap-4">
-                <a href="https://github.com/TejasSinha12/Astraeus" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-white/5 text-muted hover:text-white hover:bg-white/10 transition-all">
-                  <Github size={18} />
+                <a href="https://github.com/TejasSinha12/Astraeus" target="_blank" rel="noopener noreferrer" aria-label="Visit Github Repository" className="p-2 rounded-lg bg-white/5 text-muted hover:text-white hover:bg-white/10 transition-all">
+                  <Github size={18} aria-hidden="true" />
                 </a>
-                <a href="#" className="p-2 rounded-lg bg-white/5 text-muted hover:text-white hover:bg-white/10 transition-all">
-                  <Twitter size={18} />
+                <a href="#" aria-label="Follow us on Twitter" className="p-2 rounded-lg bg-white/5 text-muted hover:text-white hover:bg-white/10 transition-all">
+                  <Twitter size={18} aria-hidden="true" />
                 </a>
-                <a href="#" className="p-2 rounded-lg bg-white/5 text-muted hover:text-white hover:bg-white/10 transition-all">
-                  <Linkedin size={18} />
+                <a href="#" aria-label="Connect on LinkedIn" className="p-2 rounded-lg bg-white/5 text-muted hover:text-white hover:bg-white/10 transition-all">
+                  <Linkedin size={18} aria-hidden="true" />
                 </a>
               </div>
             </div>

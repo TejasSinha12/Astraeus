@@ -90,6 +90,21 @@ export function Sidebar() {
                         </div>
                     </Link>
 
+                    {/* Global Search Trigger */}
+                    <button 
+                        className="mb-8 w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:border-primary/40 hover:bg-white/[0.08] transition-all group"
+                        onClick={() => {/* Trigger search command palette */}}
+                    >
+                        <div className="flex items-center gap-2">
+                            <Terminal size={14} className="text-muted group-hover:text-primary transition-colors" />
+                            <span className="text-[11px] font-medium text-muted/60 uppercase tracking-widest group-hover:text-white transition-colors">Search Docs...</span>
+                        </div>
+                        <div className="flex items-center gap-1 hidden sm:flex">
+                            <kbd className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-mono text-muted/40 uppercase">⌘</kbd>
+                            <kbd className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-mono text-muted/40 uppercase">K</kbd>
+                        </div>
+                    </button>
+
                     <nav className="flex-1 space-y-6">
                         {filteredSections.map((section) => (
                             <div key={section.label}>
@@ -106,7 +121,8 @@ export function Sidebar() {
                                                 )}>
                                                 {isActive && (
                                                     <motion.div layoutId="sidebar-active"
-                                                        className="absolute left-0 w-0.5 h-full bg-primary rounded-r-md"
+                                                        className="absolute left-0 w-1 h-3/4 my-auto inset-y-0 bg-primary rounded-r-full group-hover:bg-primary box-glow shadow-[0_0_15px_rgba(0,229,255,0.4)]"
+                                                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                                         initial={{ opacity: 0 }} animate={{ opacity: 1 }} />
                                                 )}
                                                 <Icon size={15} className={cn("transition-colors shrink-0", isActive ? "text-primary" : "group-hover:text-primary/70")} />

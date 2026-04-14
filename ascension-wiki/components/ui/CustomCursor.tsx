@@ -99,7 +99,7 @@ export function CustomCursor() {
     if (isTouch || prefersReducedMotion) return null;
 
     return (
-        <div className={`fixed inset-0 pointer-events-none z-[9999] mix-blend-screen transition-opacity duration-300 ${isVisible ? "opacity-100" : "opacity-0"}`}>
+        <div className={`fixed inset-0 pointer-events-none z-[9999] mix-blend-screen transition-opacity duration-300 ${isVisible ? "opacity-100" : "opacity-0"}`} style={{ willChange: "transform" }}>
             {/* Outer Ring */}
             <div
                 ref={outerRef}

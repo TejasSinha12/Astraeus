@@ -144,9 +144,24 @@ export default function MissionArchive() {
                                     <p className="text-sm">No tactical artifacts found in the sandbox.</p>
                                 </div>
                             ) : (
-                                <div className="divide-y divide-white/5">
+                                <motion.div 
+                                    initial="hidden"
+                                    animate="visible"
+                                    variants={{
+                                        hidden: { opacity: 0 },
+                                        visible: {
+                                            opacity: 1,
+                                            transition: { staggerChildren: 0.05 }
+                                        }
+                                    }}
+                                    className="divide-y divide-white/5"
+                                >
                                     {filteredMissions.map((mission) => (
-                                        <button
+                                        <motion.button
+                                            variants={{
+                                                hidden: { opacity: 0, x: -10 },
+                                                visible: { opacity: 1, x: 0 }
+                                            }}
                                             key={mission.id}
                                             onClick={() => handleViewSource(mission.id)}
                                             className={cn(
@@ -167,8 +182,8 @@ export default function MissionArchive() {
 
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-3 mb-1">
-                                                    <span className="font-mono text-sm font-bold text-white uppercase tracking-tight">Mission_{mission.id}</span>
-                                                    {mission.has_result && <span className="text-[8px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full font-mono uppercase">Code Ready</span>}
+                                                    <span className="font-mono text-sm font-bold text-white uppercase tracking-tight group-hover:text-primary transition-colors">Mission_{mission.id}</span>
+                                                    {mission.has_result && <span className="text-[8px] bg-green-500/10 text-green-400 border border-green-500/20 px-2 py-0.5 rounded-full font-mono uppercase animate-pulse">Code Ready</span>}
                                                 </div>
                                                 <div className="flex items-center gap-4 text-[10px] text-muted font-mono uppercase tracking-wider opacity-60">
                                                     <div className="flex items-center gap-1">
@@ -188,9 +203,9 @@ export default function MissionArchive() {
                                             )}
 
                                             <ChevronRight className={cn("transition-all text-muted/20 group-hover:text-primary/50", selectedMission === mission.id && "rotate-90 text-primary")} size={16} />
-                                        </button>
+                                        </motion.button>
                                     ))}
-                                </div>
+                                </motion.div>
                             )}
                         </div>
                     </div>

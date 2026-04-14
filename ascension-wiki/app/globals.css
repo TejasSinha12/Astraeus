@@ -7,8 +7,8 @@
   --color-primary: #00e5ff; /* Cyan / Electric Blue */
   --color-primary-dark: #0099cc;
   --color-secondary: #7000ff; /* Deep purple */
-  --color-text-main: #e2e8f0;
-  --color-text-muted: #94a3b8;
+  --color-text-main: #f8fafc;
+  --color-text-muted: #cbd5e1; /* Increased contrast for WCAG AA (#0b0f19 bg) */
   
   --font-sans: var(--font-inter), system-ui, sans-serif;
   --font-mono: var(--font-fira-code), ui-monospace, SFMono-Regular, monospace;

@@ -8,6 +8,9 @@ import { CustomCursor } from "@/components/ui/CustomCursor";
 import { Sidebar } from "@/components/Sidebar";
 import { PricingProvider } from "@/components/providers/PricingProvider";
 import { Toaster } from "sonner";
+import { ScrollProgress } from "@/components/ui/ScrollProgress";
+import { BackToTop } from "@/components/ui/BackToTop";
+import { Breadcrumbs } from "@/components/ui/Breadcrumbs";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -43,6 +46,23 @@ export const metadata: Metadata = {
   other: {
     "theme-color": "#00e5ff",
   },
+  alternates: {
+    canonical: "https://astraeus-livid.vercel.app",
+  },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Ascension",
+  "operatingSystem": "Web",
+  "applicationCategory": "DeveloperApplication",
+  "description": "Autonomous Swarm-as-a-Service — Deploy production-grade multi-agent AI.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0.00",
+    "priceCurrency": "USD"
+  }
 };
 
 export default function RootLayout({
@@ -54,14 +74,23 @@ export default function RootLayout({
     <ClerkProvider>
       <PricingProvider>
         <html lang="en" className="dark">
+          <head>
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+            />
+          </head>
           <body className={`${inter.variable} ${firaCode.variable} antialiased bg-background text-text-main selection:bg-primary/30 selection:text-white cursor-auto`}>
             <CustomCursor />
             <ParticlesBackground />
             <Navbar />
+            <ScrollProgress />
             <Sidebar />
-            <main className="md:pl-64 flex-1 min-h-screen relative z-10 pt-16">
+            <main className="md:pl-64 flex-1 min-h-screen relative z-10 pt-16 px-4 md:px-8 max-w-7xl mx-auto">
+              <Breadcrumbs />
               {children}
             </main>
+            <BackToTop />
             <Toaster
               theme="dark"
               position="bottom-right"

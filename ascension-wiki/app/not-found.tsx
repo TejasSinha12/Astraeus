@@ -74,9 +74,9 @@ export default function NotFound() {
                     <Home size={16} />
                     Return to Base
                 </Link>
-                <Link href="/coding" className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-medium hover:bg-white/10 transition-all">
-                    <ArrowLeft size={16} />
-                    Workspace
+                <Link href="/docs/core" className="flex items-center gap-2 px-6 py-3 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-medium hover:bg-white/10 transition-all">
+                    <Terminal size={16} />
+                    Search Docs
                 </Link>
             </motion.div>
         </div>

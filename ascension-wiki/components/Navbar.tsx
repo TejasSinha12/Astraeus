@@ -38,7 +38,7 @@ export function Navbar() {
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center px-6 md:px-8 border-b border-white/5 glass-card backdrop-blur-xl"
+            className="fixed top-0 left-0 right-0 z-50 h-16 flex items-center px-6 md:px-8 border-b border-white/5 glass backdrop-blur-[20px] saturate-[1.8] supports-[backdrop-filter]:bg-background/60"
         >
             {/* Logo */}
             <Link href="/" className="flex items-center gap-3 group mr-6 md:ml-64 relative">
