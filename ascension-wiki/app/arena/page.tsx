@@ -209,9 +209,8 @@ export default function ArenaPage() {
     const confidenceData = confidence.map((v, i) => ({ step: i + 1, value: parseFloat((v * 100).toFixed(1)) }));
 
     return (
-        <RoleGate allowedRole="researcher">
-            <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12">
-                <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 flex justify-between items-end">
+        <div className="max-w-7xl mx-auto py-12">
+            <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-8 flex justify-between items-end">
                     <div>
                         <div className="text-xs font-mono text-primary uppercase tracking-widest mb-2">Live Simulation</div>
                         <h1 className="text-4xl font-bold text-white">Agent Arena</h1>
@@ -384,7 +383,6 @@ export default function ArenaPage() {
                         </div>
                     </div>
                 )}
-            </div>
-        </RoleGate>
+        </div>
     );
 }

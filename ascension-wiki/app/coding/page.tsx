@@ -287,7 +287,7 @@ export default function ProfessionalWorkspace() {
     const pinnedMissions = history.filter(m => pinnedIds.includes(m.id.toString()));
 
     return (
-        <div className="flex h-[calc(100vh-64px)] overflow-hidden bg-[#050505]">
+        <div className="flex h-[calc(100vh-64px)] overflow-hidden -mx-4 md:-mx-8">
             {/* History Sidebar - Floating/Collapsible */}
             <AnimatePresence>
                 {showHistory && (
@@ -418,8 +418,8 @@ export default function ProfessionalWorkspace() {
                                 <textarea
                                     value={objective}
                                     onChange={(e) => setObjective(e.target.value)}
-                                    placeholder="Declare mission goals for swarm orchestration..."
-                                    className="w-full bg-black/60 border border-white/5 rounded-2xl p-6 text-sm font-mono text-white focus:outline-none focus:border-primary/40 transition-all min-h-[120px] resize-none group-hover:border-white/10"
+                                    placeholder="Describe what you want to build..."
+                                    className="w-full bg-white/[0.03] border border-white/10 rounded-2xl p-5 pr-48 text-sm font-mono text-white focus:outline-none focus:border-primary/40 transition-all min-h-[90px] resize-none group-hover:border-white/15 placeholder:text-white/20"
                                 />
                                 <div className="absolute bottom-4 right-4 flex items-center gap-2">
                                     <button
@@ -548,8 +548,8 @@ export default function ProfessionalWorkspace() {
                                                     <div className="flex items-center gap-2">
                                                         <Code size={12} className="text-primary" />
                                                         <span className="text-[9px] font-bold uppercase tracking-widest text-white/40">
-                                                            {selectedFile || "Mission Code Base"}
-                                                        </span>
+                                                        {selectedFile || "output"}
+                                                    </span>
                                                     </div>
                                                     <span className="text-[8px] font-mono text-muted/20 uppercase tracking-widest">Read Only</span>
                                                 </div>
