@@ -25,7 +25,7 @@ const firaCode = Fira_Code({
 export const metadata: Metadata = {
   title: "Ascension | Production AGI Infrastructure",
   description: "Autonomous Swarm-as-a-Service — Deploy production-grade multi-agent AI with institutional billing, federated orchestration, and cryptographically signed governance.",
-  keywords: ["AGI", "swarm intelligence", "multi-agent AI", "coding assistant", "AI infrastructure", "LLM orchestration"],
+  keywords: ["AGI", "swarm intelligence", "multi-agent AI", "coding assistant", "AI infrastructure", "LLM orchestration", "code generation", "autonomous agents"],
   metadataBase: new URL("https://astraeus-livid.vercel.app"),
   openGraph: {
     title: "Ascension Intelligence Platform",
