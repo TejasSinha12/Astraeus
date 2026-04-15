@@ -344,7 +344,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
     <div className="border border-white/5 rounded-2xl overflow-hidden bg-surface hover:border-white/10 transition-all">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-6 text-left"
+        className="w-full flex items-center justify-between p-6 text-left" aria-expanded={isOpen}
       >
         <span className="text-sm font-medium text-white pr-4">{q}</span>
         <ChevronDown size={18} className={`text-muted shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} />
