@@ -161,7 +161,7 @@ export default function Home() {
               <div className="flex items-center gap-2">
                 <span className="text-green-400">user@ascension</span>
                 <span className="text-white/40">~ %</span>
-                <span className="text-blue-300 lang="bash"">curl -X POST /v1/execute/swarm -d &apos;&#123; &quot;objective&quot;: &quot;build_auth&quot; &#125;&apos;</span>
+                <span className="text-blue-300">curl -X POST /v1/execute/swarm -d &apos;&#123; &quot;objective&quot;: &quot;build_auth&quot; &#125;&apos;</span>
               </div>
               <button
                 onClick={() => {
