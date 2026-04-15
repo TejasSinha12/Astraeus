@@ -57,7 +57,7 @@ export function Navbar() {
                 </span>
                 
                 {/* Global Orchestrator Load Indicator */}
-                {!isLoading && (
+                {isLoading ? (<div className="absolute -bottom-5 left/1/2 -translate-x-1/2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-black/80 px-2 py-0.5 rounded border border-white/10"><span className="text-[8px] font-mono tracking-widest uppercase text-muted/40 animate-pulse">SYNCING...</span></div>) : (
                     <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-black/80 px-2 py-0.5 rounded border border-white/10">
                         <Activity size={10} className={cn(isSurging ? "text-red-500 animate-pulse" : "text-primary")} />
                         <span className={cn("text-[8px] font-mono tracking-widest uppercase font-bold", isSurging ? "text-red-400" : "text-primary/80")}>
