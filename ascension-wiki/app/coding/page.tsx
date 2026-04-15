@@ -585,7 +585,7 @@ export default function ProfessionalWorkspace() {
                                                 <iframe
                                                     title="Mission Preview"
                                                     srcDoc={codeResult.includes("<!DOCTYPE html>") ? codeResult : `<html><body style="background:#0a0a0a;color:white;font-family:sans-serif;padding:40px;"><h3>Tactical Execution Preview</h3><hr style="border:1px solid #333;margin:20px 0;"><pre style="background:#222;padding:20px;border-radius:10px;">${codeResult}</pre></body></html>`}
-                                                    className="w-full h-full border-none"
+                                                    className="w-full h-full border-none" loading="lazy"
                                                 />
                                             ) : <EmptyState icon={<Brain size={48} />} label="Visualizer Idle..." dark />}
                                         </div>
