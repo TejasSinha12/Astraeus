@@ -198,7 +198,7 @@ function TokenCalculator() {
                         onChange={(e) => setAmount(Number(e.target.value))}
                         className="w-full accent-primary"
                     />
-                    <div className="flex justify-between text-[9px] text-muted/40 font-mono mt-2">
+                    <div className="flex justify-between text-[9px] text-muted/60 font-mono mt-2">
                         <span>$5</span>
                         <span>{tokens.toLocaleString()} tokens</span>
                         <span>$100</span>
@@ -210,7 +210,7 @@ function TokenCalculator() {
                         <div key={e.label} className="p-4 bg-white/[0.02] border border-white/5 rounded-xl text-center">
                             <div className="text-2xl font-bold text-white mb-1">~{e.count}</div>
                             <div className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">{e.label}</div>
-                            <div className="text-[9px] text-muted/50">{e.desc}</div>
+                            <div className="text-[9px] text-muted/70">{e.desc}</div>
                         </div>
                     ))}
                 </div>
