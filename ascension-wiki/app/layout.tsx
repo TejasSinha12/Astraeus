@@ -74,7 +74,7 @@ export default function RootLayout({
     <ClerkProvider>
       <PricingProvider>
         <html lang="en" className="dark">
-          <head>
+          <head><meta name="viewport" content="width=device-width, initial-scale=1" />
             <script
               type="application/ld+json"
               dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
