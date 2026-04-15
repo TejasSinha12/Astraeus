@@ -39,7 +39,7 @@ export default function NotFound() {
                 transition={{ delay: 0.4 }}
                 className="space-y-3"
             >
-                <h1 className="text-2xl md:text-3xl font-bold text-white">System Path Not Found</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-white" id="error-heading">System Path Not Found</h1>
                 <p className="text-sm text-muted max-w-md mx-auto leading-relaxed">
                     The route you requested does not exist in the Astraeus framework architecture. The swarm cannot locate the requested resource.
                 </p>
