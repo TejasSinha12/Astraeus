@@ -23,7 +23,7 @@ export default function PricingPage() {
             </div>
 
             {/* Pricing Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-20">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto mb-20" role="list" aria-label="Pricing tiers">
 
                 {/* Free Tier */}
                 <PricingCard
