@@ -1,4 +1,5 @@
 "use client";
+// SEO: Pricing page with token calculator and tier comparison
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
