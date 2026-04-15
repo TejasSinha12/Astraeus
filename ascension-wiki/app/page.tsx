@@ -290,10 +290,10 @@ export default function Home() {
                 <a href="https://github.com/TejasSinha12/Astraeus" target="_blank" rel="noopener noreferrer" aria-label="Visit Github Repository" className="p-2 rounded-lg bg-white/5 text-muted hover:text-white hover:bg-white/10 transition-all">
                   <Github size={18} aria-hidden="true" />
                 </a>
-                <a href="#" aria-label="Follow us on Twitter" className="p-2 rounded-lg bg-white/5 text-muted hover:text-white hover:bg-white/10 transition-all">
+                <a href="https://twitter.com/ascension_ai" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Twitter" className="p-2 rounded-lg bg-white/5 text-muted hover:text-white hover:bg-white/10 transition-all">
                   <Twitter size={18} aria-hidden="true" />
                 </a>
-                <a href="#" aria-label="Connect on LinkedIn" className="p-2 rounded-lg bg-white/5 text-muted hover:text-white hover:bg-white/10 transition-all">
+                <a href="https://linkedin.com/company/ascension-ai" target="_blank" rel="noopener noreferrer" aria-label="Connect on LinkedIn" className="p-2 rounded-lg bg-white/5 text-muted hover:text-white hover:bg-white/10 transition-all">
                   <Linkedin size={18} aria-hidden="true" />
                 </a>
               </div>
