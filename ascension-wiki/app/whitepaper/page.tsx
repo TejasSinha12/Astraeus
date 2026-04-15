@@ -53,7 +53,7 @@ export default function WhitepaperPage() {
                 <div className="sticky top-24">
                     <p className="text-xs font-mono text-muted uppercase tracking-widest mb-4">Contents</p>
                     <p className="text-muted/60 text-[10px] uppercase tracking-widest font-mono">v5.3.0 · April 2026</p>
-                    <nav className="space-y-1">
+                    <nav className="space-y-1" aria-label="Whitepaper table of contents">
                         {TOC.map((item) => (
                             <a key={item.id} href={`#${item.id}`} onClick={() => setActiveSection(item.id)}
                                 className={`flex items-center gap-2 text-xs font-mono py-1.5 px-2 rounded-lg transition-all ${activeSection === item.id ? "text-primary bg-primary/10" : "text-muted hover:text-white"}`}>
