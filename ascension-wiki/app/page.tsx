@@ -150,7 +150,7 @@ export default function Home() {
             <button
               onClick={() => demoState === "idle" || demoState === "completed" ? setDemoState("running") : null}
               disabled={demoState === "running"}
-              className="flex items-center gap-1.5 px-3 py-1 bg-white/5 hover:bg-white/10 rounded font-mono text-xs text-primary border border-white/10 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 hover:bg-primary/20 rounded-lg font-mono text-xs text-primary border border-primary/30 font-bold transition-colors disabled:opacity-50"
             >
               {demoState === "running" ? <Loader2 size={12} className="animate-spin" /> : <Play size={12} />}
               {demoState === "running" ? "EXECUTING..." : "RUN DEMO"}
