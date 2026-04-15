@@ -84,7 +84,7 @@ export default function Home() {
           Next-Gen <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Swarm AGI</span>
         </h1>
 
-        <p className="text-lg md:text-xl text-muted max-w-3xl mx-auto mb-12 leading-relaxed font-sans">
+        <p className="text-base md:text-lg text-muted/80 max-w-3xl mx-auto mb-12 leading-relaxed font-sans">
           Deploy production-grade multi-agent reasoning. Replace brittle LLM calls with a high-performance Swarm Execution API featuring deterministic logs, structured telemetry, and enterprise billing.
         </p>
 
