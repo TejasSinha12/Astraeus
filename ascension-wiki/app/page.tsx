@@ -206,7 +206,7 @@ export default function Home() {
       </motion.section>
 
       {/* Pillars Grid */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full mb-32">
+      <section className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full mb-32" aria-labelledby="pillars-heading"><h2 id="pillars-heading" className="sr-only">Platform Capabilities</h2>
         <PillarCard
           icon={<Cpu className="text-primary" />}
           title="Swarm Execution API"
