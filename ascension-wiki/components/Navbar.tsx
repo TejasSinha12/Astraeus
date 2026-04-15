@@ -87,7 +87,7 @@ export function Navbar() {
                         className={cn(
                             "px-4 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2",
                             pathname === link.href || (link.href !== '/' && pathname?.startsWith(link.href.split('/').slice(0, 2).join('/')))
-                                ? "text-primary bg-primary/10"
+                                ? "text-primary bg-primary/10" : ""
                                 : "text-muted hover:text-white hover:bg-white/5"
                         )}
                     >
