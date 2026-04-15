@@ -329,7 +329,7 @@ function PillarCard({ icon, title, description, features }: any) {
           {features.map((f: string) => (
             <li key={f} className="text-[12px] font-mono text-muted/70 flex items-center gap-3">
               <div className="w-1.5 h-1.5 rounded-full bg-primary/40 box-glow" />
-              {f.toUpperCase()}
+              {f}
             </li>
           ))}
         </ul>
