@@ -77,7 +77,7 @@ export default function Home() {
           whileHover={{ scale: 1.05 }}
         >
           <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          Astraeus v5.2.1 is Live
+          Astraeus v5.3.0 is Live
         </motion.div>
 
         <h1 className="text-5xl sm:text-7xl md:text-[5.5rem] font-extrabold tracking-tight text-white mb-6 leading-tight">
@@ -304,7 +304,7 @@ export default function Home() {
               © 2026 Ascension Intelligence. All rights reserved.
             </p>
             <p className="text-[10px] text-muted/40 font-mono uppercase tracking-widest">
-              v5.2.1 — Built with 🧬 by Tejas Sinha
+              v5.3.0 — Built with 🧬 by Tejas Sinha
             </p>
           </div>
         </div>

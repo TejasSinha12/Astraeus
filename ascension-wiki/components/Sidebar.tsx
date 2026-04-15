@@ -86,7 +86,7 @@ export function Sidebar() {
                         </div>
                         <div className="flex flex-col">
                             <span className="text-lg font-bold tracking-widest text-white group-hover:text-primary transition-colors uppercase">Ascension</span>
-                            <span className="text-[10px] uppercase tracking-tighter text-muted/40 font-mono mt-1 group-hover:text-primary/40 transition-colors">v5.2.3</span>
+                            <span className="text-[10px] uppercase tracking-tighter text-muted/40 font-mono mt-1 group-hover:text-primary/40 transition-colors">v5.3.0</span>
                         </div>
                     </Link>
 
