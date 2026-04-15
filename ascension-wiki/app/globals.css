@@ -267,3 +267,26 @@ a:focus-visible {
 .prose tr:hover {
   background: rgba(255, 255, 255, 0.02);
 }
+
+/* Print styles for whitepaper and documentation */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .glass, .glass-card {
+    background: white !important;
+    backdrop-filter: none !important;
+    border-color: #ccc !important;
+  }
+  nav, aside, .fixed, .sticky, button {
+    display: none !important;
+  }
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+  a { color: var(--color-primary) !important; }
+  a::after { content: " (" attr(href) ")"; font-size: 0.8em; }
+}
