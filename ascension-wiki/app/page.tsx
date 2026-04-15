@@ -269,19 +269,19 @@ export default function Home() {
             <div>
               <h4 className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-4">Product</h4>
               <ul className="space-y-3">
-                <li><Link href="/coding" className="text-sm text-muted hover:text-primary transition-colors">Workspace</Link></li>
-                <li><Link href="/arena" className="text-sm text-muted hover:text-primary transition-colors">Agent Arena</Link></li>
-                <li><Link href="/pricing" className="text-sm text-muted hover:text-primary transition-colors">Pricing</Link></li>
-                <li><Link href="/archive" className="text-sm text-muted hover:text-primary transition-colors">Mission Archive</Link></li>
+                <li><Link href="/coding" className="text-sm text-muted hover:text-primary transition-colors hover:underline underline-offset-4">Workspace</Link></li>
+                <li><Link href="/arena" className="text-sm text-muted hover:text-primary transition-colors hover:underline underline-offset-4">Agent Arena</Link></li>
+                <li><Link href="/pricing" className="text-sm text-muted hover:text-primary transition-colors hover:underline underline-offset-4">Pricing</Link></li>
+                <li><Link href="/archive" className="text-sm text-muted hover:text-primary transition-colors hover:underline underline-offset-4">Mission Archive</Link></li>
               </ul>
             </div>
             <div>
               <h4 className="text-[10px] font-bold text-white/40 uppercase tracking-widest mb-4">Developers</h4>
               <ul className="space-y-3">
-                <li><Link href="/docs/api" className="text-sm text-muted hover:text-primary transition-colors">API Reference</Link></li>
-                <li><Link href="/settings/developer" className="text-sm text-muted hover:text-primary transition-colors">API Keys</Link></li>
-                <li><Link href="/docs/core" className="text-sm text-muted hover:text-primary transition-colors">Documentation</Link></li>
-                <li><Link href="/whitepaper" className="text-sm text-muted hover:text-primary transition-colors">Whitepaper</Link></li>
+                <li><Link href="/docs/api" className="text-sm text-muted hover:text-primary transition-colors hover:underline underline-offset-4">API Reference</Link></li>
+                <li><Link href="/settings/developer" className="text-sm text-muted hover:text-primary transition-colors hover:underline underline-offset-4">API Keys</Link></li>
+                <li><Link href="/docs/core" className="text-sm text-muted hover:text-primary transition-colors hover:underline underline-offset-4">Documentation</Link></li>
+                <li><Link href="/whitepaper" className="text-sm text-muted hover:text-primary transition-colors hover:underline underline-offset-4">Whitepaper</Link></li>
               </ul>
             </div>
             <div>
