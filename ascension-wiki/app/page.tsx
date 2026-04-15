@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowRight, Terminal, Zap, Shield, Cpu, Play, CheckCircle2, Loader2, Flame, Github, Twitter, Linkedin, ChevronDown, Copy } from "lucide-react";
+import { ArrowRight, Terminal, Zap, Shield, Cpu, Play, CheckCircle2, Loader2, Flame, Github, Twitter, Linkedin, ChevronDown, Copy, X } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
