@@ -19,7 +19,7 @@ export default function PricingPage() {
                     Pricing for <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">Intelligence</span>
                 </h1>
                 <p className="text-lg text-muted">
-                    Swarm execution costs scale based on reasoning depth and objective complexity. Choose the tier that fits your engineering needs.
+                    Dynamic swarm execution costs scale based on reasoning depth and objective complexity. Choose the tier that fits your engineering needs.
                 </p>
             </div>
 
