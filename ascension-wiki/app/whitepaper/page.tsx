@@ -68,7 +68,7 @@ export default function WhitepaperPage() {
             {/* Content */}
             <main className="flex-1 max-w-3xl">
                 <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="mb-12">
-                    <div className="text-xs font-mono text-primary uppercase tracking-widest mb-2">Technical Documentation</div>
+                    <span className="text-xs font-mono text-primary uppercase tracking-widest mb-2 block" role="doc-subtitle">Technical Documentation</span>
                     <h1 className="text-4xl font-bold text-white mb-2">Project Ascension Whitepaper</h1>
                     <p className="text-muted">v5.3.0 · April 2026</p>
                 </motion.div>
