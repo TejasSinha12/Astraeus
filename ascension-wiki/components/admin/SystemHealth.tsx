@@ -145,7 +145,7 @@ export function SystemHealth() {
                 <div className="absolute top-6 right-6 w-24 h-24 bg-black/40 backdrop-blur-md rounded-full border border-white/5 flex flex-col items-center justify-center z-10">
                     <div className="text-[8px] font-mono text-muted/40 uppercase mb-0.5">Stability</div>
                     <div className="text-lg font-bold text-primary">{(stability?.overall_index * 100 || 88).toFixed(0)}%</div>
-                    <svg className="absolute inset-0 w-full h-full -rotate-90">
+                    <svg className="absolute inset-0 w-full h-full -rotate-90" aria-hidden="true">
                         <circle
                             cx="48" cy="48" r="44"
                             fill="none"
@@ -264,7 +264,7 @@ export function SystemHealth() {
                         <div className="relative w-32 h-32 flex flex-col items-center justify-center" aria-label={`Autonomous recovery rate at ${recovery?.recovery_rate * 100 || 94}%`}>
                             <span className="text-[8px] font-mono text-muted/40 uppercase mb-1">Fixed</span>
                             <span className="text-3xl font-bold text-green-500">{(recovery?.recovery_rate * 100 || 94).toFixed(0)}%</span>
-                            <svg className="absolute inset-0 w-full h-full -rotate-90">
+                            <svg className="absolute inset-0 w-full h-full -rotate-90" aria-hidden="true">
                                 <circle cx="64" cy="64" r="60" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="4" />
                                 <motion.circle 
                                     cx="64" cy="64" r="60" fill="none" stroke="#22c55e" strokeWidth="4"
