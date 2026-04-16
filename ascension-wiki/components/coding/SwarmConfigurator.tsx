@@ -151,6 +151,7 @@ export function SwarmConfigurator({ isOpen, onClose, config, onChange }: SwarmCo
                                         {/* Commit 21: Value overlays over input bounds explicitly rendering visual nodes natively */}
                                         <input
                                             type="range"
+                                            title="Strictness"
                                             min="0"
                                             max="1"
                                             step="0.05"
