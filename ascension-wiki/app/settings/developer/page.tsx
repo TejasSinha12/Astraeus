@@ -192,7 +192,7 @@ export default function DeveloperSettings() {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={() => handleRevoke(k.id)} className="p-2 hover:bg-red-500/10 text-muted hover:text-red-500 rounded-lg transition-all" title="Revoke Key">
+                                                <button onClick={() => handleRevoke(k.id)} aria-label={`Revoke key ${k.label}`} className="p-2 hover:bg-red-500/10 text-muted hover:text-red-500 rounded-lg transition-all" title="Revoke Key">
                                                     <Trash2 size={16} />
                                                 </button>
                                             </div>
