@@ -62,7 +62,7 @@ export function SwarmConfigurator({ isOpen, onClose, config, onChange }: SwarmCo
                                     <p className="text-[8px] text-muted uppercase tracking-widest mt-1">Cognitive Override Layer</p>
                                 </div>
                             </div>
-                            <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full transition-colors">
+                            <button onClick={onClose} aria-label="Close Configurator" className="p-2 hover:bg-white/5 rounded-full transition-colors">
                                 <X size={16} />
                             </button>
                         </div>
