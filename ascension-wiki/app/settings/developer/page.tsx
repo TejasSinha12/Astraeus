@@ -393,7 +393,7 @@ export default function DeveloperSettings() {
                                     </div>
                                     <div className="flex items-center gap-3 bg-black/60 border border-white/10 rounded-2xl p-5 group relative">
                                         <code className="text-[10px] font-mono text-white flex-1 overflow-hidden text-ellipsis pr-8">{freshKey.api_key}</code>
-                                        <button onClick={() => copyToClipboard(freshKey.api_key)} className="absolute right-4 p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-all text-muted hover:text-white">
+                                        <button onClick={() => copyToClipboard(freshKey.api_key)} aria-label="Copy new API key to clipboard" className="absolute right-4 p-2 bg-white/5 hover:bg-white/10 rounded-xl transition-all text-muted hover:text-white">
                                             <Copy size={16} />
                                         </button>
                                     </div>
