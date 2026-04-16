@@ -379,6 +379,7 @@ export default function DeveloperSettings() {
                                 <motion.section
                                     initial={{ opacity: 0, scale: 0.9 }}
                                     animate={{ opacity: 1, scale: 1 }}
+                                    aria-live="polite"
                                     className="bg-yellow-500/10 border border-yellow-500/20 rounded-[2rem] p-8 space-y-6 relative overflow-hidden"
                                 >
                                     <div className="absolute top-4 right-4">
