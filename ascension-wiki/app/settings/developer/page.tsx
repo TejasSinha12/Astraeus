@@ -279,6 +279,7 @@ export default function DeveloperSettings() {
                                         <input
                                             type="text"
                                             value={webhookUrl}
+                                            aria-label="Webhook destination HTTPS URL"
                                             onChange={(e) => setWebhookUrl(e.target.value)}
                                             placeholder="HTTPS Destination URL..."
                                             className="w-full bg-white/5 border border-white/5 rounded-xl px-4 py-3 text-[11px] font-mono focus:outline-none focus:border-primary/40 transition-all placeholder:text-muted/20"
