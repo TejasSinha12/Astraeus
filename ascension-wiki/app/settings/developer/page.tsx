@@ -257,7 +257,7 @@ export default function DeveloperSettings() {
                                             className={cn(
                                                 "w-full py-3 rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all",
                                                 isGitHubConnected
-                                                    ? "bg-white/5 text-muted border border-white/5 hover:bg-white/10 hover:text-red-400"
+                                                    ? "bg-white/5 text-muted border border-white/5 hover:bg-white/10 hover:text-red-500"
                                                     : "bg-white text-black hover:bg-primary transition-all active:scale-[0.98]"
                                             )}
                                         >
