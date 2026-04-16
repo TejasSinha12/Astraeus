@@ -356,6 +356,7 @@ export default function DeveloperSettings() {
                                 <button
                                     onClick={handleGenerate}
                                     disabled={!newKeyLabel || isGenerating}
+                                    aria-busy={isGenerating}
                                     className="w-full py-4 bg-primary text-black rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-white transition-all disabled:opacity-50 box-glow active:scale-[0.98]"
                                 >
                                     {isGenerating ? <Loader2 size={14} className="animate-spin" /> : <><Cpu size={14} /> Generate</>}
