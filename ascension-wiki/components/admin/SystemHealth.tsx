@@ -117,7 +117,7 @@ export function SystemHealth() {
                     </div>
                 </div>
 
-                <div className="h-[300px] w-full">
+                <div className="h-[300px] w-full" role="figure" aria-label="Live swarm traffic active missions over time chart">
                     <ResponsiveContainer width="100%" height="100%">
                         <AreaChart data={historyData || []}>
                             <defs>
