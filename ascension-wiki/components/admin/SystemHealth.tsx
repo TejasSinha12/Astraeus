@@ -261,7 +261,7 @@ export function SystemHealth() {
                         <h3 className="text-sm font-bold uppercase tracking-widest text-white">Autonomous Recovery Rate</h3>
                     </div>
                     <div className="flex items-center justify-center h-[150px]">
-                        <div className="relative w-32 h-32 flex flex-col items-center justify-center">
+                        <div className="relative w-32 h-32 flex flex-col items-center justify-center" aria-label={`Autonomous recovery rate at ${recovery?.recovery_rate * 100 || 94}%`}>
                             <span className="text-[8px] font-mono text-muted/40 uppercase mb-1">Fixed</span>
                             <span className="text-3xl font-bold text-green-500">{(recovery?.recovery_rate * 100 || 94).toFixed(0)}%</span>
                             <svg className="absolute inset-0 w-full h-full -rotate-90">
