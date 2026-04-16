@@ -286,6 +286,7 @@ export default function DeveloperSettings() {
                                         <button
                                             onClick={handleSaveWebhook}
                                             disabled={isSavingWebhook}
+                                            aria-busy={isSavingWebhook}
                                             className="w-full py-3 bg-primary/10 border border-primary/20 text-primary rounded-xl text-[10px] font-bold uppercase tracking-widest hover:bg-primary hover:text-black transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
                                         >
                                             {isSavingWebhook ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
