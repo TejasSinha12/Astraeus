@@ -343,8 +343,9 @@ export default function DeveloperSettings() {
 
                             <div className="space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-[9px] text-muted uppercase tracking-widest ml-1 font-bold">Label</label>
+                                    <label htmlFor="keygen-label" className="text-[9px] text-muted uppercase tracking-widest ml-1 font-bold">Label</label>
                                     <input
+                                        id="keygen-label"
                                         type="text"
                                         value={newKeyLabel}
                                         onChange={(e) => setNewKeyLabel(e.target.value)}
