@@ -208,7 +208,7 @@ export default function DeveloperSettings() {
                             <section className="bg-surface border border-white/5 rounded-[2rem] p-8 space-y-6 relative overflow-hidden group" aria-labelledby="github-integration-heading">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[50px] rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 <div className="flex items-center justify-between relative z-10">
-                                    <h2 className="text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
+                                    <h2 id="github-integration-heading" className="text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
                                         <Github size={16} className="text-primary" /> Source Control
                                     </h2>
                                     {isGitHubConnected ? (
