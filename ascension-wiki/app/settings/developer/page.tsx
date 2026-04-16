@@ -205,7 +205,7 @@ export default function DeveloperSettings() {
                         {/* Integration Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             {/* GitHub Integration Section */}
-                            <section className="bg-surface border border-white/5 rounded-[2rem] p-8 space-y-6 relative overflow-hidden group">
+                            <section className="bg-surface border border-white/5 rounded-[2rem] p-8 space-y-6 relative overflow-hidden group" aria-labelledby="github-integration-heading">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[50px] rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 <div className="flex items-center justify-between relative z-10">
                                     <h2 className="text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
@@ -268,7 +268,7 @@ export default function DeveloperSettings() {
                             </section>
 
                             {/* Webhook Configuration Section */}
-                            <section className="bg-surface border border-white/5 rounded-[2rem] p-8 space-y-6 relative overflow-hidden group">
+                            <section className="bg-surface border border-white/5 rounded-[2rem] p-8 space-y-6 relative overflow-hidden group" aria-labelledby="github-integration-heading">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 blur-[50px] rounded-full -mr-16 -mt-16 opacity-0 group-hover:opacity-100 transition-opacity" />
                                 <h2 className="text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 relative z-10">
                                     <Globe size={16} className="text-primary" /> Webhooks
