@@ -411,7 +411,7 @@ function HealthCard({ icon, title, value, subValue }: { icon: React.ReactNode, t
             </div>
             <div className="flex flex-col">
                 <span className="text-3xl font-bold text-white font-mono">{value}</span>
-                <span className="text-[10px] text-muted/40 uppercase tracking-widest mt-1">{subValue}</span>
+                <span className="text-[10px] text-muted/60 uppercase tracking-widest mt-1">{subValue}</span>
             </div>
         </motion.div>
     );
