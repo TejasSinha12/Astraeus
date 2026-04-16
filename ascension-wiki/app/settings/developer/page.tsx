@@ -309,7 +309,10 @@ export default function DeveloperSettings() {
                                         <p className="text-[9px] text-muted uppercase tracking-widest">Email Mission Summaries</p>
                                     </div>
                                 </div>
-                                <div 
+                                <button 
+                                    role="switch"
+                                    aria-checked={notificationsEnabled}
+                                    aria-label="Toggle Intel Reports notifications"
                                     onClick={async () => {
                                         try {
                                             const newStatus = !notificationsEnabled;
@@ -323,7 +326,7 @@ export default function DeveloperSettings() {
                                     className={`w-10 h-5 rounded-full relative p-1 cursor-pointer transition-colors ${notificationsEnabled ? 'bg-primary' : 'bg-white/20'}`}
                                 >
                                     <div className={`w-3 h-3 bg-black rounded-full absolute top-1 transition-all ${notificationsEnabled ? 'right-1' : 'left-1 bg-white'}`} />
-                                </div>
+                                </button>
                             </div>
                         </section>
                     </div>
