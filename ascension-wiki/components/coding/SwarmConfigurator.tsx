@@ -131,6 +131,7 @@ export function SwarmConfigurator({ isOpen, onClose, config, onChange }: SwarmCo
                                     </div>
                                     <input
                                         type="range"
+                                        title="Creativity"
                                         min="0"
                                         max="1"
                                         step="0.05"
