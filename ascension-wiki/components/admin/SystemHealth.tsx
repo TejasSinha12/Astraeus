@@ -173,7 +173,7 @@ export function SystemHealth() {
                 
                 <div className="relative h-[200px] w-full flex items-center justify-center bg-black/20 rounded-xl overflow-hidden border border-white/5">
                     {/* Simulated SVG Graph */}
-                    <svg width="100%" height="100%" viewBox="0 0 500 200" className="opacity-80">
+                    <svg width="100%" height="100%" viewBox="0 0 500 200" className="opacity-80" aria-label="Federation topology geographic distribution map">
                         <defs>
                             <filter id="glow">
                                 <feGaussianBlur stdDeviation="2" result="coloredBlur" />
