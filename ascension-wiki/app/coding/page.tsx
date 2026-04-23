@@ -302,7 +302,7 @@ export default function ProfessionalWorkspace() {
                                 <History size={16} className="text-primary" />
                                 <h3 className="text-xs font-bold uppercase tracking-[0.2em]">Mission Archive</h3>
                             </div>
-                            <button onClick={() => setShowHistory(false)} className="p-1 hover:bg-white/5 rounded-full transition-colors">
+                            <button onClick={() => setShowHistory(false)} aria-label="Close Mission History" className="p-1 hover:bg-white/5 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background">
                                 <X size={16} />
                             </button>
                         </div>
