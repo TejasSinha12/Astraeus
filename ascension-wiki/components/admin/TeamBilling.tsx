@@ -111,7 +111,7 @@ export function TeamBilling() {
                                     <p className="text-xl font-bold font-mono tracking-tighter text-white">
                                         {org.token_balance?.toLocaleString()}
                                     </p>
-                                    <p className="text-[10px] text-muted font-mono uppercase">SHARED CREDITS</p>
+                                    <p className="text-[10px] text-muted/60 font-mono uppercase">SHARED CREDITS</p>
                                 </div>
                             </div>
                         </div>
