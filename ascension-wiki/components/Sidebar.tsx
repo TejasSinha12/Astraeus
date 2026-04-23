@@ -117,7 +117,7 @@ export function Sidebar() {
                                         return (
                                             <Link key={item.href} href={item.href} onClick={() => setIsOpen(false)}
                                                 className={cn(
-                                                    "flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 group relative",
+                                                    "flex items-center space-x-3 px-3 py-2 rounded-lg transition-all duration-200 group relative focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/50",
                                                     isActive ? "bg-primary/10 text-primary" : "text-muted hover:text-white hover:bg-surface-hover"
                                                 )}>
                                                 {isActive && (
