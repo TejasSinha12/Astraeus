@@ -206,7 +206,7 @@ function StatItem({ icon, label, value, color }: { icon: React.ReactNode, label:
         <div className="flex items-center justify-between p-3 rounded-xl bg-white/[0.02] border border-white/5">
             <div className="flex items-center gap-2">
                 <div className={`${color} opacity-40`}>{icon}</div>
-                <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest">{label}</span>
+                <span className="text-[10px] text-white/60 uppercase font-bold tracking-widest">{label}</span>
             </div>
             <span className="text-xs font-mono text-white font-bold">{value}</span>
         </div>
