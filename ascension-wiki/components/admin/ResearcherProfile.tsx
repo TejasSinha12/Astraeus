@@ -173,7 +173,7 @@ export function ResearcherProfile() {
                                 <div key={i} className="w-3 h-3 rounded-sm bg-primary" style={{ opacity: o }} />
                             ))}
                         </div>
-                        <span className="text-[9px] text-white/20 uppercase tracking-widest">More</span>
+                        <span className="text-[9px] text-white/40 uppercase tracking-widest">More</span>
                     </div>
                 </div>
 
