@@ -87,8 +87,8 @@ export function ResearcherProfile() {
                             <Calendar size={16} className="text-white/40" />
                             <span className="text-xs">Active since {joinedDate}</span>
                         </div>
-                        <div className="flex items-center gap-3 text-white/60">
-                            <Hash size={16} className="text-white/20" />
+                        <div className="flex items-center gap-3 text-white/80">
+                            <Hash size={16} className="text-white/40" />
                             <span className="text-xs">559 Total Swarm Contributions</span>
                         </div>
                         <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5 mt-4">
