@@ -141,6 +141,7 @@ export function TeamBilling() {
                                             ].map(pkg => (
                                                 <button
                                                     key={pkg.code}
+                                                    aria-label={`Select package ${pkg.code}`}
                                                     onClick={() => setSelectedPackage(pkg)}
                                                     className={cn("p-2 rounded-lg border text-[10px] font-bold font-mono tracking-tighter transition-all flex flex-col items-center justify-center gap-1", selectedPackage.code === pkg.code ? "bg-primary/10 border-primary/40 text-primary" : "bg-white/[0.02] border-white/5 hover:border-white/20 text-muted")}
                                                 >
