@@ -92,7 +92,7 @@ export function ResearcherProfile() {
                             <span className="text-xs">559 Total Swarm Contributions</span>
                         </div>
                         <div className="p-4 rounded-xl bg-white/[0.03] border border-white/5 mt-4">
-                            <p className="text-xs text-white/40 leading-relaxed italic">
+                            <p className="text-xs text-white/60 leading-relaxed italic">
                                 "Specializing in autonomous code evolution, structural entropy reduction, and cross-swarm intelligence federation. Currently
                                 benchmarking v5.0.0 reasoning trajectories."
                             </p>
