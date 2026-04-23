@@ -73,7 +73,7 @@ export function TeamBilling() {
                 {/* Organization List */}
                 <div className="lg:col-span-2 space-y-4">
                     {!orgs ? (
-                        <div className="h-64 flex items-center justify-center border border-dashed border-white/5 rounded-2xl bg-white/[0.01]">
+                        <div className="h-64 flex items-center justify-center border border-dashed border-white/5 rounded-2xl bg-white/[0.01]" aria-live="polite" aria-busy="true">
                             <p className="text-muted text-[10px] animate-pulse">SYNCHRONIZING INSTITUTIONAL DATA...</p>
                         </div>
                     ) : orgs.organizations?.filter((o: any) => o.name.toLowerCase().includes(searchQuery.toLowerCase())).map((org: any) => (
