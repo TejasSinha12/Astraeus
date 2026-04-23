@@ -82,7 +82,7 @@ export function SystemControls() {
                                 <Activity size={16} className="text-primary animate-pulse" />
                                 <div className="flex flex-col">
                                     <span className="text-[10px] font-bold text-white uppercase tracking-widest">Active Orchestrator Agents</span>
-                                    <span className="text-[9px] text-muted/40 uppercase font-mono mt-0.5">Live telemetry streaming across clusters</span>
+                                    <span className="text-[9px] text-muted/60 uppercase font-mono mt-0.5">Live telemetry streaming across clusters</span>
                                 </div>
                             </div>
                             <span className="text-sm font-bold font-mono text-primary animate-pulse">{activeAgents} NODE</span>
