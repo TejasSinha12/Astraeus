@@ -173,7 +173,7 @@ export function TeamBilling() {
                                         <ArrowUpRight size={14} className="text-muted/40" />
                                     </button>
 
-                                    <button className="w-full flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all">
+                                    <button aria-label="View Billing History" className="w-full flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all focus-visible:outline-none focus-visible:border-primary">
                                         <div className="flex items-center gap-3">
                                             <History size={16} className="text-muted" />
                                             <span className="text-[10px] font-bold uppercase tracking-widest">Billing History</span>
