@@ -158,6 +158,8 @@ export function ResearcherProfile() {
 
             {/* Horizontal Contribution Map Mock */}
             <motion.div
+                role="figure"
+                aria-label="Weekly Research Contribution Heatmap Timeline"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="glass-card p-8 border border-white/5 bg-white/[0.01]"
