@@ -119,7 +119,9 @@ function Meter({ icon, label, value, subValue, active, gradient, tooltip, circul
                 </div>
                 {tooltip && (
                     <div className="group/tooltip relative">
-                        <HelpCircle size={12} className="text-white/20 hover:text-white/80 cursor-help transition-colors" />
+                        <button type="button" aria-label={`Details for ${label}`} className="focus:outline-none focus-visible:ring-1 focus-visible:ring-white rounded">
+                            <HelpCircle size={12} className="text-white/20 hover:text-white/80 cursor-help transition-colors" />
+                        </button>
                         <div className="absolute top-full right-0 mt-2 w-48 p-2 rounded-lg bg-black border border-white/10 text-[9px] text-white/70 shadow-2xl opacity-0 translate-y-2 pointer-events-none group-hover/tooltip:opacity-100 group-hover/tooltip:translate-y-0 transition-all z-20">
                             {tooltip}
                         </div>
