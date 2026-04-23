@@ -68,8 +68,8 @@ export function Sidebar() {
 
     return (
         <>
-            <button onClick={() => setIsOpen(!isOpen)}
-                className="md:hidden fixed top-4 right-4 z-50 p-2 text-primary hover:text-white glass rounded-md transition-colors">
+            <button aria-label={isOpen ? "Close Sidebar" : "Open Sidebar"} onClick={() => setIsOpen(!isOpen)}
+                className="md:hidden fixed top-4 right-4 z-50 p-2 text-primary hover:text-white glass rounded-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 {isOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
 
