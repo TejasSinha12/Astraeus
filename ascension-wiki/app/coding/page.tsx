@@ -391,7 +391,7 @@ export default function ProfessionalWorkspace() {
                             </div>
                         </div>
                         <div className="h-8 w-[1px] bg-white/5" />
-                        <button onClick={() => setShowHistory(true)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted hover:text-white transition-all">
+                        <button aria-label="Toggle Mission History View" onClick={() => setShowHistory(true)} className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-muted hover:text-white transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 rounded px-2 py-1">
                             <History size={14} /> Mission History
                         </button>
                     </div>
