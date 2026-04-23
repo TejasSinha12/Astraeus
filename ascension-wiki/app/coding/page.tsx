@@ -484,7 +484,7 @@ export default function ProfessionalWorkspace() {
                 {/* Output Viewport */}
                 <div className="flex-1 flex flex-col p-4 bg-background relative overflow-hidden">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="flex gap-1 p-1 bg-white/[0.03] border border-white/5 rounded-lg">
+                        <div role="tablist" aria-label="Workspace Views" className="flex gap-1 p-1 bg-white/[0.03] border border-white/5 rounded-lg">
                             <ViewBtn label="IDE View" active={viewMode === "ide"} onClick={() => setViewMode("ide")} />
                             <ViewBtn label="Swarm DAG" active={viewMode === "dag"} onClick={() => setViewMode("dag")} />
                             <ViewBtn label="Comparison" active={viewMode === "diff"} onClick={() => setViewMode("diff")} />
