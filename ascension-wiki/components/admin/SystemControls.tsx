@@ -185,7 +185,7 @@ function ActionButton({ icon, label, description, variant }: { icon: React.React
 
 function RoutingItem({ label, model, active }: { label: string, model: string, active?: boolean }) {
     return (
-        <div className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/5 rounded-lg">
+        <div className="flex items-center justify-between p-3 bg-white/[0.02] border border-white/5 rounded-lg" aria-label={`Model Routing: ${label}`}>
             <div className="flex flex-col">
                 <span className="text-[9px] font-bold text-white/60 uppercase tracking-widest">{label}</span>
                 <span className="text-[10px] font-mono text-white/90">{model}</span>
