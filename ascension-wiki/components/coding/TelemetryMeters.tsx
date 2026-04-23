@@ -63,7 +63,7 @@ export function TelemetryMeters({ tokens, latency, confidence, cost, isExecuting
             />
             </motion.div>
             
-            <div className="h-28 overflow-y-auto custom-scrollbar glass-card border-white/10 bg-black/40 rounded-2xl p-4 flex flex-col gap-2 relative shadow-inner">
+            <div role="log" aria-live="polite" className="h-28 overflow-y-auto custom-scrollbar glass-card border-white/10 bg-black/40 rounded-2xl p-4 flex flex-col gap-2 relative shadow-inner">
                 <div className="flex items-center justify-between mb-1 sticky top-0 bg-black/80 backdrop-blur-md z-10 pb-2">
                     <span className="text-[10px] font-mono text-white/40 uppercase tracking-widest flex items-center gap-2">
                         <Coins size={12} className="text-white/20" /> Live Economy Ledger
