@@ -79,12 +79,16 @@ export function TeamBilling() {
                     ) : orgs.organizations?.filter((o: any) => o.name.toLowerCase().includes(searchQuery.toLowerCase())).map((org: any) => (
                         <div
                             key={org.id}
+                            role="button"
+                            tabIndex={0}
+                            aria-selected={selectedOrg?.id === org.id}
                             // Commit 16: selectedOrg relative component background layouts cleanly nesting static states securely replacing CSS with framer
                             className={cn(
-                                "group p-5 rounded-2xl border transition-all cursor-pointer relative z-0",
+                                "group p-5 rounded-2xl border transition-all cursor-pointer relative z-0 focus:outline-none focus:border-primary",
                                 selectedOrg?.id === org.id ? "border-transparent" : "bg-white/[0.02] border-white/5 hover:border-white/10"
                             )}
                             onClick={() => setSelectedOrg(org)}
+                            onKeyDown={(e) => e.key === 'Enter' && setSelectedOrg(org)}
                         >
                             {selectedOrg?.id === org.id && (
                                 <motion.div layoutId="team-org-glow" className="absolute inset-0 rounded-2xl bg-primary/5 -z-10 shadow-[0_0_15px_rgba(0,229,255,0.05)] border border-primary/30" transition={{ type: "spring", stiffness: 400, damping: 25 }} />
