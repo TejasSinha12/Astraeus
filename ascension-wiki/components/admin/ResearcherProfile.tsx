@@ -182,6 +182,8 @@ export function ResearcherProfile() {
                         return (
                             <div
                                 key={i}
+                                role="img"
+                                aria-label={`Contribution activity metric: ${(opacity * 100).toFixed(0)} percent`}
                                 className="w-full h-full rounded-sm bg-primary/20 transition-colors hover:bg-primary cursor-help"
                                 style={{ opacity }}
                                 title={`Activity Index: ${(opacity * 100).toFixed(0)}%`}
