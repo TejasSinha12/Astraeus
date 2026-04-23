@@ -85,7 +85,7 @@ export function SystemControls() {
                                     <span className="text-[9px] text-muted/60 uppercase font-mono mt-0.5">Live telemetry streaming across clusters</span>
                                 </div>
                             </div>
-                            <span className="text-sm font-bold font-mono text-primary animate-pulse">{activeAgents} NODE</span>
+                            <span className="text-sm font-bold font-mono text-primary animate-pulse" aria-live="polite">{activeAgents} NODE</span>
                         </div>
 
                         <ActionButton
