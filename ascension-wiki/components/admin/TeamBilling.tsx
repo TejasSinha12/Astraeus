@@ -157,7 +157,8 @@ export function TeamBilling() {
                                             whileTap={{ scale: 0.96 }}
                                             onClick={handleTopup}
                                             disabled={isCheckoutLoading}
-                                            className="w-full flex items-center justify-center gap-2 p-3 bg-primary text-background rounded-lg hover:box-glow transition-all font-bold uppercase tracking-widest text-[10px] disabled:opacity-50"
+                                            aria-busy={isCheckoutLoading}
+                                            className="w-full flex items-center justify-center gap-2 p-3 bg-primary text-background rounded-lg hover:box-glow transition-all font-bold uppercase tracking-widest text-[10px] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-black focus-visible:ring-primary"
                                         >
                                             {isCheckoutLoading ? "Routing to Stripe Gateway..." : `Checkout via Stripe`}
                                             <CreditCard size={14} />
