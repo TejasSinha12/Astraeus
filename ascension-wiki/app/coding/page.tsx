@@ -455,11 +455,13 @@ export default function ProfessionalWorkspace() {
                                         <span className="hidden sm:inline">Launch Forge</span>
                                     </button>
                                     <motion.button
+                                        aria-label={isExecuting ? "Executing Swarm" : "Deploy Swarm"}
+                                        aria-busy={isExecuting}
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
                                         onClick={handleExecute}
                                         disabled={!objective || isExecuting}
-                                        className="px-6 py-2.5 bg-primary text-background rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all box-glow disabled:opacity-50 disabled:grayscale"
+                                        className="px-6 py-2.5 bg-primary text-background rounded-xl text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 transition-all box-glow disabled:opacity-50 disabled:grayscale focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                                     >
                                         {isExecuting ? <Loader2 className="animate-spin" size={14} /> : <Zap size={14} className="fill-background" />}
                                         {isExecuting ? "Orchestrating..." : "Deploy Swarm"}
