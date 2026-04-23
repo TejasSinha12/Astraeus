@@ -138,7 +138,7 @@ function Meter({ icon, label, value, subValue, active, gradient, tooltip, circul
                 {circularValue !== undefined && (
                     <div className="relative w-10 h-10 -mt-2 -mr-1">
                         <svg className="w-full h-full transform -rotate-90">
-                            <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="3" fill="transparent" className="text-white/10" />
+                            <circle cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="3" fill="transparent" className="text-white/10" role="presentation" />
                             <circle
                                 cx="20" cy="20" r="16" stroke="currentColor" strokeWidth="3" fill="transparent"
                                 strokeDasharray={100}
