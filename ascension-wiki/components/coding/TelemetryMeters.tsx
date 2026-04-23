@@ -23,6 +23,8 @@ export function TelemetryMeters({ tokens, latency, confidence, cost, isExecuting
                 initial="hidden" 
                 animate="visible" 
                 variants={{ visible: { transition: { staggerChildren: 0.1 } } }} // Commit 28: Stagger blocks
+                role="group"
+                aria-label="Live Swarm Telemetry Indicators"
                 className="grid grid-cols-2 md:grid-cols-4 gap-4"
             >
                 <Meter
