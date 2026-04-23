@@ -607,7 +607,7 @@ export default function ProfessionalWorkspace() {
                                 <motion.div key="diff" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="h-full flex flex-col">
                                     <div className="p-4 border-b border-white/5 flex gap-4 bg-white/[0.02]">
                                         <DiffSelector value={diffBase || ""} onChange={setDiffBase} history={history} label="Select Base Mission..." />
-                                        <div className="flex items-center text-muted/20 font-mono text-[9px]">VS</div>
+                                        <div className="flex items-center text-muted/40 font-mono text-[9px]">VS</div>
                                         <DiffSelector value={diffTarget || ""} onChange={setDiffTarget} history={history} label="Select Target Mission..." />
                                     </div>
                                     <div className="flex-1 flex overflow-hidden">
