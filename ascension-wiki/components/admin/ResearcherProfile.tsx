@@ -83,8 +83,8 @@ export function ResearcherProfile() {
                     </div>
 
                     <div className="mt-8 space-y-4">
-                        <div className="flex items-center gap-3 text-white/60">
-                            <Calendar size={16} className="text-white/20" />
+                        <div className="flex items-center gap-3 text-white/80">
+                            <Calendar size={16} className="text-white/40" />
                             <span className="text-xs">Active since {joinedDate}</span>
                         </div>
                         <div className="flex items-center gap-3 text-white/60">
