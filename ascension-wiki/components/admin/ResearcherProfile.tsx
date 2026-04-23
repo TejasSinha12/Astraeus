@@ -70,7 +70,7 @@ export function ResearcherProfile() {
 
                     <div className="mt-6 flex flex-col gap-2">
                         <div className="flex justify-between items-end">
-                            <span className="text-[10px] text-white/40 uppercase font-bold tracking-widest">Scientific Tier Progress</span>
+                            <span className="text-[10px] text-white/60 uppercase font-bold tracking-widest">Scientific Tier Progress</span>
                             <span className="text-[10px] text-primary font-mono">{((reputation % 1) * 100).toFixed(0)}%</span>
                         </div>
                         <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
