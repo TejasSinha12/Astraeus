@@ -735,7 +735,7 @@ function EmptyState({ icon, label, dark }: { icon: React.ReactNode, label: strin
 
 function DiffSelector({ value, onChange, history, label }: { value: string, onChange: (v: string) => void, history: any[], label: string }) {
     return (
-        <select value={value} onChange={(e) => onChange(e.target.value)} className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[10px] font-mono text-white/60 focus:outline-none focus:border-primary/40">
+        <select aria-label={label} value={value} onChange={(e) => onChange(e.target.value)} className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-[10px] font-mono text-white/60 focus:outline-none focus:border-primary/40">
             <option value="" className="bg-black">{label}</option>
             {history.map(m => <option key={m.id} value={m.source_code} className="bg-black">{m.objective.slice(0, 40)}...</option>)}
         </select>
