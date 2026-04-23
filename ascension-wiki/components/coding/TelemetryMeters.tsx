@@ -86,7 +86,7 @@ export function TelemetryMeters({ tokens, latency, confidence, cost, isExecuting
                     <div className="flex items-center justify-between text-[10px] font-mono p-2 rounded-lg bg-white/[0.01] hover:bg-white/[0.04] border border-white/5 hover:border-white/10 transition-colors shadow-sm">
                         <span className="text-white/60 font-bold tracking-widest">TX_{((Date.now() - 5000) % 1000000).toString(16).slice(0, 6).toUpperCase()}</span>
                         <div className="flex items-center gap-4">
-                            <span className="text-white/30 uppercase text-[9px]">Vector Embeddings</span>
+                            <span className="text-white/50 uppercase text-[9px]">Vector Embeddings</span>
                             <span className="text-blue-400">-0.0011 ⏣</span>
                         </div>
                     </div>
