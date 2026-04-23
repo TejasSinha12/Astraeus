@@ -167,7 +167,7 @@ export function ResearcherProfile() {
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xs font-mono text-muted uppercase tracking-widest">Research Contribution Map</h3>
                     <div className="flex items-center gap-4">
-                        <span className="text-[9px] text-white/20 uppercase tracking-widest">Less</span>
+                        <span className="text-[9px] text-white/40 uppercase tracking-widest">Less</span>
                         <div className="flex gap-1">
                             {[0.1, 0.3, 0.6, 0.9].map((o, i) => (
                                 <div key={i} className="w-3 h-3 rounded-sm bg-primary" style={{ opacity: o }} />
