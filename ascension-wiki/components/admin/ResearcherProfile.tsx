@@ -61,7 +61,7 @@ export function ResearcherProfile() {
                                 Tier {reputation > 8 ? 'Alpha' : reputation > 5 ? 'Beta' : 'Gamma'}
                             </div>
                             <span className="text-[9px] text-white/20 font-mono uppercase">Reputation: {reputation.toFixed(1)}</span>
-                            <div className="mt-1 px-2 py-1 rounded bg-black/40 border border-white/5 flex items-center gap-1.5" title="Cryptographic Ledger Hash">
+                            <div role="status" aria-label={`Ledger Identity Hash: ${ledgerHash}`} className="mt-1 px-2 py-1 rounded bg-black/40 border border-white/5 flex items-center gap-1.5" title="Cryptographic Ledger Hash">
                                 <ShieldCheck size={10} className="text-primary/50" />
                                 <span className="text-[7px] text-primary/40 font-mono tracking-widest uppercase truncate max-w-[100px]">{ledgerHash.slice(0, 16)}...</span>
                             </div>
