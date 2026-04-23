@@ -54,6 +54,7 @@ export function SystemControls() {
                         </div>
                         <input 
                             type="range" 
+                            aria-label="Surge Overload Limit"
                             min="1.0" max="3.0" step="0.1" 
                             value={surgeLimit}
                             onChange={(e) => setSurgeLimit(parseFloat(e.target.value))}
