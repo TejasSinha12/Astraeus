@@ -424,8 +424,9 @@ export default function ProfessionalWorkspace() {
                                 />
                                 <div className="absolute bottom-4 right-4 flex items-center gap-2">
                                     <button
+                                        aria-label="Open Swarm Configuration"
                                         onClick={() => setIsConfigOpen(true)}
-                                        className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-muted hover:text-primary hover:border-primary/30 transition-all group"
+                                        className="p-2.5 bg-white/5 border border-white/10 rounded-xl text-muted hover:text-primary hover:border-primary/30 transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                                         title="Swarm Tuning"
                                     >
                                         <Settings2 size={16} className="group-hover:rotate-90 transition-transform duration-500" />
