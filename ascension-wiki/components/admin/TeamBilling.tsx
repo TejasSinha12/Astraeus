@@ -165,7 +165,7 @@ export function TeamBilling() {
                                         </motion.button>
                                     </div>
 
-                                    <button className="w-full flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all">
+                                    <button aria-label="Update Billing Policy" className="w-full flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5 hover:bg-white/[0.05] transition-all focus-visible:outline-none focus-visible:border-primary">
                                         <div className="flex items-center gap-3">
                                             <ShieldCheck size={16} className="text-muted" />
                                             <span className="text-[10px] font-bold uppercase tracking-widest">Update Policy</span>
