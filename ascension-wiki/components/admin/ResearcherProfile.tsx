@@ -120,7 +120,7 @@ export function ResearcherProfile() {
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <h3 className="text-xs font-mono text-muted uppercase tracking-widest">Activity Overview</h3>
-                            <p className="text-[10px] text-white/20 uppercase tracking-widest mt-1">Intelligence Distribution</p>
+                            <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">Intelligence Distribution</p>
                         </div>
                         <GitPullRequest size={16} className="text-primary/40" />
                     </div>
