@@ -38,6 +38,8 @@ export function ResearcherProfile() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Profile Info */}
                 <motion.div
+                    role="article"
+                    aria-label="Researcher Identification Profile"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     className="glass-card p-8 border border-white/5 bg-white/[0.01] flex flex-col justify-between"
