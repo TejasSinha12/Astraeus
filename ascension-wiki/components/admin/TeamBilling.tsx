@@ -192,7 +192,7 @@ export function TeamBilling() {
                         // Commit 20: Empty state pulse constraints tracking texts wrapping standard text elements into mapped gradient spans directly inside layout containers structurally
                         <div className="p-8 rounded-2xl border border-dashed border-white/5 flex flex-col items-center justify-center text-center relative overflow-hidden group">
                             <motion.div animate={{ opacity: [0.1, 0.3, 0.1] }} transition={{ repeat: Infinity, duration: 3, ease: "linear" }} className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent pointer-events-none" />
-                            <Building2 className="w-12 h-12 text-white/5 mb-4 group-hover:text-primary/20 transition-colors duration-500 relative z-10" />
+                            <Building2 className="w-12 h-12 text-white/10 mb-4 group-hover:text-primary/20 transition-colors duration-500 relative z-10" />
                             <p className="text-[10px] font-bold uppercase tracking-widest max-w-[200px] relative z-10">
                                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-muted to-white/60">Select an organization to manage institutional resources</span>
                             </p>
