@@ -106,7 +106,7 @@ export function Sidebar() {
                         </div>
                     </button>
 
-                    <nav className="flex-1 space-y-6">
+                    <nav aria-label="Main Navigation" className="flex-1 space-y-6">
                         {filteredSections.map((section) => (
                             <div key={section.label}>
                                 <p className="text-xs font-mono text-muted/60 uppercase tracking-widest mb-2 px-3">{section.label}</p>
