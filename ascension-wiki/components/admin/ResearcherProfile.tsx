@@ -111,6 +111,8 @@ export function ResearcherProfile() {
 
                 {/* Radar Chart (GitHub Activity Overview Mock) */}
                 <motion.div
+                    role="figure"
+                    aria-label="Intelligence Distribution Radar Chart Overview"
                     initial={{ opacity: 0, x: 20 }}
                     animate={{ opacity: 1, x: 0 }}
                     className="glass-card p-8 border border-white/5 bg-white/[0.01]"
