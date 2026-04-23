@@ -138,6 +138,9 @@ function ToggleItem({ icon, label, description, enabled }: { icon: React.ReactNo
                 </div>
             </div>
             <button
+                role="switch"
+                aria-checked={isOn}
+                aria-label={`Toggle ${label}`}
                 onClick={() => setIsOn(!isOn)}
                 className={cn(
                     "w-10 h-5 rounded-full relative transition-all duration-300",
