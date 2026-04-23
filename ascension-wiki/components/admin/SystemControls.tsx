@@ -117,7 +117,7 @@ export function SystemControls() {
 
 function ControlSection({ title, children }: { title: string, children: React.ReactNode }) {
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4" role="region" aria-label={title}>
             <h3 className="text-xs font-mono text-muted uppercase tracking-[0.3em] font-bold">{title}</h3>
             {children}
         </div>
