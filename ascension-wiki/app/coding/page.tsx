@@ -555,7 +555,7 @@ export default function ProfessionalWorkspace() {
                                                         {selectedFile || "output"}
                                                     </span>
                                                     </div>
-                                                    <span className="text-[8px] font-mono text-muted/20 uppercase tracking-widest">Read Only</span>
+                                                    <span className="text-[8px] font-mono text-muted/40 uppercase tracking-widest">Read Only</span>
                                                 </div>
                                                 <div className="flex-1 overflow-hidden">
                                                     {codeResult ? (
