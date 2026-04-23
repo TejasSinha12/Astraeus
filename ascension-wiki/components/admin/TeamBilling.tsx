@@ -194,7 +194,7 @@ export function TeamBilling() {
                             <motion.div animate={{ opacity: [0.1, 0.3, 0.1] }} transition={{ repeat: Infinity, duration: 3, ease: "linear" }} className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent pointer-events-none" />
                             <Building2 className="w-12 h-12 text-white/10 mb-4 group-hover:text-primary/20 transition-colors duration-500 relative z-10" />
                             <p className="text-[10px] font-bold uppercase tracking-widest max-w-[200px] relative z-10">
-                                <span className="bg-clip-text text-transparent bg-gradient-to-r from-muted to-white/60">Select an organization to manage institutional resources</span>
+                                <span className="bg-clip-text text-transparent bg-gradient-to-r from-white/70 to-white">Select an organization to manage institutional resources</span>
                             </p>
                         </div>
                     )}
