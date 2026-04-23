@@ -311,6 +311,7 @@ export default function ProfessionalWorkspace() {
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/20 w-3 h-3" />
                             <input
                                 type="text"
+                                aria-label="Search Mission Objectives"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Search objective..."
