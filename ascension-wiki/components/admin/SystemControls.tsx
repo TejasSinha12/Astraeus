@@ -48,7 +48,7 @@ export function SystemControls() {
                         <div className="flex items-center justify-between">
                             <div className="flex flex-col">
                                 <span className="text-[10px] font-bold text-white uppercase tracking-widest">Surge Overload Limit</span>
-                                <span className="text-[9px] text-muted/40 uppercase font-mono">Dynamic Pricing Cap</span>
+                                <span className="text-[9px] text-muted/60 uppercase font-mono">Dynamic Pricing Cap</span>
                             </div>
                             <span className="text-xl font-bold font-mono text-primary" aria-live="polite">{surgeLimit}x</span>
                         </div>
