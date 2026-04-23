@@ -183,7 +183,7 @@ export function TeamBilling() {
                                 </div>
                             </div>
 
-                            <div className="pt-6 border-t border-white/5 text-[9px] text-muted leading-relaxed">
+                            <div className="pt-6 border-t border-white/5 text-[9px] text-muted leading-relaxed" role="alert">
                                 <AlertCircle size={12} className="inline mr-1 text-primary" />
                                 Credits allocated here are shared across all researchers linked to <strong>{selectedOrg.name}</strong>.
                             </div>
