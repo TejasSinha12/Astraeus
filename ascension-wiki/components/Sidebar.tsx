@@ -92,7 +92,8 @@ export function Sidebar() {
 
                     {/* Global Search Trigger */}
                     <button 
-                        className="mb-8 w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:border-primary/40 hover:bg-white/[0.08] transition-all group"
+                        aria-label="Search Platform Command Palette"
+                        className="mb-8 w-full flex items-center justify-between px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:border-primary/40 hover:bg-white/[0.08] transition-all group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20"
                         onClick={() => {/* Trigger search command palette */}}
                     >
                         <div className="flex items-center gap-2">
