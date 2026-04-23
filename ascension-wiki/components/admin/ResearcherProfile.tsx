@@ -191,7 +191,7 @@ export function ResearcherProfile() {
                         );
                     })}
                 </div>
-                <div className="mt-4 flex justify-between text-[9px] text-white/20 uppercase font-mono">
+                <div className="mt-4 flex justify-between text-[9px] text-white/40 uppercase font-mono" aria-hidden="true">
                     <span>Mar 2025</span>
                     <span>Sep 2025</span>
                     <span>Mar 2026</span>
