@@ -379,7 +379,7 @@ export default function ProfessionalWorkspace() {
             {/* Main Area */}
             <main className="flex-1 flex flex-col">
                 {/* Header Controls */}
-                <header className="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-black/20">
+                <header role="banner" className="h-16 border-b border-white/5 flex items-center justify-between px-8 bg-black/20">
                     <div className="flex items-center gap-6">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-primary/10 border border-primary/20 rounded-lg">
