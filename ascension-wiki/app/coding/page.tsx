@@ -710,7 +710,7 @@ function HistoryItem({ mission, isPinned, onTogglePin, onSelect, onFork }: { mis
 
 function ViewBtn({ label, active, onClick }: { label: string, active: boolean, onClick: () => void }) {
     return (
-        <button onClick={onClick} className={cn("px-4 py-1.5 rounded-md text-[9px] font-bold uppercase tracking-widest transition-all", active ? "bg-primary text-background box-glow" : "text-muted hover:text-white")}>
+        <button role="tab" aria-selected={active} onClick={onClick} className={cn("px-4 py-1.5 rounded-md text-[9px] font-bold uppercase tracking-widest transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary focus-visible:ring-offset-1 focus-visible:ring-offset-background", active ? "bg-primary text-background box-glow" : "text-muted hover:text-white")}>
             {label}
         </button>
     );
